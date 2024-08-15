@@ -1,0 +1,39 @@
+.digimon {
+    width: 64px; /* Adjust based on your sprite size */
+    height: 80px; /* Adjust based on your sprite size */
+    background-repeat: no-repeat;
+    image-rendering: pixelated;
+  }
+  
+  .agumon {
+    background-image: url('../assets/images/agumon-sprite.png');
+  }
+
+  .gabumon {
+    background-image: url('../assets/images/gabumon-sprite.png');
+  }       
+  
+  .impmon {
+    background-image: url('../assets/images/impmon-sprite.png');
+  }    
+  
+  .breathing {
+    animation: breathe 1.5s steps(1, end) infinite;
+  }
+  
+  @keyframes breathe {
+    0% { background-position: 0 0; }     /* Frame 1 */
+    25%, 75% { background-position: -64px 0; } /* Frame 2 */
+    50% { background-position: -128px 0; } /* Frame 3 */
+  }
+  
+  
+  .attacking {
+    animation: attack 0.4s steps(1, end) 1;
+  }
+  
+  @keyframes attack {
+    0% { background-position: 0 -80px; }     /* First attack frame */
+    50% { background-position: -64px -80px; } /* Second attack frame */
+    100% { background-position: 0 0; }      /* Return to first breathing frame */
+  }

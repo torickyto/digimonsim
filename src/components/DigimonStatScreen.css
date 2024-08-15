@@ -1,0 +1,101 @@
+.digimon-stat-screen {
+    width: 320px;
+    border-radius: 15px;
+    padding: 10px;
+    font-family: 'Arial', sans-serif;
+    color: #32313b;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+  
+  .stat-inner {
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 10px;
+    padding: 15px;
+  }
+  
+  .stat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  
+  .digimon-name {
+    font-weight: bold;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .obtained-status {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+  }
+  
+  .obtained { background-color: #4CAF50; }
+  .not-obtained { background-color: #F44336; }
+  
+  .digimon-level, .digimon-type {
+    font-size: 14px;
+    font-weight: bold;
+  }
+  
+  .stat-content {
+    display: flex;
+    margin-bottom: 15px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 8px;
+    padding: 10px;
+  }
+  
+  .digimon-image {
+    width: 96px;
+    height: 96px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: 15px;
+    border-radius: 8px;
+  }
+  
+  .stat-table {
+    flex-grow: 1;
+  }
+  
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  
+  .stat-label, .stat-value {
+    font-size: 14px;
+  }
+  
+  .stat-label {
+    font-weight: bold;
+  }
+  
+  .digimon-ability {
+    background-color: rgba(255, 255, 255, 0.5);
+    padding: 10px;
+    border-radius: 8px;
+  }
+  
+  .ability-label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-size: 16px;
+  }
+  
+  .ability-value {
+    font-size: 14px;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+  
+  .ability-description {
+    font-size: 12px;
+  }
