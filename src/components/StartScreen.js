@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import DigimonSprite from './DigimonSprite';
 import DigimonStatScreen from './DigimonStatScreen';
 import './StartScreen.css';
+import WeaknessTriangle from './WeaknessTriangle';
 
 const STARTER_DIGIMON = [
   { 
@@ -37,7 +38,7 @@ function StartScreen({ onChooseDigimon }) {
 
   return (
     <div className="start-screen">
-      <h1>Choose Your Digimon Partner</h1>
+      <h1>Choose Your Partner</h1>
       <div className="digimon-selection">
         {STARTER_DIGIMON.map((digimon) => (
           <div 
@@ -60,11 +61,15 @@ function StartScreen({ onChooseDigimon }) {
         ))}
       </div>
 
+      <div><p></p></div>
+
+      <WeaknessTriangle />
+
       {selectedDigimon && (
         <div className="stats-modal">
           <div className="stats-content">
             <DigimonStatScreen digimon={selectedDigimon} isObtained={false} />
-            <button onClick={closeStatsModal}>Close</button>
+            <button className= "view-stats-button" onClick={closeStatsModal}>Close</button>
           </div>
         </div>
       )}
