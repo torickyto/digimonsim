@@ -1,0 +1,103 @@
+.home-screen {
+    font-family: "Ubuntu Mono", monospace;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: #444774;
+    color: #f0f0f0;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .top-bar, .bottom-bar {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    z-index: 1;
+  }
+  
+  .top-bar {
+    align-items: flex-start;
+  }
+  
+  .bottom-bar {
+    align-items: flex-end;
+  }
+  
+  .digimon-display {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .digimon-display .digimon-sprite {
+    width: 200px;
+    height: 200px;
+    image-rendering: pixelated;
+  }
+  
+  button {
+    font-family: "Ubuntu Mono", monospace;
+    font-size: 16px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 20px;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #f0f0f0;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  button:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+  
+  .stats-button, .eggs-button {
+    background-color: rgba(133, 218, 235, 0.7);
+  }
+  
+  .digimon-button {
+    background-color: rgba(245, 218, 167, 0.7);
+  }
+  
+  .battle-button {
+    background-color: rgba(202, 96, 174, 0.7);
+  }
+  
+  .modal {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(50, 49, 59, 0.9);
+    padding: 20px;
+    border-radius: 10px;
+    z-index: 2;
+  }
+  
+  .modal h2 {
+    margin-top: 0;
+  }
+  
+  .modal ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .modal li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .modal .digimon-sprite {
+    width: 32px;
+    height: 32px;
+    margin-right: 10px;
+  }
+  
+  .modal button {
+    margin-top: 10px;
+  }

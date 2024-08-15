@@ -40,7 +40,7 @@ const DigimonStatScreen = ({ digimon, isObtained = false }) => {
         <div className="digimon-ability">
           <div className="ability-label">Ability</div>
           <div className="ability-value">Placeholder Ability</div>
-          <div className="ability-description">Description of the Digimon's ability goes here.</div>
+          <div className="ability-description">Description</div>
         </div>
       </div>
     </div>

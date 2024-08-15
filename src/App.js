@@ -6,40 +6,62 @@ import BattleScreen from './components/BattleScreen';
 function App() {
   const [gameState, setGameState] = useState({
     currentScreen: 'start',
-    chosenDigimon: null,
+    party: [],
+    eggs: [],
+    currentDigimon: null
   });
 
-  const chooseDigimon = (digimon) => {
+  const chooseStarterDigimon = (digimon) => {
     setGameState({
       currentScreen: 'home',
-      chosenDigimon: {
-        ...digimon,
-        hp: 100,
-        attack: 15,
-        defense: 10,
-      },
+      party: [digimon],
+      eggs: [],
+      currentDigimon: digimon
     });
   };
 
   const startBattle = () => {
-    setGameState(prev => ({ ...prev, currentScreen: 'battle' }));
+    setGameState(prevState => ({
+      ...prevState,
+      currentScreen: 'battle'
+    }));
   };
 
-  const endBattle = () => {
-    setGameState(prev => ({ ...prev, currentScreen: 'home' }));
+  const endBattle = (battleResult) => {
+    setGameState(prevState => ({
+      ...prevState,
+      currentScreen: 'home'
+    }));
+  };
+
+  const renderScreen = () => {
+    switch (gameState.currentScreen) {
+      case 'start':
+        return <StartScreen onChooseDigimon={chooseStarterDigimon} />;
+      case 'home':
+        return (
+          <HomeScreen
+            currentDigimon={gameState.currentDigimon}
+            party={gameState.party}
+            eggs={gameState.eggs}
+            onStartBattle={startBattle}
+          />
+        );
+      case 'battle':
+        return (
+          <BattleScreen
+            playerDigimon={gameState.currentDigimon}
+            onBattleEnd={endBattle}
+          />
+        );
+      default:
+        return <div>Error: Unknown screen</div>;
+    }
   };
 
   return (
     <div className="App">
-      {gameState.currentScreen === 'start' && (
-        <StartScreen onChooseDigimon={chooseDigimon} />
-      )}
-      {gameState.currentScreen === 'home' && (
-        <HomeScreen digimon={gameState.chosenDigimon} onStartBattle={startBattle} />
-      )}
-      {gameState.currentScreen === 'battle' && (
-        <BattleScreen playerDigimon={gameState.chosenDigimon} onBattleEnd={endBattle} />
-      )}
+      {renderScreen()}
     </div>
   );
 }
