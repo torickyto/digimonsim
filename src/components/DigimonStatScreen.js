@@ -8,18 +8,17 @@ const TYPE_COLORS = {
   VIRUS: '#ca60ae'
 };
 
-const DigimonStatScreen = ({ digimon, isObtained = false }) => {
+const DigimonStatScreen = ({ digimon, isObtained }) => {
   const typeColor = TYPE_COLORS[digimon.type] || '#ffffff';
-
   return (
     <div className="digimon-stat-screen" style={{ backgroundColor: typeColor }}>
       <div className="stat-inner">
         <div className="stat-header">
           <div className="digimon-name">
             <span className={`obtained-status ${isObtained ? 'obtained' : 'not-obtained'}`}></span>
-            {digimon.displayName}
+            {digimon.name}
           </div>
-          <div className="digimon-level">Lv.{digimon.stats.level}</div>
+          {isObtained && <div className="digimon-level">Lv.{digimon.level}</div>}
           <div className="digimon-type">{digimon.type}</div>
         </div>
         <div className="stat-content">
@@ -27,20 +26,26 @@ const DigimonStatScreen = ({ digimon, isObtained = false }) => {
             <DigimonSprite name={digimon.name} />
           </div>
           <div className="stat-table">
-            {Object.entries(digimon.stats).map(([stat, value]) => (
-              stat !== 'level' && (
-                <div key={stat} className="stat-row">
-                  <div className="stat-label">{stat.charAt(0).toUpperCase() + stat.slice(1)}</div>
-                  <div className="stat-value">{value}</div>
-                </div>
-              )
-            ))}
+            <div className="stat-row">
+              <div className="stat-label">HP</div>
+              <div className="stat-value">{digimon.hp}/{digimon.maxHp}</div>
+            </div>
+            <div className="stat-row">
+              <div className="stat-label">Block</div>
+              <div className="stat-value">{digimon.block}</div>
+            </div>
+            {isObtained && (
+              <div className="stat-row">
+                <div className="stat-label">EXP</div>
+                <div className="stat-value">{digimon.exp}</div>
+              </div>
+            )}
           </div>
         </div>
         <div className="digimon-ability">
-          <div className="ability-label">Ability</div>
-          <div className="ability-value">Placeholder Ability</div>
-          <div className="ability-description">Description</div>
+          <div className="ability-label">Special Ability</div>
+          <div className="ability-value">{digimon.specialAbility.name}</div>
+          <div className="ability-description">{digimon.specialAbility.description}</div>
         </div>
       </div>
     </div>

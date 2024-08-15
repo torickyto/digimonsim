@@ -1,0 +1,51 @@
+.battle-screen {
+    width: 100vw;
+    height: 100vh;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px;
+  }
+  
+  .player-digimon, .enemy-digimon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .player-digimon {
+    align-self: flex-start;
+  }
+  
+  .enemy-digimon {
+    align-self: flex-end;
+  }
+  
+  .hp-bar {
+    width: 200px;
+    height: 20px;
+    background-color: #ddd;
+    margin-top: 10px;
+  }
+  
+  .hp-fill {
+    height: 100%;
+    background-color: #4CAF50;
+  }
+  
+  .player-hand {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+  }
+  
+  .player-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+  }

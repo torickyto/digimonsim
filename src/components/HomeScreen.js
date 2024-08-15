@@ -1,16 +1,27 @@
 import React, { useState } from 'react';
 import DigimonSprite from './DigimonSprite';
 import DigimonStatScreen from './DigimonStatScreen';
+import BattleScreen from './BattleScreen';
 import './HomeScreen.css';
 
-const HomeScreen = ({ currentDigimon, allDigimon, eggs }) => {
+const HomeScreen = ({ currentDigimon, party, eggs, onStartBattle }) => {
   const [showStats, setShowStats] = useState(false);
-  const [showDigimonList, setShowDigimonList] = useState(false);
+  const [showParty, setShowParty] = useState(false);
   const [showEggs, setShowEggs] = useState(false);
+  const [inBattle, setInBattle] = useState(false);
 
   const toggleStats = () => setShowStats(!showStats);
-  const toggleDigimonList = () => setShowDigimonList(!showDigimonList);
+  const toggleParty = () => setShowParty(!showParty);
   const toggleEggs = () => setShowEggs(!showEggs);
+  const startBattle = () => setInBattle(true);
+  const endBattle = (playerWon) => {
+    setInBattle(false);
+    // post-battle effects (exp gain, etc.)
+  };
+
+  if (inBattle) {
+    return <BattleScreen playerDigimon={currentDigimon} onBattleEnd={endBattle} />;
+  }
 
   return (
     <div className="home-screen">
@@ -24,8 +35,8 @@ const HomeScreen = ({ currentDigimon, allDigimon, eggs }) => {
       </div>
 
       <div className="bottom-bar">
-        <button className="digimon-button" onClick={toggleDigimonList}>Digimon</button>
-        <button className="battle-button">Battle</button>
+        <button className="party-button" onClick={toggleParty}>Party</button>
+        <button className="battle-button" onClick={startBattle}>Battle</button>
       </div>
 
       {showStats && (
@@ -35,18 +46,16 @@ const HomeScreen = ({ currentDigimon, allDigimon, eggs }) => {
         </div>
       )}
 
-      {showDigimonList && (
+      {showParty && (
         <div className="modal">
-          <h2>Your Digimon</h2>
-          <ul>
-            {allDigimon.map(digimon => (
-              <li key={digimon.id}>
-                <DigimonSprite name={digimon.name} />
-                {digimon.displayName}
-              </li>
-            ))}
-          </ul>
-          <button onClick={toggleDigimonList}>Close</button>
+          <h2>Your Party</h2>
+          {party.map(digimon => (
+            <div key={digimon.id} className="party-member">
+              <DigimonSprite name={digimon.name} />
+              <p>{digimon.name} Lv.{digimon.level}</p>
+            </div>
+          ))}
+          <button onClick={toggleParty}>Close</button>
         </div>
       )}
 

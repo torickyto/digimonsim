@@ -2,6 +2,10 @@
     font-family: "Ubuntu Mono", monospace;
     width: 100%;
     height: 100vh;
+    background-image: url('/src/assets/backgrounds/palacelaboratory.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: auto;
     display: flex;
     flex-direction: column;
     background-color: #444774;
@@ -28,6 +32,7 @@
   .digimon-display {
     flex-grow: 1;
     display: flex;
+    margin-top: 80px;
     justify-content: center;
     align-items: center;
   }

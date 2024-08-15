@@ -1,21 +1,45 @@
 import React, { useState } from 'react';
 import DigimonSprite from './DigimonSprite';
 import DigimonStatScreen from './DigimonStatScreen';
-import './StartScreen.css';
 import WeaknessTriangle from './WeaknessTriangle';
+import './StartScreen.css';
 
 const STARTER_DIGIMON = [
   { 
     id: 1, name: 'agumon', displayName: 'Agumon', type: 'DATA',
-    stats: { level: 5, health: 100, attack: 15, defence: 10, speed: 8 }
+    hp: 50, maxHp: 50, block: 0,
+    specialAbility: {
+      name: 'Pepper Breath',
+      cost: 2,
+      effect: (player, enemy) => { enemy.takeDamage(10); },
+      description: 'Deal 10 damage to the enemy.'
+    }
   },
   { 
     id: 2, name: 'gabumon', displayName: 'Gabumon', type: 'VACCINE',
-    stats: { level: 5, health: 95, attack: 14, defence: 12, speed: 7 }
+    hp: 45, maxHp: 45, block: 0,
+    specialAbility: {
+      name: 'Blue Blaster',
+      cost: 2,
+      effect: (player, enemy) => { 
+        enemy.takeDamage(8); 
+        player.addBlock(3);
+      },
+      description: 'Deal 8 damage to the enemy and gain 3 block.'
+    }
   },
   { 
     id: 3, name: 'impmon', displayName: 'Impmon', type: 'VIRUS',
-    stats: { level: 5, health: 90, attack: 16, defence: 8, speed: 10 }
+    hp: 40, maxHp: 40, block: 0,
+    specialAbility: {
+      name: 'Bada Boom',
+      cost: 1,
+      effect: (player, enemy) => { 
+        enemy.takeDamage(6); 
+        player.draw(1);
+      },
+      description: 'Deal 6 damage to the enemy and draw a card.'
+    }
   },
 ];
 
@@ -61,15 +85,13 @@ function StartScreen({ onChooseDigimon }) {
         ))}
       </div>
 
-      <div><p></p></div>
-
       <WeaknessTriangle />
 
       {selectedDigimon && (
         <div className="stats-modal">
           <div className="stats-content">
             <DigimonStatScreen digimon={selectedDigimon} isObtained={false} />
-            <button className= "view-stats-button" onClick={closeStatsModal}>Close</button>
+            <button className="view-stats-button" onClick={closeStatsModal}>Close</button>
           </div>
         </div>
       )}

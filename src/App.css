@@ -33,3 +33,9 @@ img {
   max-width: 100px;
   height: auto;
 }
+
+:root {
+  --data-color: #85daeb;
+  --vaccine-color: #f5daa7;
+  --virus-color: #ca60ae;
+}

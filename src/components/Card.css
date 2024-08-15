@@ -1,0 +1,50 @@
+.card {
+    width: 200px;
+    height: 300px;
+    border: 2px solid #000;
+    border-radius: 10px;
+    padding: 10px;
+    margin: 10px;
+    position: relative;
+    background-color: #f0f0f0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  
+  .card-cost {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    width: 30px;
+    height: 30px;
+    background-color: #4a90e2;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+  }
+  
+  .card-name {
+    text-align: center;
+    margin-top: 30px;
+  }
+  
+  .card-description {
+    text-align: center;
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .card-type {
+    text-align: center;
+    font-style: italic;
+  }
+  
+  .attack { background-color: #ffcccb; }
+  .block { background-color: #90ee90; }
+  .skill { background-color: #add8e6; }
