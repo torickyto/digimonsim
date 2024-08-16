@@ -1,38 +1,23 @@
 import React, { useState } from 'react';
 import DigimonSprite from './DigimonSprite';
 import DigimonStatScreen from './DigimonStatScreen';
-import BattleScreen from './BattleScreen';
 import { Digimon, DigimonEgg } from '../shared/types';
 import './HomeScreen.css';
 
 interface HomeScreenProps {
-  currentDigimon: Digimon;
-  party: Digimon[];
+  playerTeam: Digimon[];
   eggs: DigimonEgg[];
   onStartBattle: () => void;
 }
 
-const HomeScreen: React.FC<HomeScreenProps> = ({ currentDigimon, party, eggs, onStartBattle }) => {
+const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle }) => {
   const [showStats, setShowStats] = useState(false);
   const [showParty, setShowParty] = useState(false);
   const [showEggs, setShowEggs] = useState(false);
-  const [inBattle, setInBattle] = useState(false);
 
   const toggleStats = () => setShowStats(!showStats);
   const toggleParty = () => setShowParty(!showParty);
   const toggleEggs = () => setShowEggs(!showEggs);
-  const startBattle = () => {
-    setInBattle(true);
-    onStartBattle();
-  };
-  const endBattle = (playerWon: boolean) => {
-    setInBattle(false);
-    // post-battle effects (exp gain, etc.)
-  };
-
-  if (inBattle) {
-    return <BattleScreen playerDigimon={currentDigimon} onBattleEnd={endBattle} />;
-  }
 
   return (
     <div className="home-screen">
@@ -42,17 +27,17 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ currentDigimon, party, eggs, on
       </div>
       
       <div className="digimon-display">
-        <DigimonSprite name={currentDigimon.name} />
+        <DigimonSprite name={playerTeam[0].name} />
       </div>
 
       <div className="bottom-bar">
         <button className="party-button" onClick={toggleParty}>Party</button>
-        <button className="battle-button" onClick={startBattle}>Battle</button>
+        <button className="battle-button" onClick={onStartBattle}>Battle</button>
       </div>
 
       {showStats && (
         <div className="modal">
-          <DigimonStatScreen digimon={currentDigimon} isObtained={true} />
+          <DigimonStatScreen digimon={playerTeam[0]} isObtained={true} />
           <button onClick={toggleStats}>Close</button>
         </div>
       )}
@@ -60,10 +45,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ currentDigimon, party, eggs, on
       {showParty && (
         <div className="modal">
           <h2>Your Party</h2>
-          {party.map(digimon => (
+          {playerTeam.map(digimon => (
             <div key={digimon.id} className="party-member">
               <DigimonSprite name={digimon.name} />
-              <p>{digimon.name} Lv.{digimon.level}</p>
+              <p>{digimon.displayName} Lv.{digimon.level}</p>
             </div>
           ))}
           <button onClick={toggleParty}>Close</button>

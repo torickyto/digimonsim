@@ -11,43 +11,46 @@ export const shuffleArray = <T>(array: T[]): T[] => {
 };
 
 export const createDeck = (playerTeam: Digimon[]): CardType[] => {
-  let deck: CardType[] = [];
-
-  playerTeam.forEach((digimon, index) => {
-    // Add 3 basic attack cards for each Digimon
-    for (let i = 0; i < 3; i++) {
-      const attackCard: AttackCard = {
+    let deck: CardType[] = [];
+  
+    playerTeam.forEach((digimon, index) => {
+      // Add 3 basic attack cards for each Digimon
+      for (let i = 0; i < 3; i++) {
+        const attackCard: AttackCard = {
+          id: deck.length + 1,
+          name: 'Attack',
+          type: 'attack',
+          cost: 1,
+          damage: 6,
+          description: 'Deal 6 damage to the target.'
+        };
+        deck.push(attackCard);
+      }
+  
+      // Add 3 basic block cards for each Digimon
+      for (let i = 0; i < 3; i++) {
+        const blockCard: BlockCard = {
+          id: deck.length + 1,
+          name: 'Block',
+          type: 'block',
+          cost: 1,
+          block: 5,
+          description: 'Gain 5 block.'
+        };
+        deck.push(blockCard);
+      }
+  
+      // Add the Digimon's special ability card
+      const specialCard: SpecialCard = {
         id: deck.length + 1,
-        name: 'Attack',
-        type: 'attack',
-        cost: 1,
-        damage: 6
+        name: digimon.specialAbility.name,
+        type: 'special',
+        cost: digimon.specialAbility.cost,
+        effect: digimon.specialAbility.effect,
+        description: digimon.specialAbility.description
       };
-      deck.push(attackCard);
-    }
-
-    // Add 3 basic block cards for each Digimon
-    for (let i = 0; i < 3; i++) {
-      const blockCard: BlockCard = {
-        id: deck.length + 1,
-        name: 'Block',
-        type: 'block',
-        cost: 1,
-        block: 5
-      };
-      deck.push(blockCard);
-    }
-
-    // Add the Digimon's special ability card
-    const specialCard: SpecialCard = {
-      id: deck.length + 1,
-      name: digimon.specialAbility.name,
-      type: 'special',
-      cost: digimon.specialAbility.cost,
-      effect: digimon.specialAbility.effect
-    };
-    deck.push(specialCard);
-  });
-
-  return shuffleArray(deck);
-};
+      deck.push(specialCard);
+    });
+  
+    return shuffleArray(deck);
+  };

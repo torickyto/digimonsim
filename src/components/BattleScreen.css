@@ -1,107 +1,332 @@
 .battle-screen {
-    width: 100vw;
     height: 100vh;
-    background-size: cover;
-    background-position: center;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    padding: 20px;
-    font-family: 'Kreon', serif;
-    color: #f0f0f0;
+    background: linear-gradient(to bottom, #1a237e, #000000);
+    color: white;
+    font-family: 'Arial', sans-serif;
   }
   
-  .battle-area {
+  .top-bar {
+    background: linear-gradient(to right, #1565c0, #311b92);
+    padding: 1rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 60%;
+    border-bottom: 2px solid #00bcd4;
   }
   
-  .player-digimon, .enemy-digimon {
+  .turn-display {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #ffd54f;
+    text-shadow: 0 0 10px rgba(255, 213, 79, 0.7);
+  }
+  
+  .tutorial-mode {
+    font-size: 1.2rem;
+    color: #4dd0e1;
+  }
+  
+  .main-content {
+    display: flex;
+    flex: 1;
+  }
+  
+  .card-sidebar {
+    width: 33%;
+    background: linear-gradient(to bottom, #263238, #12191d);
+    padding: 1rem;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    border-right: 2px solid #00bcd4;
   }
   
-  .hp-bar {
-    width: 200px;
-    height: 20px;
-    background-color: #4a4a4a;
-    border-radius: 10px;
-    overflow: hidden;
-    margin-top: 10px;
-    position: relative;
-  }
-  
-  .hp-fill {
-    height: 100%;
-    background-color: #4CAF50;
-    transition: width 0.3s ease;
-  }
-  
-  .hp-text {
-    position: absolute;
-    width: 100%;
-    text-align: center;
-    line-height: 20px;
-    color: #ffffff;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
-  }
-  
-  .block-indicator {
-    background-color: #3498db;
-    color: #ffffff;
-    padding: 5px 10px;
-    border-radius: 15px;
-    margin-top: 5px;
-  }
-  
-  .player-hand {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    padding: 20px;
-  }
-  
-  .player-info {
+  .action-buttons {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    background-color: rgba(0, 0, 0, 0.5);
-    border-radius: 10px;
+    margin-bottom: 1rem;
   }
   
-  .energy-indicator, .deck-pile, .discard-pile {
-    background-color: rgba(255, 255, 255, 0.1);
-    padding: 5px 10px;
+  .end-turn-button, .discard-button {
+    padding: 0.5rem 1rem;
+    border: none;
     border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
   }
   
   .end-turn-button {
-    background-color: #e74c3c;
-    color: #ffffff;
-    border: none;
-    padding: 10px 20px;
+    background: linear-gradient(to right, #6a1b9a, #4a148c);
+    color: white;
+  }
+  
+  .discard-button {
+    background: linear-gradient(to right, #0277bd, #01579b);
+    color: white;
+  }
+  
+  .end-turn-button:hover, .discard-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .deck-count {
+    display: flex;
+    align-items: center;
+    background: #37474f;
+    padding: 0.5rem;
     border-radius: 5px;
+  }
+  
+  .deck-icon {
+    color: #4dd0e1;
+    margin-right: 0.5rem;
+  }
+  
+  .energy-gauge {
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .energy-stars {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    max-width: 150px;
+  }
+  
+  .energy-star {
+    color: #424242;
+    margin: 0 2px;
+    font-size: 1.5rem;
+  }
+  
+  .energy-star.active {
+    color: #ffd54f;
+  }
+  
+  .card-list {
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1;
+    padding-right: 10px;
+  }
+
+  .card-sidebar {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  
+  .game-card {
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+  }
+  
+  .game-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    border-color: #4a90e2;
+  }
+  
+  .game-card.selected {
+    transform: translateX(10px);
+    border-color: #4a90e2;
+    box-shadow: 0 0 20px rgba(74, 144, 226, 0.5);
+  }
+  
+  .enemy {
+    position: absolute;
+    bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .enemy.attackable {
     cursor: pointer;
-    transition: background-color 0.3s ease;
   }
   
-  .end-turn-button:hover {
-    background-color: #c0392b;
+  .enemy.attackable:hover {
+    filter: brightness(1.2);
+    transform: scale(1.05);
   }
   
-  .end-turn-button:disabled {
-    background-color: #7f8c8d;
-    cursor: not-allowed;
+  .card-content {
+    display: flex;
+    align-items: stretch;
+    height: 4rem;
   }
   
-  .enemy-intent {
-    align-self: flex-end;
-    background-color: rgba(0, 0, 0, 0.5);
-    padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 10px;
+  .card-image {
+    width: 4rem;
+    background: linear-gradient(to bottom right, #1565c0, #7b1fa2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .card-info {
+    flex: 1;
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .card-name {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #4dd0e1;
+    margin: 0;
+  }
+  
+  .card-description {
+    font-size: 0.7rem;
+    color: #b0bec5;
+    margin: 0;
+  }
+  
+  .card-cost {
+    width: 3rem;
+    background: linear-gradient(to bottom, #ffd54f, #ff8f00);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #263238;
+  }
+  
+  .battle-area {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .battle-background {
+    background-image: url('/src/assets/backgrounds/northcave.png');
+    position: relative;
+    width: 472px;
+    height: 256px;
+  }
+  
+  .battle-background img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border: 4px solid #00bcd4;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 188, 212, 0.5);
+  }
+  
+  .enemy-left {
+    left: 25%;
+    transform: translateX(-50%);
+  }
+  
+  .enemy-info {
+    text-align: center;
+  }
+  
+  .enemy-name {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #4dd0e1;
+    margin-top: 0.5rem;
+  }
+  
+  .health-bar {
+    width: 8rem;
+    height: 0.75rem;
+    background: #37474f;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  .health-fill {
+    height: 100%;
+    background: linear-gradient(to right, #f44336, #e91e63);
+    transition: width 0.3s ease;
+  }
+  
+  .health-text {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.6rem;
+    font-weight: bold;
+  }
+  
+  .player-party {
+    display: flex;
+    justify-content: space-around;
+    padding: 1rem;
+    background: linear-gradient(to right, #263238, #12191d);
+    border-top: 2px solid #00bcd4;
+  }
+  
+  .party-member {
+    display: flex;
+    align-items: center;
+  }
+  
+  .digimon-info {
+    margin-left: 0.5rem;
+  }
+  
+  .digimon-name {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #4dd0e1;
+  }
+  
+  .player-party .health-bar {
+    width: 6rem;
+  }
+  
+  .player-party .health-fill {
+    background: linear-gradient(to right, #4caf50, #8bc34a);
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 1024px) {
+    .card-sidebar {
+      width: 40%;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .main-content {
+      flex-direction: column;
+    }
+    
+    .card-sidebar {
+      width: 100%;
+      order: 2;
+    }
+    
+    .battle-area {
+      order: 1;
+    }
+    
+    .player-party {
+      flex-wrap: wrap;
+    }
+    
+    .party-member {
+      margin-bottom: 1rem;
+    }
   }

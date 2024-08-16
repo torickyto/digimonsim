@@ -1,25 +1,29 @@
 import React from 'react';
 import { CardType } from '../shared/types';
-import './Card.css';
 
 interface CardProps {
   card: CardType;
-  onPlay: (card: CardType) => void;
-  disabled?: boolean;
+  onClick: () => void;
+  isSelected: boolean;
+  onMouseEnter?: () => void; 
+  onMouseLeave?: () => void; 
 }
 
-const Card: React.FC<CardProps> = ({ card, onPlay, disabled = false }) => {
+const Card: React.FC<CardProps> = ({ card, onClick, isSelected }) => {
   return (
     <div 
-      className={`card ${card.type} ${disabled ? 'disabled' : ''}`} 
-      onClick={() => !disabled && onPlay(card)}
+      className={`game-card ${isSelected ? 'selected' : ''}`}
+      onClick={onClick}
     >
-      <div className="card-cost">{card.cost}</div>
-      <h3 className="card-name">{card.name}</h3>
-      <div className="card-effect">
-        {card.type === 'attack' && `Deal ${card.damage} damage`}
-        {card.type === 'block' && `Gain ${card.block} block`}
-        {card.type === 'special' && 'Special effect'}
+      <div className="card-content">
+        <div className="card-image">
+          <img src={`/api/placeholder/48/48?text=${card.type}`} alt={card.name} />
+        </div>
+        <div className="card-info">
+          <h3 className="card-name">{card.name}</h3>
+          <p className="card-description">{card.description}</p>
+        </div>
+        <div className="card-cost">{card.cost}</div>
       </div>
     </div>
   );

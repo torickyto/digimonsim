@@ -1,148 +1,158 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Digimon, CardType, BattleState } from '../shared/types';
 import Card from './Card';
-import { Digimon, CardType, BattleState, AttackCard, BlockCard, SpecialCard } from '../shared/types';
+import DigimonSprite from './DigimonSprite';
+import { createDeck, shuffleArray } from '../utils/deckUtils';
+import './BattleSystem.css';
 
 interface BattleSystemProps {
   playerTeam: Digimon[];
   enemy: Digimon;
+  onBattleEnd: (playerWon: boolean) => void;
 }
 
-const BattleSystem: React.FC<BattleSystemProps> = ({ playerTeam, enemy }) => {
-  const shuffleDeck = (deck: CardType[]): CardType[] => {
-    return [...deck].sort(() => Math.random() - 0.5);
-  };
-
-  const createDeck = (digimon: Digimon): CardType[] => {
-    const attackCard: AttackCard = {
-      id: 1,
-      name: 'Attack',
-      type: 'attack',
-      cost: 1,
-      damage: 6
-    };
-
-    const blockCard: BlockCard = {
-      id: 2,
-      name: 'Block',
-      type: 'block',
-      cost: 1,
-      block: 5
-    };
-
-    const specialCard: SpecialCard = {
-      id: 3,
-      name: digimon.specialAbility.name,
-      type: 'special',
-      cost: digimon.specialAbility.cost,
-      effect: digimon.specialAbility.effect
-    };
-
-    return [
-      attackCard,
-      blockCard,
-      specialCard,
-      ...Array(3).fill(attackCard).map((card, index) => ({ ...card, id: 4 + index })),
-      ...Array(3).fill(blockCard).map((card, index) => ({ ...card, id: 7 + index }))
-    ];
-  };
-
-  const getHandSize = (teamSize: number): number => {
-    return Math.min(5, 3 + teamSize);
-  };
-
-  const initialDeck = shuffleDeck(playerTeam.flatMap(digimon => createDeck(digimon)));
-  const initialHandSize = getHandSize(playerTeam.length);
-  const initialHand = initialDeck.slice(0, initialHandSize);
-  const remainingDeck = initialDeck.slice(initialHandSize);
-
-  const [deck, setDeck] = useState<CardType[]>(remainingDeck);
-  const [hand, setHand] = useState<CardType[]>(initialHand);
-  const [discardPile, setDiscardPile] = useState<CardType[]>([]);
-  const [energy, setEnergy] = useState(3);
+const BattleSystem: React.FC<BattleSystemProps> = ({ playerTeam, enemy, onBattleEnd }) => {
   const [turn, setTurn] = useState(1);
-  const [enemyBlock, setEnemyBlock] = useState(0);
+  const [playerEnergy, setPlayerEnergy] = useState(6);
+  const [playerDeck, setPlayerDeck] = useState<CardType[]>([]);
+  const [playerHand, setPlayerHand] = useState<CardType[]>([]);
+  const [playerDiscardPile, setPlayerDiscardPile] = useState<CardType[]>([]);
+  const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
+  const [enemyHp, setEnemyHp] = useState(enemy.hp);
+  const [enemyBlock, setEnemyBlock] = useState(0); 
+  const [playerTeamHp, setPlayerTeamHp] = useState(playerTeam.map(d => d.hp));
 
-  const battleState: BattleState = {
-    playerEnergy: energy,
-    playerHand: hand,
-    playerDeck: deck,
-    playerDiscardPile: discardPile,
-    enemyBlock: enemyBlock
+  useEffect(() => {
+    const initialDeck = createDeck(playerTeam);
+    const shuffledDeck = shuffleArray(initialDeck);
+    setPlayerDeck(shuffledDeck);
+    drawInitialHand(shuffledDeck);
+  }, [playerTeam]);
+
+  const drawInitialHand = (deck: CardType[]) => {
+    const initialHandSize = 3 + playerTeam.length;
+    setPlayerHand(deck.slice(0, initialHandSize));
+    setPlayerDeck(deck.slice(initialHandSize));
   };
 
   const drawCard = () => {
-    if (deck.length === 0) {
-      refreshDeck();
+    if (playerDeck.length === 0) {
+      if (playerDiscardPile.length === 0) return;
+      const shuffledDiscard = shuffleArray(playerDiscardPile);
+      setPlayerDeck(shuffledDiscard);
+      setPlayerDiscardPile([]);
     }
-    if (deck.length > 0) {
-      const newCard = deck[0];
-      setHand([...hand, newCard]);
-      setDeck(deck.slice(1));
-    }
-  };
-
-  const refreshDeck = () => {
-    const newDeck = shuffleDeck([...discardPile]);
-    setDeck(newDeck);
-    setDiscardPile([]);
+    const [newCard, ...remainingDeck] = playerDeck;
+    setPlayerHand(prev => [...prev, newCard]);
+    setPlayerDeck(remainingDeck);
   };
 
   const playCard = (card: CardType) => {
-    if (energy >= card.cost) {
-      setEnergy(energy - card.cost);
-      setHand(hand.filter(c => c.id !== card.id));
-      setDiscardPile([...discardPile, card]);
+    if (playerEnergy < card.cost) return;
 
-      switch (card.type) {
-        case 'attack':
-          break;
-        case 'block':
-          break;
-        case 'special':
+    setPlayerEnergy(prev => prev - card.cost);
+    setPlayerHand(prev => prev.filter(c => c.id !== card.id));
+    setPlayerDiscardPile(prev => [...prev, card]);
+
+    // Implement card effects here
+    switch (card.type) {
+      case 'attack':
+        setEnemyHp(prev => Math.max(0, prev - (card.damage || 0)));
+        break;
+      case 'block':
+        // Implement block logic
+        break;
+      case 'special':
+        if (card.effect) {
+          const battleState: BattleState = {
+            playerEnergy,
+            playerHand,
+            playerDeck,
+            playerDiscardPile,
+            enemyHp,
+            enemyBlock
+          };
           card.effect(playerTeam[0], enemy, battleState);
-          break;
-      }
+        }
+        break;
     }
+
+    setSelectedCardId(null);
+  };
+
+  const handleCardClick = (card: CardType) => {
+    setSelectedCardId(prev => prev === card.id ? null : card.id);
   };
 
   const endTurn = () => {
-    setTurn(turn + 1);
-    setEnergy(3);
-    const handSize = getHandSize(playerTeam.length);
-    while (hand.length < handSize && (deck.length > 0 || discardPile.length > 0)) {
-      drawCard();
-    }
-    // enemy logic
+    setTurn(prev => prev + 1);
+    setPlayerEnergy(6);
+    drawCard();
+    // Implement enemy turn logic here
+  };
+
+  const discardSelected = () => {
+    if (selectedCardId === null) return;
+    const cardToDiscard = playerHand.find(card => card.id === selectedCardId);
+    if (!cardToDiscard) return;
+
+    setPlayerHand(prev => prev.filter(card => card.id !== selectedCardId));
+    setPlayerDiscardPile(prev => [...prev, cardToDiscard]);
+    setSelectedCardId(null);
   };
 
   return (
     <div className="battle-system">
-      <div className="player-team">
-        {playerTeam.map(digimon => (
-          <div key={digimon.id} className="digimon-card">
-            <h3>{digimon.name}</h3>
-            <p>HP: {digimon.hp}/{digimon.maxHp}</p>
-            <p>Block: {digimon.block}</p>
+      <div className="top-bar">
+        <div className="turn-display">TURN {turn}</div>
+        <div className="energy-gauge">
+          Gauge {playerEnergy}
+          {[...Array(6)].map((_, i) => (
+            <span key={i} className={`energy-star ${i < playerEnergy ? 'active' : ''}`}>★</span>
+          ))}
+        </div>
+        <div className="button-container">
+          <button onClick={endTurn}>END TURN</button>
+          <button onClick={discardSelected} disabled={selectedCardId === null}>DISCARD</button>
+        </div>
+      </div>
+      
+      <div className="main-content">
+        <div className="card-list">
+          {playerHand.map(card => (
+            <Card 
+              key={card.id}
+              card={card}
+              onClick={() => handleCardClick(card)}
+              isSelected={card.id === selectedCardId}
+            />
+          ))}
+        </div>
+        
+        <div className="battle-area">
+          <div className="enemy-area">
+            <DigimonSprite name={enemy.name} />
+            <div>{enemy.name}</div>
+            <div className="hp-bar">
+              <div className="hp-fill" style={{width: `${(enemyHp / enemy.maxHp) * 100}%`}}></div>
+              <span>{enemyHp}/{enemy.maxHp}</span>
+            </div>
           </div>
-        ))}
+          
+          <div className="player-area">
+            {playerTeam.map((digimon, index) => (
+              <div key={digimon.id} className="player-digimon">
+                <DigimonSprite name={digimon.name} />
+                <div>{digimon.name}</div>
+                <div className="hp-bar">
+                  <div className="hp-fill" style={{width: `${(playerTeamHp[index] / digimon.maxHp) * 100}%`}}></div>
+                  <span>{playerTeamHp[index]}/{digimon.maxHp}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
-      <div className="enemy">
-        <h3>{enemy.name}</h3>
-        <p>HP: {enemy.hp}/{enemy.maxHp}</p>
-        <p>Block: {enemyBlock}</p>
-      </div>
-      <div className="player-hand">
-        {hand.map(card => (
-          <Card key={card.id} card={card} onPlay={() => playCard(card)} />
-        ))}
-      </div>
-      <div className="player-info">
-        <p>Energy: {energy}/3</p>
-        <p>Turn: {turn}</p>
-        <p>Deck: {deck.length}</p>
-        <p>Discard: {discardPile.length}</p>
-      </div>
-      <button onClick={endTurn}>End Turn</button>
     </div>
   );
 };

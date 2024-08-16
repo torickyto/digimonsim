@@ -1,4 +1,4 @@
-import { DigimonTemplate, Digimon, CardType, AttackCard, BlockCard, SpecialCard, DigimonType, BattleState } from '../shared/types';
+import { DigimonTemplate, Digimon, CardType, DigimonType, BattleState } from '../shared/types';
 
 const digimonTemplates: Record<string, DigimonTemplate> = {
   Agumon: {
@@ -45,39 +45,42 @@ const digimonTemplates: Record<string, DigimonTemplate> = {
   }
 };
 
-const createBasicDeck = (digimon: Digimon): CardType[] => {
-  const attackCard: AttackCard = {
-    id: 1,
-    name: 'Attack',
-    type: 'attack',
-    cost: 1,
-    damage: 6
-  };
+let nextCardId = 1;
 
-  const blockCard: BlockCard = {
-    id: 2,
-    name: 'Block',
-    type: 'block',
-    cost: 1,
-    block: 5
-  };
+const createCard = (
+  name: string,
+  type: 'attack' | 'block' | 'special',
+  cost: number,
+  description: string,
+  damage?: number,
+  block?: number,
+  effect?: (attacker: Digimon, defender: Digimon, battleState: BattleState) => void
+): CardType => ({
+  id: nextCardId++,
+  name,
+  type,
+  cost,
+  description,
+  damage,
+  block,
+  effect
+});
 
-  const specialCard: SpecialCard = {
-    id: 3,
-    name: digimon.specialAbility.name,
-    type: 'special',
-    cost: digimon.specialAbility.cost,
-    effect: digimon.specialAbility.effect
-  };
-
-  return [
-    attackCard,
-    blockCard,
-    specialCard,
-    ...Array(3).fill(attackCard).map((card, index) => ({ ...card, id: 4 + index })),
-    ...Array(3).fill(blockCard).map((card, index) => ({ ...card, id: 7 + index })),
-  ];
-};
+const createBasicDeck = (digimonName: string): CardType[] => [
+  createCard('Attack', 'attack', 1, 'Deal 6 damage to the target.', 6),
+  createCard('Attack', 'attack', 1, 'Deal 6 damage to the target.', 6),
+  createCard('Block', 'block', 1, 'Gain 5 block.', undefined, 5),
+  createCard('Block', 'block', 1, 'Gain 5 block.', undefined, 5),
+  createCard(
+    digimonTemplates[digimonName].specialAbility.name,
+    'special',
+    digimonTemplates[digimonName].specialAbility.cost,
+    digimonTemplates[digimonName].specialAbility.description,
+    undefined,
+    undefined,
+    digimonTemplates[digimonName].specialAbility.effect
+  )
+];
 
 export const createUniqueDigimon = (templateName: string, level: number = 1): Digimon => {
   const template = digimonTemplates[templateName];
@@ -91,6 +94,7 @@ export const createUniqueDigimon = (templateName: string, level: number = 1): Di
     maxHp: template.baseHp + (level - 1) * 5,
     block: 0,
     exp: 0,
+    deck: createBasicDeck(templateName)
   };
 
   return digimon;
@@ -116,3 +120,23 @@ export const getTypeRelationship = (attackerType: DigimonType, defenderType: Dig
   };
   return relationships[attackerType][defenderType];
 };
+
+export const addCardToDigimon = (digimon: Digimon, card: CardType): Digimon => ({
+  ...digimon,
+  deck: [...digimon.deck, card]
+});
+
+export const upgradeDigimonCard = (digimon: Digimon, cardId: number, upgrades: Partial<CardType>): Digimon => ({
+  ...digimon,
+  deck: digimon.deck.map(card => 
+    card.id === cardId ? { ...card, ...upgrades } : card
+  )
+});
+
+export const levelUpDigimon = (digimon: Digimon): Digimon => ({
+  ...digimon,
+  level: digimon.level + 1,
+  maxHp: digimon.maxHp + 5,
+  hp: digimon.maxHp + 5,  // Heal to full HP on level up
+  exp: digimon.exp - 100  // Assuming 100 exp per level
+});

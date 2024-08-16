@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import DigimonSprite from './DigimonSprite';
 import DigimonStatScreen from './DigimonStatScreen';
 import WeaknessTriangle from './WeaknessTriangle';
+import { initializeDigimonDeck } from '../shared/digimonManager';
 import { Digimon, DigimonType, SpecialAbility, TYPE_COLORS, BattleState } from '../shared/types';
 import './StartScreen.css';
 
@@ -21,11 +22,11 @@ const STARTER_DIGIMON: Digimon[] = [
       name: 'Pepper Breath',
       cost: 2,
       effect: (attacker, defender, battleState) => {
-        // This will be handled in the battle system
         console.log(`${attacker.name} uses Pepper Breath on ${defender.name}`);
       },
       description: 'Deal 10 damage to the enemy.'
-    }
+    },
+    deck: []  
   },
   { 
     id: 2,
@@ -42,11 +43,11 @@ const STARTER_DIGIMON: Digimon[] = [
       name: 'Blue Blaster',
       cost: 2,
       effect: (attacker, defender, battleState) => {
-        // This will be handled in the battle system
         console.log(`${attacker.name} uses Blue Blaster on ${defender.name}`);
       },
       description: 'Deal 8 damage to the enemy and gain 3 block.'
-    }
+    },
+    deck: []  
   },
   { 
     id: 3,
@@ -63,13 +64,17 @@ const STARTER_DIGIMON: Digimon[] = [
       name: 'Bada Boom',
       cost: 1,
       effect: (attacker, defender, battleState) => {
-        // This will be handled in the battle system
         console.log(`${attacker.name} uses Bada Boom on ${defender.name}`);
       },
       description: 'Deal 6 damage to the enemy and draw a card.'
-    }
+    },
+    deck: [] 
   },
 ];
+
+STARTER_DIGIMON.forEach(digimon => {
+  digimon.deck = initializeDigimonDeck(digimon);
+});
 
 interface StartScreenProps {
   onChooseDigimon: (digimon: Digimon) => void;

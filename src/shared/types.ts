@@ -13,7 +13,7 @@ export interface Digimon {
   id: number;
   name: string;
   displayName: string;
-  type: DigimonType;
+  type: 'DATA' | 'VACCINE' | 'VIRUS';
   hp: number;
   maxHp: number;
   block: number;
@@ -21,21 +21,34 @@ export interface Digimon {
   exp: number;
   baseHp: number;
   specialAbility: SpecialAbility;
+  deck: CardType[];
 }
 
+export interface CardType {
+  id: number;
+  name: string;
+  type: 'attack' | 'block' | 'special';
+  cost: number;
+  description: string;
+  damage?: number;
+  block?: number;
+  effect?: (attacker: Digimon, defender: Digimon, battleState: BattleState) => void;
+}
 export interface BattleState {
   playerEnergy: number;
   playerHand: CardType[];
   playerDeck: CardType[];
   playerDiscardPile: CardType[];
-  enemyBlock: number;
+  enemyHp: number;
+  enemyBlock: number; 
 }
 
-// New Card Type Definitions
+
 export interface BaseCard {
   id: number;
   name: string;
   cost: number;
+  description: string;
 }
 
 export interface AttackCard extends BaseCard {
@@ -52,8 +65,6 @@ export interface SpecialCard extends BaseCard {
   type: 'special';
   effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => void;
 }
-
-export type CardType = AttackCard | BlockCard | SpecialCard;
 
 export interface DigimonTemplate {
   name: string;
