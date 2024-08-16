@@ -1,14 +1,14 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import DigimonSprite from './DigimonSprite';
 import Card from './Card';
-import { Digimon, Card as CardType, BattleState } from '../shared/types';
+import { Digimon, CardType, BattleState, DigimonType } from '../shared/types';
 import './BattleScreen.css';
 
 const ENEMY_AGUMON: Digimon = {
   id: 0,
   name: 'agumon',
   displayName: 'Agumon',
-  type: 'DATA',
+  type: 'VACCINE' as DigimonType,
   hp: 50,
   maxHp: 50,
   block: 0,
@@ -35,24 +35,45 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerDigimon, onBattleEnd 
   const [playerBlock, setPlayerBlock] = useState(0);
   const [enemyHp, setEnemyHp] = useState(ENEMY_AGUMON.hp);
   const [enemyBlock, setEnemyBlock] = useState(0);
-  const [playerDeck, setPlayerDeck] = useState<CardType[]>([
-    { id: 1, name: 'Attack', type: 'attack', damage: 6, cost: 1 },
-    { id: 2, name: 'Block', type: 'block', block: 5, cost: 1 },
-    { id: 3, name: playerDigimon.specialAbility.name, type: 'special', cost: 2, effect: playerDigimon.specialAbility.effect },
-    ...Array(3).fill({ id: 4, name: 'Attack', type: 'attack', damage: 6, cost: 1 }),
-    ...Array(3).fill({ id: 5, name: 'Block', type: 'block', block: 5, cost: 1 }),
-  ]);
-  const [playerHand, setPlayerHand] = useState<CardType[]>([]);
   const [playerEnergy, setPlayerEnergy] = useState(3);
   const [isPlayerTurn, setIsPlayerTurn] = useState(true);
 
-  const battleState: BattleState = {
+  const [playerDeck, setPlayerDeck] = useState<CardType[]>(() => [
+    { id: 1, name: 'Attack', type: 'attack', cost: 1, damage: 6 },
+    { id: 2, name: 'Block', type: 'block', cost: 1, block: 5 },
+    { 
+      id: 3, 
+      name: playerDigimon.specialAbility.name, 
+      type: 'special', 
+      cost: playerDigimon.specialAbility.cost, 
+      effect: playerDigimon.specialAbility.effect 
+    },
+    ...Array(3).fill(null).map((_, index) => ({ 
+      id: 4 + index, 
+      name: 'Attack', 
+      type: 'attack' as const, 
+      cost: 1, 
+      damage: 6 
+    })),
+    ...Array(3).fill(null).map((_, index) => ({ 
+      id: 7 + index, 
+      name: 'Block', 
+      type: 'block' as const, 
+      cost: 1, 
+      block: 5 
+    })),
+  ]);
+
+  const [playerHand, setPlayerHand] = useState<CardType[]>([]);
+  const [playerDiscardPile, setPlayerDiscardPile] = useState<CardType[]>([]);
+
+  const battleState = useMemo<BattleState>(() => ({
     playerEnergy,
     playerHand,
     playerDeck,
-    playerDiscardPile: [],
+    playerDiscardPile,
     enemyBlock
-  };
+  }), [playerEnergy, playerHand, playerDeck, playerDiscardPile, enemyBlock]);
 
   const shuffleArray = useCallback(<T,>(array: T[]): T[] => {
     const newArray = [...array];
@@ -66,38 +87,52 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerDigimon, onBattleEnd 
   const drawCard = useCallback(() => {
     setPlayerDeck(prevDeck => {
       if (prevDeck.length === 0) {
-        const newDeck = shuffleArray([...prevDeck, ...playerHand]);
-        setPlayerHand([]);
-        return newDeck;
+        const newDeck = shuffleArray([...playerDiscardPile]);
+        setPlayerDiscardPile([]);
+        setPlayerHand(prevHand => {
+          const drawnCard = newDeck[0];
+          return [...prevHand, drawnCard];
+        });
+        return newDeck.slice(1);
       }
       const [drawnCard, ...remainingDeck] = prevDeck;
       setPlayerHand(prevHand => [...prevHand, drawnCard]);
       return remainingDeck;
     });
-  }, [playerHand, shuffleArray]);
+  }, [shuffleArray, playerDiscardPile]);
 
   const drawInitialHand = useCallback(() => {
-    const initialHand = playerDeck.slice(0, 5);
-    setPlayerHand(initialHand);
-    setPlayerDeck(prevDeck => prevDeck.slice(5));
-  }, [playerDeck]);
-
-  useEffect(() => {
-    drawInitialHand();
-  }, [drawInitialHand]);
+    setPlayerDeck(prevDeck => {
+      const initialHand = prevDeck.slice(0, 5);
+      setPlayerHand(initialHand);
+      return prevDeck.slice(5);
+    });
+  }, []);
 
   const playCard = useCallback((card: CardType) => {
     if (playerEnergy >= card.cost) {
       setPlayerEnergy(prevEnergy => prevEnergy - card.cost);
       setPlayerHand(prevHand => prevHand.filter(c => c.id !== card.id));
-      if (card.type === 'attack' && card.damage !== undefined) {
-        const damage = Math.max(0, card.damage - enemyBlock);
-        setEnemyHp(prevHp => Math.max(0, prevHp - damage));
-        setEnemyBlock(prevBlock => Math.max(0, prevBlock - card.damage!));
-      } else if (card.type === 'block' && card.block !== undefined) {
-        setPlayerBlock(prevBlock => prevBlock + card.block!);
-      } else if (card.type === 'special' && card.effect) {
-        card.effect(playerDigimon, ENEMY_AGUMON, battleState);
+      setPlayerDiscardPile(prevDiscard => [...prevDiscard, card]);
+
+      switch (card.type) {
+        case 'attack':
+          if (typeof card.damage === 'number') {
+            const damage = Math.max(0, card.damage - enemyBlock);
+            setEnemyHp(prevHp => Math.max(0, prevHp - damage));
+            setEnemyBlock(prevBlock => Math.max(0, prevBlock - card.damage));
+          }
+          break;
+        case 'block':
+          if (typeof card.block === 'number') {
+            setPlayerBlock(prevBlock => prevBlock + card.block);
+          }
+          break;
+        case 'special':
+          if (card.effect) {
+            card.effect(playerDigimon, ENEMY_AGUMON, battleState);
+          }
+          break;
       }
     }
   }, [playerEnergy, enemyBlock, playerDigimon, battleState]);
@@ -105,16 +140,20 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerDigimon, onBattleEnd 
   const executeEnemyTurn = useCallback(() => {
     // Implement enemy turn logic here
     setIsPlayerTurn(true);
-  }, []);
+    setPlayerEnergy(3);
+    drawCard();
+  }, [drawCard]);
 
   const endTurn = useCallback(() => {
     if (isPlayerTurn) {
       setIsPlayerTurn(false);
-      setPlayerEnergy(3);
-      drawCard();
       setTimeout(executeEnemyTurn, 1000);
     }
-  }, [isPlayerTurn, drawCard, executeEnemyTurn]);
+  }, [isPlayerTurn, executeEnemyTurn]);
+
+  useEffect(() => {
+    drawInitialHand();
+  }, [drawInitialHand]);
 
   useEffect(() => {
     if (playerHp <= 0 || enemyHp <= 0) {
@@ -142,7 +181,12 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerDigimon, onBattleEnd 
       </div>
       <div className="player-hand">
         {playerHand.map(card => (
-          <Card key={card.id} card={card} onPlay={() => playCard(card)} disabled={!isPlayerTurn || playerEnergy < card.cost} />
+          <Card 
+            key={card.id} 
+            card={card} 
+            onPlay={() => playCard(card)} 
+            disabled={!isPlayerTurn || playerEnergy < card.cost} 
+          />
         ))}
       </div>
       <div className="player-info">

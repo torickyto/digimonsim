@@ -1,3 +1,5 @@
+// File: src/shared/types.ts
+
 export type DigimonType = 'DATA' | 'VACCINE' | 'VIRUS';
 
 export interface SpecialAbility {
@@ -23,21 +25,35 @@ export interface Digimon {
 
 export interface BattleState {
   playerEnergy: number;
-  playerHand: Card[];
-  playerDeck: Card[];
-  playerDiscardPile: Card[];
+  playerHand: CardType[];
+  playerDeck: CardType[];
+  playerDiscardPile: CardType[];
   enemyBlock: number;
 }
 
-export interface Card {
+// New Card Type Definitions
+export interface BaseCard {
   id: number;
   name: string;
-  type: 'attack' | 'block' | 'special';
   cost: number;
-  damage?: number;
-  block?: number;
-  effect?: (attacker: Digimon, defender: Digimon, battleState: BattleState) => void;
 }
+
+export interface AttackCard extends BaseCard {
+  type: 'attack';
+  damage: number;
+}
+
+export interface BlockCard extends BaseCard {
+  type: 'block';
+  block: number;
+}
+
+export interface SpecialCard extends BaseCard {
+  type: 'special';
+  effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => void;
+}
+
+export type CardType = AttackCard | BlockCard | SpecialCard;
 
 export interface DigimonTemplate {
   name: string;

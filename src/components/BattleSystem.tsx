@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Card from './Card';
-import { Digimon, Card as CardType, BattleState } from '../shared/types';
+import { Digimon, CardType, BattleState, AttackCard, BlockCard, SpecialCard } from '../shared/types';
 
 interface BattleSystemProps {
   playerTeam: Digimon[];
@@ -13,13 +13,41 @@ const BattleSystem: React.FC<BattleSystemProps> = ({ playerTeam, enemy }) => {
   };
 
   const createDeck = (digimon: Digimon): CardType[] => {
-    // Implement the logic to create a deck based on the digimon
-    return [];
+    const attackCard: AttackCard = {
+      id: 1,
+      name: 'Attack',
+      type: 'attack',
+      cost: 1,
+      damage: 6
+    };
+
+    const blockCard: BlockCard = {
+      id: 2,
+      name: 'Block',
+      type: 'block',
+      cost: 1,
+      block: 5
+    };
+
+    const specialCard: SpecialCard = {
+      id: 3,
+      name: digimon.specialAbility.name,
+      type: 'special',
+      cost: digimon.specialAbility.cost,
+      effect: digimon.specialAbility.effect
+    };
+
+    return [
+      attackCard,
+      blockCard,
+      specialCard,
+      ...Array(3).fill(attackCard).map((card, index) => ({ ...card, id: 4 + index })),
+      ...Array(3).fill(blockCard).map((card, index) => ({ ...card, id: 7 + index }))
+    ];
   };
 
   const getHandSize = (teamSize: number): number => {
-    // Implement the logic to determine hand size based on team size
-    return 5;
+    return Math.min(5, 3 + teamSize);
   };
 
   // Directly initialize state without useEffect
@@ -62,12 +90,21 @@ const BattleSystem: React.FC<BattleSystemProps> = ({ playerTeam, enemy }) => {
 
   const playCard = (card: CardType) => {
     if (energy >= card.cost) {
-      if (card.effect) {
-        card.effect(playerTeam[0], enemy, battleState);
-      }
       setEnergy(energy - card.cost);
       setHand(hand.filter(c => c.id !== card.id));
       setDiscardPile([...discardPile, card]);
+
+      switch (card.type) {
+        case 'attack':
+          // Implement attack logic
+          break;
+        case 'block':
+          // Implement block logic
+          break;
+        case 'special':
+          card.effect(playerTeam[0], enemy, battleState);
+          break;
+      }
     }
   };
 

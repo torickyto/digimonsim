@@ -1,4 +1,4 @@
-import { DigimonTemplate, Digimon, Card, DigimonType, BattleState } from '../shared/types';
+import { DigimonTemplate, Digimon, CardType, AttackCard, BlockCard, SpecialCard, DigimonType, BattleState } from '../shared/types';
 
 const digimonTemplates: Record<string, DigimonTemplate> = {
   Agumon: {
@@ -45,13 +45,39 @@ const digimonTemplates: Record<string, DigimonTemplate> = {
   }
 };
 
-const createBasicDeck = (digimonName: string): Card[] => [
-  { id: 1, name: 'Attack', type: 'attack', damage: 6, cost: 1 },
-  { id: 2, name: 'Block', type: 'block', block: 5, cost: 1 },
-  { id: 3, name: digimonTemplates[digimonName].specialAbility.name, type: 'special', cost: 2 },
-  ...Array(3).fill({ id: 4, name: 'Attack', type: 'attack', damage: 6, cost: 1 }),
-  ...Array(3).fill({ id: 5, name: 'Block', type: 'block', block: 5, cost: 1 }),
-];
+const createBasicDeck = (digimon: Digimon): CardType[] => {
+  const attackCard: AttackCard = {
+    id: 1,
+    name: 'Attack',
+    type: 'attack',
+    cost: 1,
+    damage: 6
+  };
+
+  const blockCard: BlockCard = {
+    id: 2,
+    name: 'Block',
+    type: 'block',
+    cost: 1,
+    block: 5
+  };
+
+  const specialCard: SpecialCard = {
+    id: 3,
+    name: digimon.specialAbility.name,
+    type: 'special',
+    cost: digimon.specialAbility.cost,
+    effect: digimon.specialAbility.effect
+  };
+
+  return [
+    attackCard,
+    blockCard,
+    specialCard,
+    ...Array(3).fill(attackCard).map((card, index) => ({ ...card, id: 4 + index })),
+    ...Array(3).fill(blockCard).map((card, index) => ({ ...card, id: 7 + index })),
+  ];
+};
 
 export const createUniqueDigimon = (templateName: string, level: number = 1): Digimon => {
   const template = digimonTemplates[templateName];

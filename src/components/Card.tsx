@@ -1,7 +1,6 @@
 import React from 'react';
-import { Card as CardType } from '../shared/types';
+import { CardType } from '../shared/types';
 import './Card.css';
-
 
 interface CardProps {
   card: CardType;
@@ -18,8 +17,8 @@ const Card: React.FC<CardProps> = ({ card, onPlay, disabled = false }) => {
       <div className="card-cost">{card.cost}</div>
       <h3 className="card-name">{card.name}</h3>
       <div className="card-effect">
-        {card.type === 'attack' && typeof card.damage === 'number' && `Deal ${card.damage} damage`}
-        {card.type === 'block' && typeof card.block === 'number' && `Gain ${card.block} block`}
+        {card.type === 'attack' && `Deal ${card.damage} damage`}
+        {card.type === 'block' && `Gain ${card.block} block`}
         {card.type === 'special' && 'Special effect'}
       </div>
     </div>
