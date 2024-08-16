@@ -1,15 +1,16 @@
 import React from 'react';
 import DigimonSprite from './DigimonSprite';
+import { Digimon, TYPE_COLORS } from '../shared/types';
 import './DigimonStatScreen.css';
 
-const TYPE_COLORS = {
-  DATA: '#85daeb',
-  VACCINE: '#f5daa7',
-  VIRUS: '#ca60ae'
-};
+interface DigimonStatScreenProps {
+  digimon: Digimon;
+  isObtained: boolean;
+}
 
-const DigimonStatScreen = ({ digimon, isObtained }) => {
+const DigimonStatScreen: React.FC<DigimonStatScreenProps> = ({ digimon, isObtained }) => {
   const typeColor = TYPE_COLORS[digimon.type] || '#ffffff';
+  
   return (
     <div className="digimon-stat-screen" style={{ backgroundColor: typeColor }}>
       <div className="stat-inner">

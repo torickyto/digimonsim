@@ -2,57 +2,83 @@ import React, { useState } from 'react';
 import DigimonSprite from './DigimonSprite';
 import DigimonStatScreen from './DigimonStatScreen';
 import WeaknessTriangle from './WeaknessTriangle';
+import { Digimon, DigimonType, SpecialAbility, TYPE_COLORS, BattleState } from '../shared/types';
 import './StartScreen.css';
 
-const STARTER_DIGIMON = [
+const STARTER_DIGIMON: Digimon[] = [
   { 
-    id: 1, name: 'agumon', displayName: 'Agumon', type: 'DATA',
-    hp: 50, maxHp: 50, block: 0,
+    id: 1,
+    name: 'agumon',
+    displayName: 'Agumon',
+    type: 'DATA',
+    hp: 50,
+    maxHp: 50,
+    block: 0,
+    level: 1,
+    exp: 0,
+    baseHp: 50,
     specialAbility: {
       name: 'Pepper Breath',
       cost: 2,
-      effect: (player, enemy) => { enemy.takeDamage(10); },
+      effect: (attacker, defender, battleState) => {
+        // This will be handled in the battle system
+        console.log(`${attacker.name} uses Pepper Breath on ${defender.name}`);
+      },
       description: 'Deal 10 damage to the enemy.'
     }
   },
   { 
-    id: 2, name: 'gabumon', displayName: 'Gabumon', type: 'VACCINE',
-    hp: 45, maxHp: 45, block: 0,
+    id: 2,
+    name: 'gabumon',
+    displayName: 'Gabumon',
+    type: 'VACCINE',
+    hp: 45,
+    maxHp: 45,
+    block: 0,
+    level: 1,
+    exp: 0,
+    baseHp: 45,
     specialAbility: {
       name: 'Blue Blaster',
       cost: 2,
-      effect: (player, enemy) => { 
-        enemy.takeDamage(8); 
-        player.addBlock(3);
+      effect: (attacker, defender, battleState) => {
+        // This will be handled in the battle system
+        console.log(`${attacker.name} uses Blue Blaster on ${defender.name}`);
       },
       description: 'Deal 8 damage to the enemy and gain 3 block.'
     }
   },
   { 
-    id: 3, name: 'impmon', displayName: 'Impmon', type: 'VIRUS',
-    hp: 40, maxHp: 40, block: 0,
+    id: 3,
+    name: 'impmon',
+    displayName: 'Impmon',
+    type: 'VIRUS',
+    hp: 40,
+    maxHp: 40,
+    block: 0,
+    level: 1,
+    exp: 0,
+    baseHp: 40,
     specialAbility: {
       name: 'Bada Boom',
       cost: 1,
-      effect: (player, enemy) => { 
-        enemy.takeDamage(6); 
-        player.draw(1);
+      effect: (attacker, defender, battleState) => {
+        // This will be handled in the battle system
+        console.log(`${attacker.name} uses Bada Boom on ${defender.name}`);
       },
       description: 'Deal 6 damage to the enemy and draw a card.'
     }
   },
 ];
 
-const TYPE_COLORS = {
-  DATA: '#85daeb',
-  VACCINE: '#f5daa7',
-  VIRUS: '#ca60ae'
-};
+interface StartScreenProps {
+  onChooseDigimon: (digimon: Digimon) => void;
+}
 
-function StartScreen({ onChooseDigimon }) {
-  const [selectedDigimon, setSelectedDigimon] = useState(null);
+const StartScreen: React.FC<StartScreenProps> = ({ onChooseDigimon }) => {
+  const [selectedDigimon, setSelectedDigimon] = useState<Digimon | null>(null);
 
-  const openStatsModal = (digimon) => {
+  const openStatsModal = (digimon: Digimon) => {
     setSelectedDigimon(digimon);
   };
 
@@ -97,6 +123,6 @@ function StartScreen({ onChooseDigimon }) {
       )}
     </div>
   );
-}
+};
 
 export default StartScreen;

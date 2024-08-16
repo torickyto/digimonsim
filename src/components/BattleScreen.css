@@ -49,3 +49,7 @@
     background-color: rgba(0, 0, 0, 0.5);
     color: white;
   }
+
+  .player-digimon .digimon-sprite {
+    transform: scaleX(-1);
+  }

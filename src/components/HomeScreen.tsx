@@ -2,9 +2,17 @@ import React, { useState } from 'react';
 import DigimonSprite from './DigimonSprite';
 import DigimonStatScreen from './DigimonStatScreen';
 import BattleScreen from './BattleScreen';
+import { Digimon, DigimonEgg } from '../shared/types';
 import './HomeScreen.css';
 
-const HomeScreen = ({ currentDigimon, party, eggs, onStartBattle }) => {
+interface HomeScreenProps {
+  currentDigimon: Digimon;
+  party: Digimon[];
+  eggs: DigimonEgg[];
+  onStartBattle: () => void;
+}
+
+const HomeScreen: React.FC<HomeScreenProps> = ({ currentDigimon, party, eggs, onStartBattle }) => {
   const [showStats, setShowStats] = useState(false);
   const [showParty, setShowParty] = useState(false);
   const [showEggs, setShowEggs] = useState(false);
@@ -13,8 +21,11 @@ const HomeScreen = ({ currentDigimon, party, eggs, onStartBattle }) => {
   const toggleStats = () => setShowStats(!showStats);
   const toggleParty = () => setShowParty(!showParty);
   const toggleEggs = () => setShowEggs(!showEggs);
-  const startBattle = () => setInBattle(true);
-  const endBattle = (playerWon) => {
+  const startBattle = () => {
+    setInBattle(true);
+    onStartBattle();
+  };
+  const endBattle = (playerWon: boolean) => {
     setInBattle(false);
     // post-battle effects (exp gain, etc.)
   };
@@ -63,8 +74,8 @@ const HomeScreen = ({ currentDigimon, party, eggs, onStartBattle }) => {
         <div className="modal">
           <h2>Your Eggs</h2>
           <ul>
-            {eggs.map((egg, index) => (
-              <li key={index}>Egg {index + 1}</li>
+            {eggs.map((egg) => (
+              <li key={egg.id}>Egg {egg.id}</li>
             ))}
           </ul>
           <button onClick={toggleEggs}>Close</button>

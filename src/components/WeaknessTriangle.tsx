@@ -1,7 +1,7 @@
 import React from 'react';
 import './WeaknessTriangle.css';
 
-const WeaknessTriangle = () => {
+const WeaknessTriangle: React.FC = () => {
   return (
     <div className="weakness-triangle">
       <div className="triangle-container">

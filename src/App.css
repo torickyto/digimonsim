@@ -1,11 +1,5 @@
 .App {
   text-align: center;
-  padding: 20px;
-}
-
-.start-screen, .home-screen {
-  max-width: 600px;
-  margin: 0 auto;
 }
 
 .digimon-list {
