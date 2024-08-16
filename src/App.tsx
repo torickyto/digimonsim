@@ -38,7 +38,10 @@ const App: React.FC = () => {
         />
       )}
       {gameState === 'battle' && playerDigimon && (
-        <BattleScreen playerDigimon={playerDigimon} onBattleEnd={handleBattleEnd} />
+        <BattleScreen
+          playerDigimon={playerDigimon}
+          onBattleEnd={handleBattleEnd}
+        />
       )}
     </div>
   );

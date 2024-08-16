@@ -50,7 +50,6 @@ const BattleSystem: React.FC<BattleSystemProps> = ({ playerTeam, enemy }) => {
     return Math.min(5, 3 + teamSize);
   };
 
-  // Directly initialize state without useEffect
   const initialDeck = shuffleDeck(playerTeam.flatMap(digimon => createDeck(digimon)));
   const initialHandSize = getHandSize(playerTeam.length);
   const initialHand = initialDeck.slice(0, initialHandSize);
@@ -96,10 +95,8 @@ const BattleSystem: React.FC<BattleSystemProps> = ({ playerTeam, enemy }) => {
 
       switch (card.type) {
         case 'attack':
-          // Implement attack logic
           break;
         case 'block':
-          // Implement block logic
           break;
         case 'special':
           card.effect(playerTeam[0], enemy, battleState);
@@ -115,7 +112,7 @@ const BattleSystem: React.FC<BattleSystemProps> = ({ playerTeam, enemy }) => {
     while (hand.length < handSize && (deck.length > 0 || discardPile.length > 0)) {
       drawCard();
     }
-    // enemy turn logic here
+    // enemy logic
   };
 
   return (
