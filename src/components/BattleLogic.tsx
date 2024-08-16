@@ -20,6 +20,7 @@ interface BattleLogicChildProps {
   enemyBlock: number;
   enemy: Digimon;
   playerTeamHp: number[];
+  playerTeamBlock: number[];
   handleCardClick: (card: CardType) => void;
   handleCardUse: (target: 'enemy' | 'self') => void;
   handleDiscard: () => void;
@@ -35,6 +36,7 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
   const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
   const [enemyHp, setEnemyHp] = useState(enemy.hp);
   const [enemyBlock, setEnemyBlock] = useState(0);
+  const [playerTeamBlock, setPlayerTeamBlock] = useState(playerTeam.map(() => 0));
   const [playerTeamHp, setPlayerTeamHp] = useState(playerTeam.map(d => d.hp));
 
   useEffect(() => {
@@ -90,28 +92,25 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
       case 'attack':
         if (target === 'enemy') {
           const damage = card.damage || 0;
-          if (enemyBlock > 0) {
-            const remainingDamage = Math.max(0, damage - enemyBlock);
-            setEnemyBlock(Math.max(0, enemyBlock - damage));
-            setEnemyHp(prev => Math.max(0, prev - remainingDamage));
-          } else {
-            setEnemyHp(prev => Math.max(0, prev - damage));
-          }
+          dealDamageToEnemy(damage);
         }
         break;
       case 'block':
         if (target === 'self') {
-          setPlayerTeamHp(prev => {
-            const newHp = [...prev];
-            newHp[0] = Math.min(playerTeam[0].maxHp, newHp[0] + (card.block || 0));
-            return newHp;
+          setPlayerTeamBlock(prev => {
+            const newBlock = [...prev];
+            newBlock[0] = newBlock[0] + (card.block || 0);
+            return newBlock;
           });
         }
         break;
       case 'special':
         if (card.effect) {
           card.effect(playerTeam[0], enemy, battleState);
-          // Update state based on effect (this might need to be more specific depending on your special abilities)
+          if (card.name === 'Bada Boom') {
+            dealDamageToEnemy(6);
+            drawCard();
+          }
         }
         break;
     }
@@ -121,6 +120,34 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
     if (enemyHp <= 0) {
       onBattleEnd(true);
     }
+  };
+
+  const dealDamageToEnemy = (damage: number) => {
+    if (enemyBlock > 0) {
+      const remainingDamage = Math.max(0, damage - enemyBlock);
+      setEnemyBlock(Math.max(0, enemyBlock - damage));
+      setEnemyHp(prev => Math.max(0, prev - remainingDamage));
+    } else {
+      setEnemyHp(prev => Math.max(0, prev - damage));
+    }
+  };
+
+  const dealDamageToPlayer = (damage: number) => {
+    setPlayerTeamHp(prev => {
+      const newHp = [...prev];
+      if (playerTeamBlock[0] > 0) {
+        const remainingDamage = Math.max(0, damage - playerTeamBlock[0]);
+        setPlayerTeamBlock(prevBlock => {
+          const newBlock = [...prevBlock];
+          newBlock[0] = Math.max(0, newBlock[0] - damage);
+          return newBlock;
+        });
+        newHp[0] = Math.max(0, newHp[0] - remainingDamage);
+      } else {
+        newHp[0] = Math.max(0, newHp[0] - damage);
+      }
+      return newHp;
+    });
   };
 
   const handleDiscard = () => {
@@ -140,11 +167,11 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
     // Implement enemy turn logic here
     // For now, let's just have the enemy deal some damage
     const enemyDamage = 5;
-    setPlayerTeamHp(prev => {
-      const newHp = [...prev];
-      newHp[0] = Math.max(0, newHp[0] - enemyDamage);
-      return newHp;
-    });
+    dealDamageToPlayer(enemyDamage);
+
+    // Reduce block at the end of the turn
+    setPlayerTeamBlock(prev => prev.map(block => Math.max(0, block - 1)));
+    setEnemyBlock(prev => Math.max(0, prev - 1));
 
     if (playerTeamHp[0] <= 0) {
       onBattleEnd(false);
@@ -162,6 +189,7 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
     enemyBlock,
     enemy,
     playerTeamHp,
+    playerTeamBlock,
     handleCardClick,
     handleCardUse,
     handleDiscard,

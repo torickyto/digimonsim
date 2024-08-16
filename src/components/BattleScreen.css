@@ -153,8 +153,16 @@
   }
   
   .enemy.attackable:hover {
-    filter: brightness(1.2);
-    transform: scale(1.05);
+    filter: brightness(1.1);
+  }
+  
+  .block-indicator {
+    background-color: #68c2d3;
+    color: white;
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-size: 0.8em;
+    margin-top: 5px;
   }
   
   .card-content {
@@ -243,10 +251,10 @@
   }
   
   .health-bar {
-    width: 8rem;
-    height: 0.75rem;
+    width: 10rem;
+    height: 1rem;
     background: #37474f;
-    border-radius: 10px;
+    border-radius: 3px;
     overflow: hidden;
     position: relative;
   }
@@ -274,8 +282,7 @@
     display: flex;
     justify-content: space-around;
     padding: 1rem;
-    background: linear-gradient(to right, #263238, #12191d);
-    border-top: 2px solid #00bcd4;
+    background: linear-gradient(to bottom, #212123, #45444f);
   }
   
   .party-member {

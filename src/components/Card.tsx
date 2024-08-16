@@ -9,11 +9,13 @@ interface CardProps {
   onMouseLeave?: () => void; 
 }
 
-const Card: React.FC<CardProps> = ({ card, onClick, isSelected }) => {
+const Card: React.FC<CardProps> = ({ card, onClick, isSelected, onMouseEnter, onMouseLeave }) => {
   return (
     <div 
       className={`game-card ${isSelected ? 'selected' : ''}`}
       onClick={onClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
       <div className="card-content">
         <div className="card-image">

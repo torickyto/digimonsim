@@ -14,7 +14,6 @@ interface BattleScreenProps {
 
 const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemy, onBattleEnd }) => {
   const [hoveredCard, setHoveredCard] = useState<CardType | null>(null);
-  const [isEnemyHovered, setIsEnemyHovered] = useState(false);
 
   return (
     <BattleLogic playerTeam={playerTeam} enemy={enemy} onBattleEnd={onBattleEnd}>
@@ -28,13 +27,15 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemy, onBattle
         enemyBlock,
         enemy,
         playerTeamHp,
+        playerTeamBlock,
         handleCardClick,
         handleCardUse,
         handleDiscard,
         endTurn
       }) => {
         const isAttackSelected = selectedCardId !== null && 
-          playerHand.find(card => card.id === selectedCardId)?.type === 'attack';
+          (playerHand.find(card => card.id === selectedCardId)?.type === 'attack' ||
+           playerHand.find(card => card.id === selectedCardId)?.type === 'special');
 
         return (
           <div className="battle-screen">
@@ -80,21 +81,19 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemy, onBattle
 
               {/* Main battle area */}
               <div className="battle-area">
-                <div className="battle-background">
-                  <div 
-                    className={`enemy enemy-left ${isEnemyHovered ? 'enemy-hovered' : ''}`}
-                    onClick={() => handleCardUse('enemy')}
-                    onMouseEnter={() => setIsEnemyHovered(true)}
-                    onMouseLeave={() => setIsEnemyHovered(false)}
-                  >
-                    <DigimonSprite name={enemy.name} />
-                <div className="enemy-info">
-                  <div className="enemy-name">{enemy.displayName}</div>
-                  <div className="health-bar">
-                    <div className="health-fill" style={{ width: `${(enemyHp / enemy.maxHp) * 100}%` }}></div>
-                    <div className="health-text">{enemyHp}/{enemy.maxHp}</div>
-                  </div>
-                  {enemyBlock > 0 && <div className="block-indicator">Block: {enemyBlock}</div>}
+              <div className="battle-background">
+                <div 
+                  className={`enemy enemy-left ${isAttackSelected ? 'attackable' : ''}`}
+                  onClick={() => handleCardUse('enemy')}
+                >
+                  <DigimonSprite name={enemy.name} />
+                  <div className="enemy-info">
+                    <div className="enemy-name">{enemy.displayName}</div>
+                    <div className="health-bar">
+                      <div className="health-fill" style={{ width: `${(enemyHp / enemy.maxHp) * 100}%` }}></div>
+                      <div className="health-text">{enemyHp}/{enemy.maxHp}</div>
+                    </div>
+                    {enemyBlock > 0 && <div className="block-indicator">Shield: {enemyBlock}</div>}
                 </div>
                   </div>
                 </div>
@@ -117,6 +116,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemy, onBattle
                         {playerTeamHp[index]}/{digimon.maxHp}
                       </div>
                     </div>
+                    {playerTeamBlock[index] > 0 && <div className="block-indicator">Shield: {playerTeamBlock[index]}</div>}
                   </div>
                 </div>
               ))}
