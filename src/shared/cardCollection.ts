@@ -8,7 +8,8 @@ export const CardCollection: Record<string, CardType> = {
     type: 'attack',
     cost: 1,
     description: 'Deal 6 damage to the target.',
-    damage: 6
+    damage: 6,
+    digimonType: 'NULL'
   },
   BLOCK_BASIC: {
     id: 'BLOCK_BASIC',
@@ -16,7 +17,8 @@ export const CardCollection: Record<string, CardType> = {
     type: 'block',
     cost: 1,
     description: 'Gain 5 block.',
-    block: 5
+    block: 5,
+    digimonType: 'NULL'
   },
 
   // Impmon cards
@@ -29,7 +31,8 @@ export const CardCollection: Record<string, CardType> = {
     effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
       battleState.damageEnemy(6);
       battleState.drawCard(1);
-    }
+    },
+    digimonType: 'VIRUS'
   },
   INFERNAL_FUNNEL: {
     id: 'INFERNAL_FUNNEL',
@@ -40,7 +43,8 @@ export const CardCollection: Record<string, CardType> = {
     effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
       battleState.discardCard(1);
       battleState.setPlayerEnergy(battleState.playerEnergy + 2);
-    }
+    },
+    digimonType: 'VIRUS'
   },
   RIDICULE: {
     id: 'RIDICULE',
@@ -51,7 +55,8 @@ export const CardCollection: Record<string, CardType> = {
     effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
       battleState.setEnemyBlock(0);
       battleState.drawCard(1);
-    }
+    },
+    digimonType: 'VIRUS'
   },
 
   // Add more cards here...

@@ -1,5 +1,5 @@
 
-export type DigimonType = 'DATA' | 'VACCINE' | 'VIRUS';
+export type DigimonType = 'NULL' | 'DATA' | 'VACCINE' | 'VIRUS';
 
 export interface SpecialAbility {
   name: string;
@@ -24,6 +24,7 @@ export interface Digimon extends DigimonTemplate {
   level: number;
   exp: number;
   deck: CardType[];
+  type: DigimonType;
 }
 
 export interface CardType {
@@ -35,6 +36,7 @@ export interface CardType {
   damage?: number;
   block?: number;
   effect?: (attacker: Digimon, defender: Digimon, battleState: BattleState) => void;
+  digimonType: DigimonType;
 }
 
 export interface AttackCard extends CardType {
@@ -106,6 +108,7 @@ export interface BattleActions {
 }
 
 export const TYPE_COLORS: Record<DigimonType, string> = {
+  NULL: 'white',
   DATA: '#85daeb',
   VACCINE: '#f5daa7',
   VIRUS: '#ca60ae'

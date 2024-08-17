@@ -82,9 +82,10 @@ export const getDigimonById = (id: number): Digimon | undefined => {
 
 export const getTypeRelationship = (attackerType: DigimonType, defenderType: DigimonType): number => {
   const relationships: Record<DigimonType, Record<DigimonType, number>> = {
-    DATA: { DATA: 1, VACCINE: 0.5, VIRUS: 2 },
-    VACCINE: { DATA: 2, VACCINE: 1, VIRUS: 0.5 },
-    VIRUS: { DATA: 0.5, VACCINE: 2, VIRUS: 1 }
+    DATA: { DATA: 1, VACCINE: 0.5, VIRUS: 2, NULL: 1 },
+    VACCINE: { DATA: 2, VACCINE: 1, VIRUS: 0.5, NULL: 1 },
+    VIRUS: { DATA: 0.5, VACCINE: 2, VIRUS: 1, NULL: 1 },
+    NULL: { DATA: 1, VACCINE: 1, VIRUS: 1, NULL: 1 }
   };
   return relationships[attackerType][defenderType];
 };

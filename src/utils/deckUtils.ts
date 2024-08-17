@@ -1,4 +1,4 @@
-import { Digimon, CardType, AttackCard, BlockCard, SpecialCard } from '../shared/types';
+import { Digimon, CardType, AttackCard, BlockCard, SpecialCard, DigimonType  } from '../shared/types';
 
 export const shuffleArray = <T>(array: T[]): T[] => {
   const newArray = [...array];
@@ -21,7 +21,8 @@ export const createDeck = (playerTeam: Digimon[]): CardType[] => {
           type: 'attack',
           cost: 1,
           damage: 6,
-          description: 'Deal 6 damage to the target.'
+          description: 'Deal 6 damage to the target.',
+          digimonType: digimon.type
         };
         deck.push(attackCard);
       }
@@ -34,7 +35,8 @@ export const createDeck = (playerTeam: Digimon[]): CardType[] => {
           type: 'block',
           cost: 1,
           block: 5,
-          description: 'Gain 5 block.'
+          description: 'Gain 5 block.',
+          digimonType: digimon.type
         };
         deck.push(blockCard);
       }
@@ -46,7 +48,8 @@ export const createDeck = (playerTeam: Digimon[]): CardType[] => {
         type: 'special',
         cost: digimon.specialAbility.cost,
         effect: digimon.specialAbility.effect,
-        description: digimon.specialAbility.description
+        description: digimon.specialAbility.description,
+        digimonType: digimon.type
       };
       deck.push(specialCard);
     });
