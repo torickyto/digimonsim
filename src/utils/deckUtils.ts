@@ -1,4 +1,3 @@
-// src/utils/deckUtils.ts
 import { Digimon, CardType, AttackCard, BlockCard, SpecialCard } from '../shared/types';
 
 export const shuffleArray = <T>(array: T[]): T[] => {
@@ -11,13 +10,13 @@ export const shuffleArray = <T>(array: T[]): T[] => {
 };
 
 export const createDeck = (playerTeam: Digimon[]): CardType[] => {
-    let deck: CardType[] = [];
+  let deck: CardType[] = [];
   
     playerTeam.forEach((digimon, index) => {
       // Add 3 basic attack cards for each Digimon
       for (let i = 0; i < 3; i++) {
         const attackCard: AttackCard = {
-          id: deck.length + 1,
+          id: `attack_${digimon.name}_${i}`,
           name: 'Attack',
           type: 'attack',
           cost: 1,
@@ -30,7 +29,7 @@ export const createDeck = (playerTeam: Digimon[]): CardType[] => {
       // Add 3 basic block cards for each Digimon
       for (let i = 0; i < 3; i++) {
         const blockCard: BlockCard = {
-          id: deck.length + 1,
+          id: `block_${digimon.name}_${i}`,
           name: 'Block',
           type: 'block',
           cost: 1,
@@ -42,7 +41,7 @@ export const createDeck = (playerTeam: Digimon[]): CardType[] => {
   
       // Add the Digimon's special ability card
       const specialCard: SpecialCard = {
-        id: deck.length + 1,
+        id: `special_${digimon.name}`,
         name: digimon.specialAbility.name,
         type: 'special',
         cost: digimon.specialAbility.cost,
@@ -53,4 +52,4 @@ export const createDeck = (playerTeam: Digimon[]): CardType[] => {
     });
   
     return shuffleArray(deck);
-  };
+};

@@ -1,4 +1,3 @@
-// File: src/shared/types.ts
 
 export type DigimonType = 'DATA' | 'VACCINE' | 'VIRUS';
 
@@ -9,23 +8,26 @@ export interface SpecialAbility {
   description: string;
 }
 
-export interface Digimon {
-  id: number;
+export interface DigimonTemplate {
   name: string;
   displayName: string;
-  type: 'DATA' | 'VACCINE' | 'VIRUS';
+  type: DigimonType;
+  baseHp: number;
+  specialAbility: SpecialAbility;
+}
+
+export interface Digimon extends DigimonTemplate {
+  id: number;
   hp: number;
   maxHp: number;
   block: number;
   level: number;
   exp: number;
-  baseHp: number;
-  specialAbility: SpecialAbility;
   deck: CardType[];
 }
 
 export interface CardType {
-  id: number;
+  id: string;
   name: string;
   type: 'attack' | 'block' | 'special';
   cost: number;
@@ -34,36 +36,44 @@ export interface CardType {
   block?: number;
   effect?: (attacker: Digimon, defender: Digimon, battleState: BattleState) => void;
 }
+
+export interface AttackCard extends CardType {
+  type: 'attack';
+  damage: number;
+}
+
+export interface BlockCard extends CardType {
+  type: 'block';
+  block: number;
+}
+
+export interface SpecialCard extends CardType {
+  type: 'special';
+  effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => void;
+}
+
 export interface BattleState {
   playerEnergy: number;
   playerHand: CardType[];
   playerDeck: CardType[];
   playerDiscardPile: CardType[];
   enemyHp: number;
-  enemyBlock: number; 
+  enemyBlock: number;
+  drawCard: (amount: number) => void;
+  discardCard: (amount: number) => void;
+  setPlayerEnergy: (amount: number) => void;
+  damageEnemy: (amount: number) => void;
+  damagePlayer: (amount: number) => void;
+  addPlayerBlock: (amount: number) => void;
+  addEnemyBlock: (amount: number) => void;
+  setEnemyBlock: (amount: number) => void;
 }
-
 
 export interface BaseCard {
   id: number;
   name: string;
   cost: number;
   description: string;
-}
-
-export interface AttackCard extends BaseCard {
-  type: 'attack';
-  damage: number;
-}
-
-export interface BlockCard extends BaseCard {
-  type: 'block';
-  block: number;
-}
-
-export interface SpecialCard extends BaseCard {
-  type: 'special';
-  effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => void;
 }
 
 export interface DigimonTemplate {

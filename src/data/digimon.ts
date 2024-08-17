@@ -1,4 +1,5 @@
 import { DigimonTemplate, Digimon, CardType, DigimonType, BattleState } from '../shared/types';
+import { CardCollection, getStarterDeck } from '../shared/cardCollection';
 
 const digimonTemplates: Record<string, DigimonTemplate> = {
   Agumon: {
@@ -11,6 +12,7 @@ const digimonTemplates: Record<string, DigimonTemplate> = {
       cost: 2,
       effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
         console.log(`${attacker.name} uses Pepper Breath on ${defender.name}`);
+        battleState.damageEnemy(10);
       },
       description: 'Deal 10 damage to the enemy.'
     }
@@ -25,6 +27,8 @@ const digimonTemplates: Record<string, DigimonTemplate> = {
       cost: 2,
       effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
         console.log(`${attacker.name} uses Blue Blaster on ${defender.name}`);
+        battleState.damageEnemy(8);
+        battleState.addPlayerBlock(3);
       },
       description: 'Deal 8 damage to the enemy and gain 3 block.'
     }
@@ -36,52 +40,16 @@ const digimonTemplates: Record<string, DigimonTemplate> = {
     baseHp: 40,
     specialAbility: {
       name: 'Bada Boom',
-      cost: 2,
+      cost: 1,
       effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
         console.log(`${attacker.name} uses Bada Boom on ${defender.name}`);
+        battleState.damageEnemy(6);
+        battleState.drawCard(1);
       },
       description: 'Deal 6 damage to the enemy and draw a card.'
     }
   }
 };
-
-let nextCardId = 1;
-
-const createCard = (
-  name: string,
-  type: 'attack' | 'block' | 'special',
-  cost: number,
-  description: string,
-  damage?: number,
-  block?: number,
-  effect?: (attacker: Digimon, defender: Digimon, battleState: BattleState) => void
-): CardType => ({
-  id: nextCardId++,
-  name,
-  type,
-  cost,
-  description,
-  damage,
-  block,
-  effect
-});
-
-const createBasicDeck = (digimonName: string): CardType[] => [
-  createCard('Attack', 'attack', 1, 'Deal 6 damage to the target.', 6),
-  createCard('Attack', 'attack', 1, 'Deal 6 damage to the target.', 6),
-  createCard('Block', 'block', 1, 'Gain 5 block.', undefined, 5),
-  createCard('Block', 'block', 1, 'Gain 5 block.', undefined, 5),
-  createCard(
-    digimonTemplates[digimonName].specialAbility.name,
-    'special',
-    digimonTemplates[digimonName].specialAbility.cost,
-    digimonTemplates[digimonName].specialAbility.description,
-    undefined,
-    undefined,
-    digimonTemplates[digimonName].specialAbility.effect
-  )
-];
-
 export const createUniqueDigimon = (templateName: string, level: number = 1): Digimon => {
   const template = digimonTemplates[templateName];
   if (!template) throw new Error(`No template found for ${templateName}`);
@@ -94,7 +62,7 @@ export const createUniqueDigimon = (templateName: string, level: number = 1): Di
     maxHp: template.baseHp + (level - 1) * 5,
     block: 0,
     exp: 0,
-    deck: createBasicDeck(templateName)
+    deck: getStarterDeck(templateName)
   };
 
   return digimon;
@@ -121,12 +89,17 @@ export const getTypeRelationship = (attackerType: DigimonType, defenderType: Dig
   return relationships[attackerType][defenderType];
 };
 
-export const addCardToDigimon = (digimon: Digimon, card: CardType): Digimon => ({
-  ...digimon,
-  deck: [...digimon.deck, card]
-});
+export const addCardToDigimon = (digimon: Digimon, cardId: string): Digimon => {
+  const newCard = CardCollection[cardId];
+  if (!newCard) return digimon;
+  
+  return {
+    ...digimon,
+    deck: [...digimon.deck, newCard]
+  };
+};
 
-export const upgradeDigimonCard = (digimon: Digimon, cardId: number, upgrades: Partial<CardType>): Digimon => ({
+export const upgradeDigimonCard = (digimon: Digimon, cardId: string, upgrades: Partial<CardType>): Digimon => ({
   ...digimon,
   deck: digimon.deck.map(card => 
     card.id === cardId ? { ...card, ...upgrades } : card

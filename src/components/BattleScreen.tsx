@@ -22,7 +22,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemy, onBattle
         playerEnergy,
         playerHand,
         playerDeck,
-        selectedCardId,
+        selectedCardInstanceId,
         enemyHp,
         enemyBlock,
         enemy,
@@ -33,9 +33,9 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemy, onBattle
         handleDiscard,
         endTurn
       }) => {
-        const isAttackSelected = selectedCardId !== null && 
-          (playerHand.find(card => card.id === selectedCardId)?.type === 'attack' ||
-           playerHand.find(card => card.id === selectedCardId)?.type === 'special');
+        const isAttackSelected = selectedCardInstanceId !== null && 
+          (playerHand.find(card => card.instanceId === selectedCardInstanceId)?.type === 'attack' ||
+           playerHand.find(card => card.instanceId === selectedCardInstanceId)?.type === 'special');
 
         return (
           <div className="battle-screen">
@@ -51,7 +51,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemy, onBattle
               <div className="card-sidebar">
                 <div className="action-buttons">
                   <button onClick={endTurn} className="end-turn-button">END TURN</button>
-                  <button onClick={handleDiscard} disabled={selectedCardId === null} className="discard-button">DISCARD</button>
+                  <button onClick={handleDiscard} disabled={selectedCardInstanceId === null} className="discard-button">DISCARD</button>
                   <div className="deck-count">
                     <Layers className="deck-icon" />
                     <span>{playerDeck.length}</span>
@@ -66,15 +66,15 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemy, onBattle
                   </div>
                 </div>
                 <div className="card-list">
-                  {playerHand.map(card => (
-                    <Card
-                      key={card.id}
-                      card={card}
-                      onClick={() => handleCardClick(card)}
-                      isSelected={selectedCardId === card.id}
-                      onMouseEnter={() => setHoveredCard(card)}
-                      onMouseLeave={() => setHoveredCard(null)}
-                    />
+              {playerHand.map(card => (
+                <Card
+                  key={card.instanceId}
+                  card={card}
+                  onClick={() => handleCardClick(card)}
+                  isSelected={selectedCardInstanceId === card.instanceId}
+                  onMouseEnter={() => setHoveredCard(card)}
+                  onMouseLeave={() => setHoveredCard(null)}
+                />
                   ))}
                 </div>
               </div>

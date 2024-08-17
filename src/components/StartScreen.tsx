@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import DigimonSprite from './DigimonSprite';
 import DigimonStatScreen from './DigimonStatScreen';
 import WeaknessTriangle from './WeaknessTriangle';
-import { initializeDigimonDeck } from '../shared/digimonManager';
-import { Digimon, DigimonType, SpecialAbility, TYPE_COLORS, BattleState } from '../shared/types';
+import { createDigimon } from '../shared/digimonManager';
+import { Digimon, DigimonType, SpecialAbility, TYPE_COLORS } from '../shared/types';
 import './StartScreen.css';
 
 const STARTER_DIGIMON: Digimon[] = [
@@ -23,10 +23,11 @@ const STARTER_DIGIMON: Digimon[] = [
       cost: 2,
       effect: (attacker, defender, battleState) => {
         console.log(`${attacker.name} uses Pepper Breath on ${defender.name}`);
+        battleState.damageEnemy(10);
       },
       description: 'Deal 10 damage to the enemy.'
     },
-    deck: []  
+    deck: []
   },
   { 
     id: 2,
@@ -72,16 +73,22 @@ const STARTER_DIGIMON: Digimon[] = [
   },
 ];
 
-STARTER_DIGIMON.forEach(digimon => {
-  digimon.deck = initializeDigimonDeck(digimon);
-});
-
 interface StartScreenProps {
   onChooseDigimon: (digimon: Digimon) => void;
 }
 
 const StartScreen: React.FC<StartScreenProps> = ({ onChooseDigimon }) => {
   const [selectedDigimon, setSelectedDigimon] = useState<Digimon | null>(null);
+
+  const handleChooseDigimon = (template: Digimon) => {
+    const newDigimon = createDigimon(
+      template.name,
+      template.type,
+      template.baseHp,
+      template.specialAbility
+    );
+    onChooseDigimon(newDigimon);
+  };
 
   const openStatsModal = (digimon: Digimon) => {
     setSelectedDigimon(digimon);
@@ -95,12 +102,12 @@ const StartScreen: React.FC<StartScreenProps> = ({ onChooseDigimon }) => {
     <div className="start-screen">
       <h1>Choose Your Partner</h1>
       <div className="digimon-selection">
-        {STARTER_DIGIMON.map((digimon) => (
-          <div 
-            key={digimon.id} 
-            className="digimon-option"
-            style={{ backgroundColor: TYPE_COLORS[digimon.type] }}
-          >
+      {STARTER_DIGIMON.map((digimon) => (
+        <div 
+          key={digimon.id} 
+          className="digimon-option"
+          style={{ backgroundColor: TYPE_COLORS[digimon.type] }}
+        >
             <div className="spotlight">
               <DigimonSprite name={digimon.name} />
             </div>
@@ -109,11 +116,11 @@ const StartScreen: React.FC<StartScreenProps> = ({ onChooseDigimon }) => {
               <p>{digimon.type}</p>
             </div>
             <div className="button-container">
-              <button className="view-stats-button" onClick={() => openStatsModal(digimon)}>View Stats</button>
-              <button className="select-digimon-button" onClick={() => onChooseDigimon(digimon)}>Select</button>
-            </div>
+            <button className="view-stats-button" onClick={() => setSelectedDigimon(digimon)}>View Stats</button>
+            <button className="select-digimon-button" onClick={() => handleChooseDigimon(digimon)}>Select</button>
           </div>
-        ))}
+        </div>
+      ))}
       </div>
 
       <WeaknessTriangle />
