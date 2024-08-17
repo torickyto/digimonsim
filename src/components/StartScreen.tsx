@@ -3,12 +3,12 @@ import DigimonSprite from './DigimonSprite';
 import DigimonStatScreen from './DigimonStatScreen';
 import WeaknessTriangle from './WeaknessTriangle';
 import { createDigimon } from '../shared/digimonManager';
-import { Digimon, DigimonType, SpecialAbility, TYPE_COLORS } from '../shared/types';
+import { Digimon, DigimonType, CardType, BattleState, TYPE_COLORS } from '../shared/types';
+import { CardCollection } from '../shared/cardCollection';
 import './StartScreen.css';
 
-const STARTER_DIGIMON: Digimon[] = [
+const STARTER_DIGIMON: Omit<Digimon, 'id' | 'deck'>[] = [
   { 
-    id: 1,
     name: 'agumon',
     displayName: 'Agumon',
     type: 'DATA',
@@ -18,19 +18,9 @@ const STARTER_DIGIMON: Digimon[] = [
     level: 1,
     exp: 0,
     baseHp: 50,
-    specialAbility: {
-      name: 'Pepper Breath',
-      cost: 2,
-      effect: (attacker, defender, battleState) => {
-        console.log(`${attacker.name} uses Pepper Breath on ${defender.name}`);
-        battleState.damageEnemy(10);
-      },
-      description: 'Deal 10 damage to the enemy.'
-    },
-    deck: []
+    startingCard: CardCollection.PEPPER_BREATH
   },
   { 
-    id: 2,
     name: 'gabumon',
     displayName: 'Gabumon',
     type: 'VACCINE',
@@ -40,18 +30,9 @@ const STARTER_DIGIMON: Digimon[] = [
     level: 1,
     exp: 0,
     baseHp: 45,
-    specialAbility: {
-      name: 'Blue Blaster',
-      cost: 2,
-      effect: (attacker, defender, battleState) => {
-        console.log(`${attacker.name} uses Blue Blaster on ${defender.name}`);
-      },
-      description: 'Deal 8 damage to the enemy and gain 3 block.'
-    },
-    deck: []  
+    startingCard: CardCollection.BLUE_BLASTER
   },
   { 
-    id: 3,
     name: 'impmon',
     displayName: 'Impmon',
     type: 'VIRUS',
@@ -61,15 +42,7 @@ const STARTER_DIGIMON: Digimon[] = [
     level: 1,
     exp: 0,
     baseHp: 40,
-    specialAbility: {
-      name: 'Bada Boom',
-      cost: 1,
-      effect: (attacker, defender, battleState) => {
-        console.log(`${attacker.name} uses Bada Boom on ${defender.name}`);
-      },
-      description: 'Deal 6 damage to the enemy and draw a card.'
-    },
-    deck: [] 
+    startingCard: CardCollection.BADA_BOOM
   },
 ];
 
@@ -78,19 +51,19 @@ interface StartScreenProps {
 }
 
 const StartScreen: React.FC<StartScreenProps> = ({ onChooseDigimon }) => {
-  const [selectedDigimon, setSelectedDigimon] = useState<Digimon | null>(null);
+  const [selectedDigimon, setSelectedDigimon] = useState<Omit<Digimon, 'id' | 'deck'> | null>(null);
 
-  const handleChooseDigimon = (template: Digimon) => {
+  const handleChooseDigimon = (template: Omit<Digimon, 'id' | 'deck'>) => {
     const newDigimon = createDigimon(
       template.name,
       template.type,
       template.baseHp,
-      template.specialAbility
+      template.startingCard
     );
     onChooseDigimon(newDigimon);
   };
 
-  const openStatsModal = (digimon: Digimon) => {
+  const openStatsModal = (digimon: Omit<Digimon, 'id' | 'deck'>) => {
     setSelectedDigimon(digimon);
   };
 
@@ -102,9 +75,9 @@ const StartScreen: React.FC<StartScreenProps> = ({ onChooseDigimon }) => {
     <div className="start-screen">
       <h1>Choose Your Partner</h1>
       <div className="digimon-selection">
-      {STARTER_DIGIMON.map((digimon) => (
+      {STARTER_DIGIMON.map((digimon, index) => (
         <div 
-          key={digimon.id} 
+          key={index} 
           className="digimon-option"
           style={{ backgroundColor: TYPE_COLORS[digimon.type] }}
         >
@@ -128,7 +101,7 @@ const StartScreen: React.FC<StartScreenProps> = ({ onChooseDigimon }) => {
       {selectedDigimon && (
         <div className="stats-modal">
           <div className="stats-content">
-            <DigimonStatScreen digimon={selectedDigimon} isObtained={false} />
+            <DigimonStatScreen digimon={{...selectedDigimon, id: 0, deck: []}} isObtained={false} />
             <button className="view-stats-button" onClick={closeStatsModal}>Close</button>
           </div>
         </div>

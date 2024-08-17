@@ -1,11 +1,16 @@
 
 export type DigimonType = 'NULL' | 'DATA' | 'VACCINE' | 'VIRUS';
 
-export interface SpecialAbility {
+export interface CardType {
+  id: string;
   name: string;
+  type: 'attack' | 'block' | 'special';
   cost: number;
-  effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => void;
   description: string;
+  effect?: (attacker: Digimon, defender: Digimon, battleState: BattleState) => void;
+  digimonType: DigimonType;
+  damage?: number;
+  block?: number;
 }
 
 export interface DigimonTemplate {
@@ -13,30 +18,22 @@ export interface DigimonTemplate {
   displayName: string;
   type: DigimonType;
   baseHp: number;
-  specialAbility: SpecialAbility;
+  startingCard: CardType;
 }
 
-export interface Digimon extends DigimonTemplate {
+export interface Digimon {
   id: number;
+  name: string;
+  displayName: string;
+  type: DigimonType;
   hp: number;
   maxHp: number;
   block: number;
   level: number;
   exp: number;
+  baseHp: number;
+  startingCard: CardType;
   deck: CardType[];
-  type: DigimonType;
-}
-
-export interface CardType {
-  id: string;
-  name: string;
-  type: 'attack' | 'block' | 'special';
-  cost: number;
-  description: string;
-  damage?: number;
-  block?: number;
-  effect?: (attacker: Digimon, defender: Digimon, battleState: BattleState) => void;
-  digimonType: DigimonType;
 }
 
 export interface AttackCard extends CardType {
@@ -61,8 +58,14 @@ export interface BattleState {
   playerDiscardPile: CardType[];
   enemyHp: number;
   enemyBlock: number;
-  drawCard: (amount: number) => void;
-  discardCard: (amount: number) => void;
+  discardCard: (amount: number) => CardType[];
+  discardHand: () => void;
+  drawCard: (amount: number) => CardType[];
+  discardRandomCards: (amount: number) => CardType[];
+  getDiscardedCardCount: () => number;
+  healRandomAlly: (amount: number) => void;
+  addRandomAllyBlock: (amount: number) => void;
+  damageRandomEnemy: (amount: number) => void;
   setPlayerEnergy: (amount: number) => void;
   damageEnemy: (amount: number) => void;
   damagePlayer: (amount: number) => void;
@@ -71,19 +74,16 @@ export interface BattleState {
   setEnemyBlock: (amount: number) => void;
 }
 
+
+export interface CardInstance extends CardType {
+  instanceId: string;
+}
+
 export interface BaseCard {
   id: number;
   name: string;
   cost: number;
   description: string;
-}
-
-export interface DigimonTemplate {
-  name: string;
-  displayName: string;
-  type: DigimonType;
-  baseHp: number;
-  specialAbility: SpecialAbility;
 }
 
 export interface DigimonEgg {

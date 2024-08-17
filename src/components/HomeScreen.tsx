@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import DigimonSprite from './DigimonSprite';
 import DigimonStatScreen from './DigimonStatScreen';
 import CardDex from './CardDex'; 
+import TestArena from './TestArena';
 import { Digimon, DigimonEgg, CardType } from '../shared/types';
 import { CardCollection as AllCards } from '../shared/cardCollection';  // Import all cards
 import './HomeScreen.css';
@@ -17,11 +18,17 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
   const [showParty, setShowParty] = useState(false);
   const [showEggs, setShowEggs] = useState(false);
   const [showCardCollection, setShowCardCollection] = useState(false);
+  const [showTestArena, setShowTestArena] = useState(false);
 
   const toggleStats = () => setShowStats(!showStats);
   const toggleParty = () => setShowParty(!showParty);
   const toggleEggs = () => setShowEggs(!showEggs);
   const toggleCardCollection = () => setShowCardCollection(!showCardCollection);
+  const toggleTestArena = () => setShowTestArena(!showTestArena);
+
+  if (showTestArena) {
+    return <TestArena />;
+  }
 
   return (
     <div className="home-screen">
@@ -38,6 +45,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
       <div className="bottom-bar">
         <button className="party-button" onClick={toggleParty}>Party</button>
         <button className="battle-button" onClick={onStartBattle}>Battle</button>
+        <button className="test-arena-button" onClick={toggleTestArena}>Test Arena</button>
       </div>
 
       {showStats && (

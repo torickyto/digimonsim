@@ -9,7 +9,10 @@ export const CardCollection: Record<string, CardType> = {
     cost: 1,
     description: 'Deal 6 damage to the target.',
     damage: 6,
-    digimonType: 'NULL'
+    digimonType: 'NULL',
+    effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
+      battleState.damageEnemy(6);
+    }
   },
   BLOCK_BASIC: {
     id: 'BLOCK_BASIC',
@@ -18,10 +21,13 @@ export const CardCollection: Record<string, CardType> = {
     cost: 1,
     description: 'Gain 5 shield.',
     block: 5,
-    digimonType: 'NULL'
+    digimonType: 'NULL',
+    effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
+      battleState.addPlayerBlock(5);
+    }
   },
 
-  // Impmon cards
+  // Impmon 
   BADA_BOOM: {
     id: 'BADA_BOOM',
     name: 'Bada Boom',
@@ -58,6 +64,8 @@ export const CardCollection: Record<string, CardType> = {
     },
     digimonType: 'VIRUS'
   },
+
+  // Agumon
   PEPPER_BREATH: {
     id: 'PEPPER_BREATH',
     name: 'Pepper Breath',
@@ -109,10 +117,13 @@ export const CardCollection: Record<string, CardType> = {
     cost: 2,
     description: "Can only target enemies with shield. Deal 20 damage.",
     effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
-        battleState.damageEnemy(8);
+      if (battleState.enemyBlock > 0) {
+        battleState.damageEnemy(20);
+      }
     },
     digimonType: 'VACCINE'
   },
+
   BLUE_CYCLONE: {
     id: 'BLUE_CYCLONE',
     name: 'Blue Cyclone',
@@ -120,21 +131,27 @@ export const CardCollection: Record<string, CardType> = {
     cost: 4,
     description: "Deal 11 damage to all enemies. Each enemy hit gives the user 4 shield",
     effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
-        battleState.damageEnemy(8);
+      battleState.damageEnemy(11);
+      battleState.addPlayerBlock(4);
     },
     digimonType: 'VACCINE'
   },
+
   MAGICAL_GAME: {
     id: 'MAGICAL_GAME',
     name: 'Magical Game',
     type: 'special',
     cost: 1,
-    description: "Discard a card then gain it's energy.",
+    description: "Discard a card then gain its energy.",
     effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
-        battleState.damageEnemy(8);
+      const discardedCards = battleState.discardCard(1);
+      if (discardedCards.length > 0) {
+        battleState.setPlayerEnergy(battleState.playerEnergy + discardedCards[0].cost);
+      }
     },
     digimonType: 'VACCINE'
   },
+
   THUNDER_BOMB: {
     id: 'THUNDER_BOMB',
     name: 'Thunder Bomb',
@@ -146,6 +163,7 @@ export const CardCollection: Record<string, CardType> = {
     },
     digimonType: 'VACCINE'
   },
+
   VISIONS_OF_TERROR: {
     id: 'VISIONS_OF_TERROR',
     name: 'Visions of Terror',
@@ -153,10 +171,12 @@ export const CardCollection: Record<string, CardType> = {
     cost: 1,
     description: "Discard your hand, then draw 3 cards.",
     effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
-        battleState.damageEnemy(8);
+      battleState.discardHand();
+      battleState.drawCard(3);
     },
     digimonType: 'VACCINE'
   },
+
   BLOODTHIRST: {
     id: 'BLOODTHIRST',
     name: 'Bloodthirst',
@@ -164,11 +184,12 @@ export const CardCollection: Record<string, CardType> = {
     cost: 1,
     description: "Deal 26 damage to an ally and gain 5 energy.",
     effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
-      battleState.setEnemyBlock(0);
-      battleState.drawCard(1);
+      battleState.damagePlayer(26);
+      battleState.setPlayerEnergy(battleState.playerEnergy + 5);
     },
     digimonType: 'VIRUS'
   },
+
   RAVAGE: {
     id: 'RAVAGE',
     name: 'Ravage',
@@ -176,11 +197,12 @@ export const CardCollection: Record<string, CardType> = {
     cost: 6,
     description: "Deal 26 damage to an enemy and gain 2 energy.",
     effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
-      battleState.setEnemyBlock(0);
-      battleState.drawCard(1);
+      battleState.damageEnemy(26);
+      battleState.setPlayerEnergy(battleState.playerEnergy + 2);
     },
     digimonType: 'VIRUS'
   },
+
   DARK_MIND: {
     id: 'DARK_MIND',
     name: 'Dark Mind',
@@ -188,9 +210,12 @@ export const CardCollection: Record<string, CardType> = {
     cost: 5,
     description: "Lose 10 health, gain 10 energy.",
     effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
+      battleState.damagePlayer(10);
+      battleState.setPlayerEnergy(battleState.playerEnergy + 10);
     },
     digimonType: 'VIRUS'
   },
+
   DJ_SHOOTER: {
     id: 'DJ_SHOOTER',
     name: 'DJ Shooter',
@@ -198,9 +223,11 @@ export const CardCollection: Record<string, CardType> = {
     cost: 2,
     description: "Give an ally 8 shield.",
     effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
+      battleState.addPlayerBlock(8);
     },
     digimonType: 'DATA'
   },
+
   BREAK_IT_DOWN: {
     id: 'BREAK_IT_DOWN',
     name: 'Break It Down',
@@ -208,9 +235,12 @@ export const CardCollection: Record<string, CardType> = {
     cost: 1,
     description: "Give both an ally and an enemy 10 shield.",
     effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
+      battleState.addPlayerBlock(10);
+      battleState.addEnemyBlock(10);
     },
     digimonType: 'DATA'
   },
+
   MEGATON_HYDRO_LASER: {
     id: 'MEGATON_HYDRO_LASER',
     name: 'Megaton Hydro Laser',
@@ -218,9 +248,12 @@ export const CardCollection: Record<string, CardType> = {
     cost: 8,
     description: "Deal user's shield * 10 to an enemy.",
     effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
+      const damage = attacker.block * 10;
+      battleState.damageEnemy(damage);
     },
     digimonType: 'DATA'
   },
+
   JUMBO_CRATER: {
     id: 'JUMBO_CRATER',
     name: 'Jumbo Crater',
@@ -228,20 +261,12 @@ export const CardCollection: Record<string, CardType> = {
     cost: 4,
     description: "Deal your current shield * 3 to all enemies.",
     effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
+      const damage = attacker.block * 3;
+      battleState.damageEnemy(damage);
     },
     digimonType: 'DATA'
   },
-  CORONA_DESTROYER: {
-    id: 'CORONA_DESTROYER',
-    name: 'Corona Destroyer',
-    type: 'attack',
-    cost: 6,
-    description: "Deal 6 damage * number of cards discarded this battle to random enemies.",
-    effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
-        battleState.damageEnemy(8);
-    },
-    digimonType: 'VIRUS'
-  },
+
   HEART_CRASH: {
     id: 'HEART_CRASH',
     name: 'Heart Crash',
@@ -249,10 +274,28 @@ export const CardCollection: Record<string, CardType> = {
     cost: 6,
     description: "Discard 6 cards, then draw 6 cards. Gain 6 energy.",
     effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
-        battleState.damageEnemy(8);
+      battleState.discardCard(6);
+      battleState.drawCard(6);
+      battleState.setPlayerEnergy(battleState.playerEnergy + 6);
     },
     digimonType: 'VIRUS'
   },
+
+  CORONA_DESTROYER: {
+    id: 'CORONA_DESTROYER',
+    name: 'Corona Destroyer',
+    type: 'special',
+    cost: 3,
+    description: "Deal 6 damage * number of cards discarded this battle to random enemies.",
+    effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
+      const discardedCardCount = battleState.getDiscardedCardCount();
+      const damage = 6 * discardedCardCount;
+      battleState.damageRandomEnemy(damage);
+    },
+    digimonType: 'VIRUS'
+  },
+
+
   BEREJENA: {
     id: 'BEREJENA',
     name: 'Berejena',
@@ -260,10 +303,13 @@ export const CardCollection: Record<string, CardType> = {
     cost: 3,
     description: "Discard 2 random cards, gain their energy cost. Can overload.",
     effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
-        battleState.damageEnemy(8);
+      const discardedCards = battleState.discardRandomCards(2);
+      const energyGain = discardedCards.reduce((sum, card) => sum + card.cost, 0);
+      battleState.setPlayerEnergy(battleState.playerEnergy + energyGain);
     },
     digimonType: 'VIRUS'
   },
+
   DEATH_CLAW: {
     id: 'DEATH_CLAW',
     name: 'Death Claw',
@@ -271,10 +317,13 @@ export const CardCollection: Record<string, CardType> = {
     cost: 6,
     description: "Lose 13 health and deal 48 damage to an enemy. Gain 1 energy.",
     effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
-        battleState.damageEnemy(8);
+      battleState.damagePlayer(13);
+      battleState.damageEnemy(48);
+      battleState.setPlayerEnergy(battleState.playerEnergy + 1);
     },
     digimonType: 'VIRUS'
   },
+  
   HEAT_VIPER: {
     id: 'HEAT_VIPER',
     name: 'Heat Viper',
@@ -282,33 +331,27 @@ export const CardCollection: Record<string, CardType> = {
     cost: 10,
     description: "Discard 3 random cards, heal a random ally by 16, give a random ally 16 shield, and deal 16 damage to a random enemy 6 times.",
     effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
-        battleState.damageEnemy(8);
+      battleState.discardRandomCards(3);
+      battleState.healRandomAlly(16);
+      battleState.addRandomAllyBlock(16);
+      for (let i = 0; i < 6; i++) {
+        battleState.damageRandomEnemy(16);
+      }
     },
     digimonType: 'VIRUS'
   }
-
-
-
-  // Add more cards here...
 };
 
 export const getCardById = (id: string): CardType | undefined => {
-  return CardCollection[id];
-};
+    return CardCollection[id];
+  };
 
 export const getStarterDeck = (digimonName: string): CardType[] => {
-  const basicDeck = [
-    CardCollection.ATTACK_BASIC,
-    CardCollection.ATTACK_BASIC,
-    CardCollection.BLOCK_BASIC,
-    CardCollection.BLOCK_BASIC,
-  ];
-
-  switch (digimonName.toLowerCase()) {
-    case 'impmon':
-      return [...basicDeck, CardCollection.BADA_BOOM];
-    // Add cases for other Digimon here
-    default:
-      return basicDeck;
-  }
+    const basicDeck = [
+      CardCollection.ATTACK_BASIC,
+      CardCollection.ATTACK_BASIC,
+      CardCollection.BLOCK_BASIC,
+      CardCollection.BLOCK_BASIC,
+    ];
+    return basicDeck;
 };

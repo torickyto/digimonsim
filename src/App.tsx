@@ -4,6 +4,7 @@ import HomeScreen from './components/HomeScreen';
 import BattleScreen from './components/BattleScreen';
 import { Digimon, DigimonEgg } from './shared/types';
 import { createDigimon } from './shared/digimonManager';
+import { DigimonTemplates } from './shared/DigimonTemplate';
 import './App.css';
 
 const App: React.FC = () => {
@@ -12,31 +13,20 @@ const App: React.FC = () => {
   const [eggs, setEggs] = useState<DigimonEgg[]>([]);
   const [enemyDigimon, setEnemyDigimon] = useState<Digimon | null>(null);
 
-  const handleChooseDigimon = (digimonTemplate: any) => {
-    const newDigimon = createDigimon(
-      digimonTemplate.name,
-      digimonTemplate.type,
-      digimonTemplate.baseHp,
-      digimonTemplate.specialAbility
-    );
-    setPlayerTeam([newDigimon]);
+  const handleChooseDigimon = (digimon: Digimon) => {
+    setPlayerTeam([digimon]);
     setGameState('home');
   };
 
   const handleStartBattle = () => {
-    // Create a placeholder enemy
-    const enemyDigimon = createDigimon(
-      'agumon',
-      'VACCINE',
-      50,
-      {
-        name: 'Pepper Breath',
-        cost: 2,
-        effect: () => {},
-        description: 'Deals 10 damage to the enemy.'
-      }
+    const agumonTemplate = DigimonTemplates.agumon;
+    const enemyAgumon = createDigimon(
+      agumonTemplate.name,
+      agumonTemplate.type,
+      agumonTemplate.baseHp,
+      agumonTemplate.startingCard
     );
-    setEnemyDigimon(enemyDigimon);
+    setEnemyDigimon(enemyAgumon);
     setGameState('battle');
   };
 
@@ -52,25 +42,28 @@ const App: React.FC = () => {
     setGameState('home');
   };
 
-  return (
-    <div className="App">
-      {gameState === 'start' && <StartScreen onChooseDigimon={handleChooseDigimon} />}
-      {gameState === 'home' && (
-        <HomeScreen
-          playerTeam={playerTeam}
-          eggs={eggs}
+  switch (gameState) {
+    case 'start':
+      return <StartScreen onChooseDigimon={handleChooseDigimon} />;
+    case 'home':
+      return (
+        <HomeScreen 
+          playerTeam={playerTeam} 
+          eggs={eggs} 
           onStartBattle={handleStartBattle}
         />
-      )}
-      {gameState === 'battle' && enemyDigimon && (
-        <BattleScreen
-          playerTeam={playerTeam}
+      );
+    case 'battle':
+      return enemyDigimon ? (
+        <BattleScreen 
+          playerTeam={playerTeam} 
           enemy={enemyDigimon}
-          onBattleEnd={handleBattleEnd}
+          onBattleEnd={handleBattleEnd} 
         />
-      )}
-    </div>
-  );
+      ) : null;
+    default:
+      return null;
+  }
 };
 
 export default App;

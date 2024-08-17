@@ -1,29 +1,29 @@
-import { Digimon, CardType, DigimonType, SpecialAbility } from './types';
+import { Digimon, CardType, DigimonType } from './types';
 import { getStarterDeck, getCardById } from './cardCollection';
 
 export const createDigimon = (
-    name: string,
-    type: DigimonType,  
-    baseHp: number,
-    specialAbility: SpecialAbility
-  ): Digimon => {
-    const digimon: Digimon = {
-      id: Date.now(),
-      name,
-      displayName: name.charAt(0).toUpperCase() + name.slice(1),
-      type,
-      hp: baseHp,
-      maxHp: baseHp,
-      block: 0,
-      level: 1,
-      exp: 0,
-      baseHp,
-      specialAbility,
-      deck: getStarterDeck(name)
-    };
-  
-    return digimon;
+  name: string,
+  type: DigimonType,  
+  baseHp: number,
+  startingCard: CardType
+): Digimon => {
+  const digimon: Digimon = {
+    id: Date.now(),
+    name,
+    displayName: name.charAt(0).toUpperCase() + name.slice(1),
+    type,
+    hp: baseHp,
+    maxHp: baseHp,
+    block: 0,
+    level: 1,
+    exp: 0,
+    baseHp,
+    startingCard,
+    deck: [startingCard, ...getStarterDeck(name)]
   };
+
+  return digimon;
+};
 
 export const addCardToDigimon = (digimon: Digimon, cardId: string): Digimon => {
     const newCard = getCardById(cardId);

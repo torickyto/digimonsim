@@ -7,47 +7,21 @@ const digimonTemplates: Record<string, DigimonTemplate> = {
     displayName: 'Agumon',
     type: 'DATA',
     baseHp: 50,
-    specialAbility: {
-      name: 'Pepper Breath',
-      cost: 2,
-      effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
-        console.log(`${attacker.name} uses Pepper Breath on ${defender.name}`);
-        battleState.damageEnemy(10);
-      },
-      description: 'Deal 10 damage to the enemy.'
-    }
+    startingCard: CardCollection.PEPPER_BREATH
   },
   Gabumon: {
     name: 'gabumon',
     displayName: 'Gabumon',
     type: 'VACCINE',
     baseHp: 45,
-    specialAbility: {
-      name: 'Blue Blaster',
-      cost: 2,
-      effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
-        console.log(`${attacker.name} uses Blue Blaster on ${defender.name}`);
-        battleState.damageEnemy(8);
-        battleState.addPlayerBlock(3);
-      },
-      description: 'Deal 8 damage to the enemy and gain 3 block.'
-    }
+    startingCard: CardCollection.BLUE_BLASTER
   },
   Impmon: {
     name: 'impmon',
     displayName: 'Impmon',
     type: 'VIRUS',
     baseHp: 40,
-    specialAbility: {
-      name: 'Bada Boom',
-      cost: 1,
-      effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
-        console.log(`${attacker.name} uses Bada Boom on ${defender.name}`);
-        battleState.damageEnemy(6);
-        battleState.drawCard(1);
-      },
-      description: 'Deal 6 damage to the enemy and draw a card.'
-    }
+    startingCard: CardCollection.BADA_BOOM
   }
 };
 export const createUniqueDigimon = (templateName: string, level: number = 1): Digimon => {

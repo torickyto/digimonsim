@@ -17,7 +17,7 @@ const DigimonStatScreen: React.FC<DigimonStatScreenProps> = ({ digimon, isObtain
         <div className="stat-header">
           <div className="digimon-name">
             <span className={`obtained-status ${isObtained ? 'obtained' : 'not-obtained'}`}></span>
-            {digimon.name}
+            {digimon.displayName}
           </div>
           {isObtained && <div className="digimon-level">Lv.{digimon.level}</div>}
           <div className="digimon-type">{digimon.type}</div>
@@ -32,8 +32,8 @@ const DigimonStatScreen: React.FC<DigimonStatScreenProps> = ({ digimon, isObtain
               <div className="stat-value">{digimon.hp}/{digimon.maxHp}</div>
             </div>
             <div className="stat-row">
-              <div className="stat-label">Block</div>
-              <div className="stat-value">{digimon.block}</div>
+              <div className="stat-label">Energy Bonus</div>
+              <div className="stat-value">0</div> {/* Placeholder for Energy Bonus */}
             </div>
             {isObtained && (
               <div className="stat-row">
@@ -43,10 +43,22 @@ const DigimonStatScreen: React.FC<DigimonStatScreenProps> = ({ digimon, isObtain
             )}
           </div>
         </div>
-        <div className="digimon-ability">
-          <div className="ability-label">Special Ability</div>
-          <div className="ability-value">{digimon.specialAbility.name}</div>
-          <div className="ability-description">{digimon.specialAbility.description}</div>
+        <div className="digimon-starting-card">
+          <div className="ability-label">Starting Card</div>
+          <div className="game-card">
+            <div className="card-content">
+              <div className="card-image">
+                {/* Add card image here if available */}
+              </div>
+              <div className="card-info">
+                <h3 className="card-name">{digimon.startingCard.name}</h3>
+                <p className="card-description">{digimon.startingCard.description}</p>
+              </div>
+              <div className="card-cost" data-type={digimon.startingCard.digimonType}>
+                {digimon.startingCard.cost}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
