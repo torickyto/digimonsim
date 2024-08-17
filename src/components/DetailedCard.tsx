@@ -10,9 +10,9 @@ const DetailedCard: React.FC<DetailedCardProps> = ({ card }) => {
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'NULL': return '#808080';
-      case 'VACCINE': return '#00ff00';
-      case 'VIRUS': return '#ff0000';
-      case 'DATA': return '#0000ff';
+      case 'VACCINE': return '#8dd894';
+      case 'VIRUS': return '#ca60ae';
+      case 'DATA': return '#5fa1e7';
       default: return '#ffffff';
     }
   };
