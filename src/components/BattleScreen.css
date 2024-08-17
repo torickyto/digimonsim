@@ -2,13 +2,13 @@
     height: 100vh;
     display: flex;
     flex-direction: column;
-    background: radial-gradient(rgb(37, 37, 37) , #474747);
+    background: radial-gradient(#463c5e , #32313b);
     color: white;
     font-family: "Ubuntu Mono", monospace;
   }
   
   .top-bar {
-    background: linear-gradient(to right, #32313b, #444774);
+    background: linear-gradient(to top, #ff5dcc, #ab58a8);
     padding: 1rem;
     display: flex;
     justify-content: space-between;
@@ -36,7 +36,7 @@
   
   .card-sidebar {
     width: 36%;
-    background: linear-gradient(to right, #32313b, #383a5a);
+    background: transparent;
     padding: 2rem;
     display: flex;
     flex-direction: column;
@@ -58,17 +58,28 @@
   }
   
   .end-turn-button {
-    background: linear-gradient(to right, #85daeb, #5fc9e7);
+    background: #5fc9e7;
+    border: 2px solid #5efdf7;
+    border-radius: 4px;
     color: white;
   }
   
   .discard-button {
-    background: linear-gradient(to right, #ff5dcc, #ca60ae);
+    background: #ca60ae;
+    border: 2px solid #ff5dcc;
+    border-radius: 4px;
     color: white;
   }
   
-  .end-turn-button:hover, .discard-button:hover {
+  .end-turn-button:hover {
     transform: translateY(-2px);
+    background: linear-gradient(to right, #85daeb, #5fc9e7);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .discard-button:hover {
+    transform: translateY(-2px);
+    background: linear-gradient(to right, #ff5dcc, #ca60ae);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   }
   
@@ -96,7 +107,6 @@
   .energy-stars {
     display: flex;
     justify-content: center;
-    flex-wrap: wrap;
     max-width: 150px;
   }
   
@@ -201,6 +211,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    margin-bottom: 10%;
   }
   
   .battle-background {
@@ -208,7 +219,7 @@
     position: relative;
     width: 472px;
     height: 256px;
-    border: 3px solid #ff5dcc;
+    border: 3px solid #5efdf7;
     border-radius: 6px;
   }
   
@@ -287,6 +298,7 @@
   .player-party {
     display: flex;
     justify-content: space-around;
+    margin-bottom:25px
   }
   
   .party-member {
@@ -297,6 +309,7 @@
   
   .digimon-info {
     margin-left: 0.5rem;
+    margin-top: 1rem;
   }
   
   .digimon-name {

@@ -36,7 +36,7 @@ const digimonTemplates: Record<string, DigimonTemplate> = {
     baseHp: 40,
     specialAbility: {
       name: 'Bada Boom',
-      cost: 1,
+      cost: 2,
       effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
         console.log(`${attacker.name} uses Bada Boom on ${defender.name}`);
       },

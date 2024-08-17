@@ -58,7 +58,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemy, onBattle
                   </div>
                 </div>
                 <div className="energy-gauge">
-                  Energy {playerEnergy}/10
+                  Energy {playerEnergy}
                   <div className="energy-stars">
                     {[...Array(10)].map((_, i) => (
                       <span key={i} className={`energy-star ${i < playerEnergy ? 'active' : ''}`}>★</span>
