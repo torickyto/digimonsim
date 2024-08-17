@@ -10,6 +10,7 @@ interface CardProps {
 }
 
 const Card: React.FC<CardProps> = ({ card, onClick, isSelected, onMouseEnter, onMouseLeave }) => {
+  const imageSrc = require(`../assets/cards/${card.name.toLowerCase().replace(/\s+/g, '')}.png`);
   return (
     <div 
       className={`game-card ${isSelected ? 'selected' : ''}`}
@@ -19,7 +20,7 @@ const Card: React.FC<CardProps> = ({ card, onClick, isSelected, onMouseEnter, on
     >
       <div className="card-content">
         <div className="card-image">
-          <img src={`/api/placeholder/48/48?text=${card.type}`} alt={card.name} />
+        <img src={imageSrc} alt={card.name} />
         </div>
         <div className="card-info">
           <h3 className="card-name">{card.name}</h3>

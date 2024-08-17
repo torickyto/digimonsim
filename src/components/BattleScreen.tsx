@@ -42,7 +42,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemy, onBattle
             {/* Top bar */}
             <div className="top-bar">
               <div className="turn-display">TURN {turn}</div>
-              <div className="tutorial-mode">TUTORIAL MODE</div>
+              <div className="tutorial-mode">TESTING AREA</div>
             </div>
 
             {/* Main content */}
