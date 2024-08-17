@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Layers } from 'lucide-react';
-import { Digimon, CardType } from '../shared/types';
+import { Digimon, CardType, CardInstance } from '../shared/types';
 import DigimonSprite from './DigimonSprite';
 import Card from './Card';
 import BattleLogic from './BattleLogic';
@@ -15,6 +15,26 @@ interface BattleScreenProps {
 const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemy, onBattleEnd }) => {
   const [hoveredCard, setHoveredCard] = useState<CardType | null>(null);
   const [showDiscardTooltip, setShowDiscardTooltip] = useState(false);
+  const [arrowStart, setArrowStart] = useState<{ x: number; y: number } | null>(null);
+  const [arrowEnd, setArrowEnd] = useState<{ x: number; y: number } | null>(null);
+  const battleAreaRef = useRef<HTMLDivElement>(null);
+  const cardSidebarRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (arrowStart && battleAreaRef.current && cardSidebarRef.current) {
+        const battleRect = battleAreaRef.current.getBoundingClientRect();
+        const sidebarRect = cardSidebarRef.current.getBoundingClientRect();
+        setArrowEnd({
+          x: e.clientX - battleRect.left,
+          y: e.clientY - battleRect.top,
+        });
+      }
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, [arrowStart]);
 
   return (
     <BattleLogic playerTeam={playerTeam} enemy={enemy} onBattleEnd={onBattleEnd}>
@@ -30,14 +50,33 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemy, onBattle
         playerTeamHp,
         playerTeamBlock,
         selectingCardToDiscard,
+        selectingCardForEffect,
+        selectedCard,
+        requiresTarget,
+        handleCardClick,
         handleCardSelection,
         handleCardUse,
         handleDiscard,
         endTurn
       }) => {
-        const isAttackSelected = selectedCardInstanceId !== null && 
-          (playerHand.find(card => card.instanceId === selectedCardInstanceId)?.type === 'attack' ||
-           playerHand.find(card => card.instanceId === selectedCardInstanceId)?.type === 'special');
+        const isAttackSelected = selectedCard !== null && 
+          (selectedCard.type === 'attack' || (selectedCard.type === 'special' && selectedCard.requiresTarget !== false));
+
+          const handleCardAction = (card: CardInstance) => {
+            if (selectedCard?.instanceId === card.instanceId) {
+              // if the card is already selected, use it
+              if (card.requiresTarget === false) {
+                handleCardUse('self');
+              } else if (card.requiresTarget === true) {
+              } else {
+                // requiresTarget is undefined, default to 'self'
+                handleCardUse('self');
+              }
+            } else {
+              handleCardClick(card);
+            }
+          };
+
 
         return (
           <div className="battle-screen">
@@ -47,8 +86,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemy, onBattle
             </div>
 
             <div className="main-content">
-              {/* card sidebar */}
-              <div className="card-sidebar">
+              <div className="card-sidebar" ref={cardSidebarRef}>
                 <div className="action-buttons">
                   <button onClick={endTurn} className="end-turn-button">END TURN</button>
                   <div className="discard-button-container">
@@ -80,46 +118,69 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemy, onBattle
                   </div>
                 </div>
                 <div className="card-list">
-              {playerHand.map(card => (
+              {playerHand.map((card: CardInstance) => (
                 <Card
                   key={card.instanceId}
                   card={card}
-                  onClick={() => selectingCardToDiscard ? handleCardSelection(card) : handleCardSelection(card)}
-                  isSelected={selectedCardInstanceId === card.instanceId}
+                  onClick={() => handleCardAction(card)}
+                  onDoubleClick={() => handleCardAction(card)}
+                  isSelected={selectedCard?.instanceId === card.instanceId}
                   onMouseEnter={() => setHoveredCard(card)}
                   onMouseLeave={() => setHoveredCard(null)}
-                  disabled={!selectingCardToDiscard && playerEnergy < card.cost}
+                  disabled={playerEnergy < card.cost && !selectingCardForEffect}
                 />
               ))}
             </div>
-            {selectingCardToDiscard && (
-              <div className="overlay">
-                <div className="message">Select a card to discard</div>
+                {selectingCardToDiscard && (
+                  <div className="overlay">
+                    <div className="message">Select a card to discard</div>
+                  </div>
+                )}
+                {selectingCardForEffect && (
+                  <div className="overlay">
+                    <div className="message">Select a card for {selectingCardForEffect.name}</div>
+                  </div>
+                )}
               </div>
-            )}
-              </div>
-              {/* Main battle area */}
-              <div className="battle-area">
+              <div className="battle-area" ref={battleAreaRef}>
               <div className="battle-background">
                 <div 
                   className={`enemy enemy-left ${isAttackSelected ? 'attackable' : ''}`}
-                  onClick={() => handleCardUse('enemy')}
+                  onClick={() => isAttackSelected && handleCardUse('enemy')}
                 >
-                  <DigimonSprite name={enemy.name} />
-                  <div className="enemy-info">
-                    <div className="enemy-name">{enemy.displayName}</div>
-                    <div className="health-bar">
-                      <div className="health-fill" style={{ width: `${(enemyHp / enemy.maxHp) * 100}%` }}></div>
-                      <div className="health-text">{enemyHp}/{enemy.maxHp}</div>
+                    <DigimonSprite name={enemy.name} />
+                    <div className="enemy-info">
+                      <div className="enemy-name">{enemy.displayName}</div>
+                      <div className="health-bar">
+                        <div className="health-fill" style={{ width: `${(enemyHp / enemy.maxHp) * 100}%` }}></div>
+                        <div className="health-text">{enemyHp}/{enemy.maxHp}</div>
+                      </div>
+                      {enemyBlock > 0 && <div className="block-indicator">Shield: {enemyBlock}</div>}
                     </div>
-                    {enemyBlock > 0 && <div className="block-indicator">Shield: {enemyBlock}</div>}
-                </div>
                   </div>
+                  {arrowStart && arrowEnd && (
+                    <svg className="targeting-arrow" style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      pointerEvents: 'none',
+                    }}>
+                      <line
+                        x1={arrowStart.x}
+                        y1={arrowStart.y}
+                        x2={arrowEnd.x}
+                        y2={arrowEnd.y}
+                        stroke="red"
+                        strokeWidth="2"
+                      />
+                    </svg>
+                  )}
                 </div>
               </div>
             </div>
 
-            {/* players digimon party */}
             <div className="player-party">
               {playerTeam.map((digimon, index) => (
                 <div key={digimon.id} className="party-member" onClick={() => handleCardUse('self')}>

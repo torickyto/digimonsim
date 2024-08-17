@@ -7,10 +7,12 @@ export interface CardType {
   type: 'attack' | 'block' | 'special';
   cost: number;
   description: string;
-  effect?: (attacker: Digimon, defender: Digimon, battleState: BattleState) => void;
+  effect?: (attacker: Digimon, defender: Digimon, battleState: BattleState, selectedCard?: CardInstance) => void;
   digimonType: DigimonType;
   damage?: number;
   block?: number;
+  requiresCardSelection?: boolean;
+  requiresTarget?: boolean;
 }
 
 export interface DigimonTemplate {

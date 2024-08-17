@@ -4,6 +4,7 @@ import { CardType } from '../shared/types';
 interface CardProps {
   card: CardType;
   onClick: () => void;
+  onDoubleClick?: () => void;
   isSelected: boolean;
   isCompact?: boolean;
   onMouseEnter?: () => void; 
@@ -14,6 +15,7 @@ interface CardProps {
 const Card: React.FC<CardProps> = ({ 
   card, 
   onClick, 
+  onDoubleClick, 
   isSelected, 
   isCompact = false, 
   onMouseEnter, 
@@ -26,6 +28,7 @@ const Card: React.FC<CardProps> = ({
     <div 
       className={`game-card ${isSelected ? 'selected' : ''} ${isCompact ? 'compact' : ''} ${disabled ? 'disabled' : ''}`}
       onClick={disabled ? undefined : onClick}
+      onDoubleClick={disabled ? undefined : onDoubleClick}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >

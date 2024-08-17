@@ -1,4 +1,4 @@
-import { CardType, Digimon, BattleState } from './types';
+import { CardType, Digimon, BattleState, CardInstance, DigimonType } from './types';
 
 export const CardCollection: Record<string, CardType> = {
   // Basic cards
@@ -143,8 +143,12 @@ export const CardCollection: Record<string, CardType> = {
     type: 'special',
     cost: 1,
     description: "Select a card to discard then gain its energy.",
-    effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
-      // handled in BattleLogic
+    requiresCardSelection: true,
+    effect: (attacker: Digimon, defender: Digimon, battleState: BattleState, selectedCard?: CardInstance) => {
+      if (selectedCard) {
+        battleState.discardSpecificCard(selectedCard);
+        battleState.setPlayerEnergy(battleState.playerEnergy + selectedCard.cost);
+      }
     },
     digimonType: 'VACCINE'
   },
@@ -155,8 +159,11 @@ export const CardCollection: Record<string, CardType> = {
     type: 'special',
     cost: 4,
     description: "Draw 3 cards then deal their combined cost * 2 to all enemies",
+    requiresTarget: false,
     effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
-        battleState.damageEnemy(8);
+      const drawnCards = battleState.drawCard(3);
+      const totalCost = drawnCards.reduce((sum, card) => sum + card.cost, 0);
+      battleState.damageEnemy(totalCost * 2);
     },
     digimonType: 'VACCINE'
   },
@@ -299,6 +306,7 @@ export const CardCollection: Record<string, CardType> = {
     type: 'special',
     cost: 3,
     description: "Discard 2 random cards, gain their energy cost. Can overload.",
+    requiresTarget: false,
     effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
       const discardedCards = battleState.discardRandomCards(2);
       const energyGain = discardedCards.reduce((sum, card) => sum + card.cost, 0);
