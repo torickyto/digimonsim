@@ -47,7 +47,7 @@ export const levelUpDigimon = (digimon: Digimon): Digimon => {
     ...digimon,
     level: digimon.level + 1,
     maxHp: digimon.maxHp + 5,
-    hp: digimon.maxHp + 5,  // Heal to full HP on level up
-    exp: digimon.exp - 100  // Assuming 100 exp per level
+    hp: digimon.maxHp + 5,  // heal on level up
+    exp: digimon.exp - 100  // placeholder - 100 exp per level
   };
 };

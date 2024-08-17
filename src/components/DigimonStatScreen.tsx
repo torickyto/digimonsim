@@ -33,7 +33,7 @@ const DigimonStatScreen: React.FC<DigimonStatScreenProps> = ({ digimon, isObtain
             </div>
             <div className="stat-row">
               <div className="stat-label">Energy Bonus</div>
-              <div className="stat-value">0</div> {/* Placeholder for Energy Bonus */}
+              <div className="stat-value">0</div> {/* placeholder for Energy Bonus stat, add logic for this later*/}
             </div>
             {isObtained && (
               <div className="stat-row">
@@ -47,9 +47,6 @@ const DigimonStatScreen: React.FC<DigimonStatScreenProps> = ({ digimon, isObtain
           <div className="ability-label">Starting Card</div>
           <div className="game-card">
             <div className="card-content">
-              <div className="card-image">
-                {/* Add card image here if available */}
-              </div>
               <div className="card-info">
                 <h3 className="card-name">{digimon.startingCard.name}</h3>
                 <p className="card-description">{digimon.startingCard.description}</p>

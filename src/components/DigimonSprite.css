@@ -1,6 +1,6 @@
 .digimon {
-    width: 64px; /* Adjust based on your sprite size */
-    height: 80px; /* Adjust based on your sprite size */
+    width: 64px; 
+    height: 80px; 
     background-repeat: no-repeat;
     image-rendering: pixelated;
   }

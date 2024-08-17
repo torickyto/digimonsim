@@ -7,7 +7,7 @@
   .triangle-container {
     position: relative;
     width: 200px;
-    height: 173px; /* Height of an equilateral triangle with 200px side */
+    height: 173px;
     margin: 0 auto 20px;
   }
   

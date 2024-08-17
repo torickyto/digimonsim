@@ -30,5 +30,4 @@ export const DigimonTemplates: Record<string, DigimonTemplate> = {
     baseHp: 50,
     startingCard: CardCollection.PEPPER_BREATH
   }
-  // Add more Digimon templates as needed
 };

@@ -142,12 +142,9 @@ export const CardCollection: Record<string, CardType> = {
     name: 'Magical Game',
     type: 'special',
     cost: 1,
-    description: "Discard a card then gain its energy.",
+    description: "Select a card to discard then gain its energy.",
     effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
-      const discardedCards = battleState.discardCard(1);
-      if (discardedCards.length > 0) {
-        battleState.setPlayerEnergy(battleState.playerEnergy + discardedCards[0].cost);
-      }
+      // handled in BattleLogic
     },
     digimonType: 'VACCINE'
   },

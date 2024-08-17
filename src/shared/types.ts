@@ -62,6 +62,7 @@ export interface BattleState {
   discardHand: () => void;
   drawCard: (amount: number) => CardType[];
   discardRandomCards: (amount: number) => CardType[];
+  discardSpecificCard: (cardToDiscard: CardInstance) => void;
   getDiscardedCardCount: () => number;
   healRandomAlly: (amount: number) => void;
   addRandomAllyBlock: (amount: number) => void;

@@ -29,7 +29,8 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemy, onBattle
         enemy,
         playerTeamHp,
         playerTeamBlock,
-        handleCardClick,
+        selectingCardToDiscard,
+        handleCardSelection,
         handleCardUse,
         handleDiscard,
         endTurn
@@ -40,15 +41,13 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemy, onBattle
 
         return (
           <div className="battle-screen">
-            {/* Top bar */}
             <div className="top-bar">
               <div className="turn-display">TURN {turn}</div>
               <div className="tutorial-mode">TESTING AREA</div>
             </div>
 
-            {/* Main content */}
             <div className="main-content">
-              {/* Left sidebar - Cards */}
+              {/* card sidebar */}
               <div className="card-sidebar">
                 <div className="action-buttons">
                   <button onClick={endTurn} className="end-turn-button">END TURN</button>
@@ -81,17 +80,23 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemy, onBattle
                   </div>
                 </div>
                 <div className="card-list">
-                  {playerHand.map(card => (
-                    <Card
-                      key={card.instanceId}
-                      card={card}
-                      onClick={() => handleCardClick(card)}
-                      isSelected={selectedCardInstanceId === card.instanceId}
-                      onMouseEnter={() => setHoveredCard(card)}
-                      onMouseLeave={() => setHoveredCard(null)}
-                    />
-                  ))}
-                </div>
+              {playerHand.map(card => (
+                <Card
+                  key={card.instanceId}
+                  card={card}
+                  onClick={() => selectingCardToDiscard ? handleCardSelection(card) : handleCardSelection(card)}
+                  isSelected={selectedCardInstanceId === card.instanceId}
+                  onMouseEnter={() => setHoveredCard(card)}
+                  onMouseLeave={() => setHoveredCard(null)}
+                  disabled={!selectingCardToDiscard && playerEnergy < card.cost}
+                />
+              ))}
+            </div>
+            {selectingCardToDiscard && (
+              <div className="overlay">
+                <div className="message">Select a card to discard</div>
+              </div>
+            )}
               </div>
               {/* Main battle area */}
               <div className="battle-area">
@@ -114,7 +119,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemy, onBattle
               </div>
             </div>
 
-            {/* Bottom bar - Player's party */}
+            {/* players digimon party */}
             <div className="player-party">
               {playerTeam.map((digimon, index) => (
                 <div key={digimon.id} className="party-member" onClick={() => handleCardUse('self')}>

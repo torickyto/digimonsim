@@ -4,13 +4,25 @@ import { createDigimon } from '../shared/digimonManager';
 import BattleScreen from './BattleScreen';
 import { CardCollection } from '../shared/cardCollection';
 
+//ARENA TEST TEAMS
 const preAssembledTeams: Digimon[][] = [
   [
     createDigimon('impmon', 'VIRUS', 40, CardCollection.BADA_BOOM),
-    createDigimon('beelzemon', 'VIRUS', 80, CardCollection.CORONA_DESTROYER),
-    createDigimon('wizardmon', 'DATA', 60, CardCollection.THUNDER_BOMB)
+    {
+      ...createDigimon('beelzemon', 'VIRUS', 80, CardCollection.CORONA_DESTROYER),
+      deck: [
+        CardCollection.HEART_CRASH,
+        CardCollection.BEREJENA,
+      ]
+    },
+    {
+      ...createDigimon('wizardmon', 'DATA', 60, CardCollection.THUNDER_BOMB),
+      deck: [
+        CardCollection.THUNDER_BOMB,
+        CardCollection.MAGICAL_GAME,
+      ]
+    }
   ],
-  // Add more pre-assembled teams here
 ];
 
 const TestArena: React.FC = () => {
@@ -29,9 +41,10 @@ const TestArena: React.FC = () => {
 
   const handleBattleEnd = (playerWon: boolean) => {
     setInBattle(false);
-    // Handle post-battle logic here
+    // post-battle logic here
   };
 
+  //PLACEHOLDER TEST ENEMY
   if (inBattle && selectedTeam) {
     return <BattleScreen 
       playerTeam={selectedTeam} 

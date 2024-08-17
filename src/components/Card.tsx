@@ -8,15 +8,24 @@ interface CardProps {
   isCompact?: boolean;
   onMouseEnter?: () => void; 
   onMouseLeave?: () => void; 
+  disabled?: boolean;  
 }
 
-const Card: React.FC<CardProps> = ({ card, onClick, isSelected, isCompact = false, onMouseEnter, onMouseLeave }) => {
+const Card: React.FC<CardProps> = ({ 
+  card, 
+  onClick, 
+  isSelected, 
+  isCompact = false, 
+  onMouseEnter, 
+  onMouseLeave, 
+  disabled = false
+}) => {
   const imageSrc = require(`../assets/cards/${card.name.toLowerCase().replace(/\s+/g, '')}.png`);
   
   return (
     <div 
-      className={`game-card ${isSelected ? 'selected' : ''} ${isCompact ? 'compact' : ''}`}
-      onClick={onClick}
+      className={`game-card ${isSelected ? 'selected' : ''} ${isCompact ? 'compact' : ''} ${disabled ? 'disabled' : ''}`}
+      onClick={disabled ? undefined : onClick}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
