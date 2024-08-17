@@ -285,7 +285,7 @@ export const CardCollection: Record<string, CardType> = {
     id: 'CORONA_DESTROYER',
     name: 'Corona Destroyer',
     type: 'special',
-    cost: 3,
+    cost: 6,
     description: "Deal 6 damage * number of cards discarded this battle to random enemies.",
     effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
       const discardedCardCount = battleState.getDiscardedCardCount();

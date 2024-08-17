@@ -135,8 +135,10 @@
   }
   
   .game-card {
+    position: relative;
     transition: all 0.3s ease;
     border: 2px solid transparent;
+    margin-bottom: 10px;
   }
   
   .game-card:hover {
@@ -196,14 +198,37 @@
     margin: 0;
   }
   
+  .discard-button-container {
+    position: relative;
+  }
+  
+  .discard-tooltip {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    z-index: 1000;
+    pointer-events: none;
+  }
+  
   .card-cost {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 25px;
+    height: 25px;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: white;
     border-radius: 50%;
+    font-weight: bold;
+    font-size: 0.9rem;
   }
 
   .card-cost[data-type="NULL"] {
@@ -211,7 +236,7 @@
   }
   
   .card-cost[data-type="VACCINE"] {
-    background-color: #f5daa7;
+    background-color: #8dd894;
   }
   
   .card-cost[data-type="VIRUS"] {
@@ -219,7 +244,7 @@
   }
   
   .card-cost[data-type="DATA"] {
-    background-color: #85daeb;
+    background-color: #5fa1e7;
   }
   
   .battle-area {

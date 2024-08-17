@@ -13,16 +13,6 @@ interface CardProps {
 const Card: React.FC<CardProps> = ({ card, onClick, isSelected, isCompact = false, onMouseEnter, onMouseLeave }) => {
   const imageSrc = require(`../assets/cards/${card.name.toLowerCase().replace(/\s+/g, '')}.png`);
   
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'null': return '#808080';
-      case 'vaccine': return '#00ff00';
-      case 'virus': return '#ff0000';
-      case 'data': return '#0000ff';
-      default: return '#ffffff';
-    }
-  };
-
   return (
     <div 
       className={`game-card ${isSelected ? 'selected' : ''} ${isCompact ? 'compact' : ''}`}
@@ -38,9 +28,9 @@ const Card: React.FC<CardProps> = ({ card, onClick, isSelected, isCompact = fals
           <h3 className="card-name">{card.name}</h3>
           <p className="card-description">{card.description}</p>
         </div>
-        <div className="card-cost" style={{backgroundColor: getTypeColor(card.type)}}>
-          {card.cost}
-        </div>
+      </div>
+      <div className="card-cost" data-type={card.digimonType}>
+        {card.cost}
       </div>
     </div>
   );

@@ -52,9 +52,9 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
 
       const createCardInstance = (card: CardType): CardInstance => ({
         ...card,
-        instanceId: `${card.id}_${Date.now()}_${Math.random()}`
+        instanceId: `${card.id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
       });
-    
+      
       const drawInitialHand = (deck: CardType[]) => {
         const initialHandSize = 3 + playerTeam.length;
         const initialHand = deck.slice(0, initialHandSize).map(createCardInstance);
@@ -175,27 +175,28 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
         };
     
         if (card.effect) {
-          card.effect(playerTeam[0], enemy, battleState);
-        } else {
-          switch (card.type) {
-            case 'attack':
-              if (target === 'enemy' && card.damage) {
-                battleState.damageEnemy(card.damage);
-              }
-              break;
-            case 'block':
-              if (target === 'self' && card.block) {
-                battleState.addPlayerBlock(card.block);
-              }
-              break;
+            card.effect(playerTeam[0], enemy, battleState);
+          } else {
+            switch (card.type) {
+              case 'attack':
+                if (target === 'enemy' && card.damage) {
+                  battleState.damageEnemy(card.damage);
+                }
+                break;
+              case 'block':
+                if (target === 'self' && card.block) {
+                  battleState.addPlayerBlock(card.block);
+                }
+                break;
+            }
           }
-        }
-        setSelectedCardInstanceId(null);
-    
-        if (enemyHp <= 0) {
-          onBattleEnd(true);
-        }
-      };
+          setSelectedCardInstanceId(null);
+      
+          if (enemyHp <= 0) {
+            onBattleEnd(true);
+          }
+        };
+  
 
   const dealDamageToEnemy = (damage: number) => {
     if (enemyBlock > 0) {

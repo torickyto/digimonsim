@@ -14,6 +14,7 @@ interface BattleScreenProps {
 
 const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemy, onBattleEnd }) => {
   const [hoveredCard, setHoveredCard] = useState<CardType | null>(null);
+  const [showDiscardTooltip, setShowDiscardTooltip] = useState(false);
 
   return (
     <BattleLogic playerTeam={playerTeam} enemy={enemy} onBattleEnd={onBattleEnd}>
@@ -51,7 +52,21 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemy, onBattle
               <div className="card-sidebar">
                 <div className="action-buttons">
                   <button onClick={endTurn} className="end-turn-button">END TURN</button>
-                  <button onClick={handleDiscard} disabled={selectedCardInstanceId === null} className="discard-button">DISCARD</button>
+                  <div className="discard-button-container">
+                    <button 
+                      onClick={handleDiscard} 
+                      className="discard-button"
+                      onMouseEnter={() => setShowDiscardTooltip(true)}
+                      onMouseLeave={() => setShowDiscardTooltip(false)}
+                    >
+                      DISCARD
+                    </button>
+                    {showDiscardTooltip && (
+                      <div className="discard-tooltip">
+                        Discard the top card from your deck
+                      </div>
+                    )}
+                  </div>
                   <div className="deck-count">
                     <Layers className="deck-icon" />
                     <span>{playerDeck.length}</span>
@@ -66,19 +81,18 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemy, onBattle
                   </div>
                 </div>
                 <div className="card-list">
-              {playerHand.map(card => (
-                <Card
-                  key={card.instanceId}
-                  card={card}
-                  onClick={() => handleCardClick(card)}
-                  isSelected={selectedCardInstanceId === card.instanceId}
-                  onMouseEnter={() => setHoveredCard(card)}
-                  onMouseLeave={() => setHoveredCard(null)}
-                />
+                  {playerHand.map(card => (
+                    <Card
+                      key={card.instanceId}
+                      card={card}
+                      onClick={() => handleCardClick(card)}
+                      isSelected={selectedCardInstanceId === card.instanceId}
+                      onMouseEnter={() => setHoveredCard(card)}
+                      onMouseLeave={() => setHoveredCard(null)}
+                    />
                   ))}
                 </div>
               </div>
-
               {/* Main battle area */}
               <div className="battle-area">
               <div className="battle-background">
