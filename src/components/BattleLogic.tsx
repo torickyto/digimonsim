@@ -75,24 +75,37 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
 
   const drawCard = (amount: number = 1): CardInstance[] => {
     const drawnCards: CardInstance[] = [];
+  
     for (let i = 0; i < amount; i++) {
-      if (playerDeck.length === 0) {
-        if (playerDiscardPile.length === 0) break;
-        const shuffledDiscard = shuffleArray(playerDiscardPile);
-        setPlayerDeck(shuffledDiscard);
-        setPlayerDiscardPile([]);
-      }
-      const [newCard, ...remainingDeck] = playerDeck;
-      if (!newCard || !newCard.id) {
-        continue;
-      }
-      const newCardInstance = createCardInstance(newCard);
-      drawnCards.push(newCardInstance);
-      setPlayerHand(prev => [...prev, newCardInstance]);
-      setPlayerDeck(remainingDeck);
+        let currentDeck = playerDeck;
+      
+        if (currentDeck.length === 0) {
+            console.log("Draw pile is empty, reshuffling discard pile");
+      
+            if (playerDiscardPile.length > 0) {
+                const shuffledDiscard = shuffleArray(playerDiscardPile);
+                currentDeck = shuffledDiscard;
+                setPlayerDeck(shuffledDiscard);
+                setPlayerDiscardPile([]);
+            } else {
+                console.log("Both draw and discard piles are empty. No more cards can be drawn.");
+                break;
+            }
+        }
+      
+        // Draw the top card from the current deck (after reshuffling, if needed)
+        const [newCard, ...remainingDeck] = currentDeck;
+        if (newCard) {
+            const newCardInstance = createCardInstance(newCard);
+            drawnCards.push(newCardInstance);
+            setPlayerHand(prev => [...prev, newCardInstance]);
+            setPlayerDeck(remainingDeck);
+        }
     }
+  
     return drawnCards;
-  };
+};
+
 
   const discardCard = (amount: number): CardInstance[] => {
     const discardedCards = playerHand.slice(0, amount);
