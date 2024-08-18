@@ -1,5 +1,12 @@
-import { DigimonTemplate, DigimonType } from './types';
+import { DigimonTemplate, DigimonType, PassiveSkill } from './types';
 import { CardCollection } from './cardCollection';
+
+// You might want to define passive skills in a separate file and import them here
+const nullPassiveSkill: PassiveSkill = {
+  name: "No Passive",
+  description: "This Digimon has no passive skill.",
+  effect: (state, digimon) => state // No effect
+};
 
 export const DigimonTemplates: Record<string, DigimonTemplate> = {
   impmon: {
@@ -7,27 +14,159 @@ export const DigimonTemplates: Record<string, DigimonTemplate> = {
     displayName: 'Impmon',
     type: 'VIRUS' as DigimonType,
     baseHp: 40,
-    startingCard: CardCollection.BADA_BOOM
+    baseAttack: 15,
+    baseHealing: 5,
+    baseEvadeChance: 0.1,
+    baseCritChance: 0.05,
+    baseCritDamage: 1.5,
+    baseAccuracy: 0.9,
+    baseCorruptionResistance: 0.2,
+    baseBuggedResistance: 0.2,
+    startingCard: CardCollection.BADA_BOOM,
+    passiveSkill: nullPassiveSkill
   },
   beelzemon: {
     name: 'beelzemon',
     displayName: 'Beelzemon',
     type: 'VIRUS' as DigimonType,
     baseHp: 80,
-    startingCard: CardCollection.CORONA_DESTROYER
+    baseAttack: 25,
+    baseHealing: 8,
+    baseEvadeChance: 0.15,
+    baseCritChance: 0.1,
+    baseCritDamage: 2.0,
+    baseAccuracy: 0.95,
+    baseCorruptionResistance: 0.4,
+    baseBuggedResistance: 0.3,
+    startingCard: CardCollection.CORONA_DESTROYER,
+    passiveSkill: nullPassiveSkill
   },
   wizardmon: {
     name: 'wizardmon',
     displayName: 'Wizardmon',
     type: 'DATA' as DigimonType,
     baseHp: 60,
-    startingCard: CardCollection.THUNDER_BOMB
+    baseAttack: 20,
+    baseHealing: 12,
+    baseEvadeChance: 0.12,
+    baseCritChance: 0.08,
+    baseCritDamage: 1.8,
+    baseAccuracy: 0.93,
+    baseCorruptionResistance: 0.3,
+    baseBuggedResistance: 0.4,
+    startingCard: CardCollection.THUNDER_BOMB,
+    passiveSkill: nullPassiveSkill
   },
   agumon: {
     name: 'agumon',
     displayName: 'Agumon',
     type: 'VACCINE' as DigimonType,
     baseHp: 50,
-    startingCard: CardCollection.PEPPER_BREATH
+    baseAttack: 18,
+    baseHealing: 7,
+    baseEvadeChance: 0.08,
+    baseCritChance: 0.06,
+    baseCritDamage: 1.6,
+    baseAccuracy: 0.92,
+    baseCorruptionResistance: 0.25,
+    baseBuggedResistance: 0.25,
+    startingCard: CardCollection.PEPPER_BREATH,
+    passiveSkill: nullPassiveSkill
+  },
+  gawappamon: {
+    name: 'gawappamon',
+    displayName: 'Gawappamon',
+    type: 'DATA' as DigimonType,
+    baseHp: 55,
+    baseAttack: 17,
+    baseHealing: 10,
+    baseEvadeChance: 0.11,
+    baseCritChance: 0.07,
+    baseCritDamage: 1.7,
+    baseAccuracy: 0.91,
+    baseCorruptionResistance: 0.3,
+    baseBuggedResistance: 0.35,
+    startingCard: CardCollection.DJ_SHOOTER,
+    passiveSkill: nullPassiveSkill
+  },
+  gabumon: {
+    name: 'gabumon',
+    displayName: 'Gabumon',
+    type: 'DATA' as DigimonType,
+    baseHp: 45,
+    baseAttack: 16,
+    baseHealing: 6,
+    baseEvadeChance: 0.09,
+    baseCritChance: 0.06,
+    baseCritDamage: 1.5,
+    baseAccuracy: 0.9,
+    baseCorruptionResistance: 0.2,
+    baseBuggedResistance: 0.3,
+    startingCard: CardCollection.BLUE_BLASTER,
+    passiveSkill: nullPassiveSkill
+  },
+  jumbogamemon: {
+    name: 'jumbogamemon',
+    displayName: 'JumboGamemon',
+    type: 'DATA' as DigimonType,
+    baseHp: 90,
+    baseAttack: 22,
+    baseHealing: 5,
+    baseEvadeChance: 0.05,
+    baseCritChance: 0.04,
+    baseCritDamage: 1.8,
+    baseAccuracy: 0.85,
+    baseCorruptionResistance: 0.4,
+    baseBuggedResistance: 0.4,
+    startingCard: CardCollection.JUMBO_CRATER,
+    passiveSkill: nullPassiveSkill
+  },
+  kimeramon: {
+    name: 'kimeramon',
+    displayName: 'Kimeramon',
+    type: 'VIRUS' as DigimonType,
+    baseHp: 75,
+    baseAttack: 28,
+    baseHealing: 3,
+    baseEvadeChance: 0.07,
+    baseCritChance: 0.12,
+    baseCritDamage: 2.2,
+    baseAccuracy: 0.88,
+    baseCorruptionResistance: 0.5,
+    baseBuggedResistance: 0.2,
+    startingCard: CardCollection.HEAT_VIPER,
+    passiveSkill: nullPassiveSkill
+  },
+  lucemon: {
+    name: 'lucemon',
+    displayName: 'Lucemon',
+    type: 'VACCINE' as DigimonType,
+    baseHp: 70,
+    baseAttack: 23,
+    baseHealing: 15,
+    baseEvadeChance: 0.14,
+    baseCritChance: 0.09,
+    baseCritDamage: 1.9,
+    baseAccuracy: 0.94,
+    baseCorruptionResistance: 0.45,
+    baseBuggedResistance: 0.45,
+    startingCard: CardCollection.DIVINE_FEAT,
+    passiveSkill: nullPassiveSkill
+  },
+  sangloupmon: {
+    name: 'sangloupmon',
+    displayName: 'Sangloupmon',
+    type: 'VIRUS' as DigimonType,
+    baseHp: 65,
+    baseAttack: 21,
+    baseHealing: 8,
+    baseEvadeChance: 0.13,
+    baseCritChance: 0.08,
+    baseCritDamage: 1.7,
+    baseAccuracy: 0.92,
+    baseCorruptionResistance: 0.35,
+    baseBuggedResistance: 0.25,
+    startingCard: CardCollection.BLOODTHIRST,
+    passiveSkill: nullPassiveSkill
   }
 };
