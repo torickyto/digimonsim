@@ -1,61 +1,73 @@
-import { CardType, Digimon, BattleState, CardInstance, DigimonType } from './types';
+import { CardTemplate, CardEffect, CardType, DigimonType, TargetType } from './types';
 
-export const CardCollection: Record<string, CardType> = {
-  // Basic cards
-  ATTACK_BASIC: {
-    id: 'ATTACK_BASIC',
-    name: 'Attack',
-    type: 'attack',
-    cost: 1,
-    description: 'Deal 6 damage to the target.',
-    damage: 6,
-    digimonType: 'NULL',
-    effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
-      battleState.damageEnemy(6);
-    }
-  },
-  BLOCK_BASIC: {
-    id: 'BLOCK_BASIC',
-    name: 'Block',
-    type: 'block',
-    cost: 1,
-    description: 'Gain 5 shield.',
-    block: 5,
-    digimonType: 'NULL',
-    effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
-      battleState.addPlayerBlock(5);
-    }
-  },
+export const createCard = (
+  id: string,
+  name: string,
+  type: CardType,
+  cost: number,
+  digimonType: DigimonType,
+  description: string,
+  target: TargetType,
+  effects: CardEffect[],
+  requiresCardSelection: boolean = false
+): CardTemplate => ({
+  id,
+  name,
+  type,
+  cost,
+  digimonType,
+  description,
+  target,
+  effects,
+  requiresCardSelection
+});
+
+export const CardCollection: Record<string, CardTemplate> = {
+  ATTACK_BASIC: createCard(
+    'ATTACK_BASIC',
+    'Attack',
+    'attack',
+    1,
+    'NULL',
+    'Deal 6 damage to the target.',
+    'enemy',
+    [{ damage: 6 }]
+  ),
+
+  BLOCK_BASIC: createCard(
+    'BLOCK_BASIC',
+    'Block',
+    'block',
+    1,
+    'NULL',
+    'Gain 5 shield.',
+    'self',
+    [{ block: 5 }]
+  ),
 
   // Impmon 
-  BADA_BOOM: {
-    id: 'BADA_BOOM',
-    name: 'Bada Boom',
-    type: 'attack',
-    cost: 1,
-    description: 'Deal 6 damage and draw 1 card.',
-    effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
-      battleState.damageEnemy(6);
-      battleState.drawCard(1);
-    },
-    digimonType: 'VIRUS'
-  },
+  BADA_BOOM: createCard(
+    'BADA_BOOM',
+    'Bada Boom',
+    'attack',
+    1,
+    'VIRUS',
+    'Deal 6 damage and draw 1 card.',
+    'enemy',
+    [{ damage: 6 }, { drawCards: 1 }]
+  ),
 
-  INFERNAL_FUNNEL: {
-    id: 'INFERNAL_FUNNEL',
-    name: 'Infernal Funnel',
-    type: 'special',
-    cost: 0,
-    description: 'Select a card to discard and gain 2 energy.',
-    requiresCardSelection: true,
-    effect: (attacker: Digimon, defender: Digimon, battleState: BattleState, selectedCard?: CardInstance) => {
-      if (selectedCard) {
-        battleState.discardSpecificCard(selectedCard);
-        battleState.setPlayerEnergy(battleState.playerEnergy + 2);
-      }
-    },
-    digimonType: 'VIRUS'
-  },
+  INFERNAL_FUNNEL: createCard(
+    'INFERNAL_FUNNEL',
+    'Infernal Funnel',
+    'special',
+    0,
+    'VIRUS',
+    'Select a card to discard and gain 2 energy.',
+    'self',
+    [{ discardCards: 1 }, { gainEnergy: 2 }],
+    true
+  ),
   
   RIDICULE: {
     id: 'RIDICULE',

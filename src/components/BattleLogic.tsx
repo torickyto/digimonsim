@@ -152,7 +152,18 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
       setPlayerDiscardPile(prev => [...prev, ...playerHand]);
       setPlayerHand([]);
     },
-    drawCard,
+    drawCard: (amount: number, callback?: () => void) => {
+      console.log('Drawing card start');
+      const drawnCards = drawCard(amount);
+      if (callback) {
+        setTimeout(() => {
+          callback();
+          console.log('Drawing card callback executed');
+        }, 0);
+      }
+      console.log('Drawing card end');
+      return drawnCards;
+    },
     discardRandomCards: (amount: number) => {
       const shuffledHand = shuffleArray([...playerHand]);
       const discardedCards = shuffledHand.slice(0, amount);
@@ -298,6 +309,8 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
   const handleCardUse = useCallback((target: 'enemy' | 'self') => {
     if (!selectedCard || playerEnergy < selectedCard.cost) return;
   
+    console.log('handleCardUse start', selectedCard.name);
+  
     if (selectedCard.requiresCardSelection) {
       setSelectingCardForEffect(selectedCard);
       return;
@@ -312,11 +325,23 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
     const updatedDiscardPile = [...playerDiscardPile, selectedCard];
     
     // Update state
-    setPlayerHand(updatedHand);
-    setPlayerDiscardPile(updatedDiscardPile);
+    setPlayerHand(prevHand => {
+      console.log('Removing card from hand', selectedCard.name);
+      return prevHand.filter(card => card.instanceId !== selectedCard.instanceId);
+    });
+    setPlayerDiscardPile(prev => {
+      console.log('Adding card to discard pile', selectedCard.name);
+      return [...prev, selectedCard];
+    });
     setPlayerEnergy(prev => prev - selectedCard.cost);
   
     // Apply card effects
+    const battleState = createBattleState();
+    if (selectedCard.effect) {
+      console.log('Executing card effect', selectedCard.name);
+      selectedCard.effect(playerTeam[0], enemy, battleState);
+    }
+  
     if (selectedCard.requiresCardSelection) {
       setSelectingCardForEffect(selectedCard);
     } else {
@@ -331,7 +356,7 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
     if (enemyHp <= 0) {
       onBattleEnd(true);
     }
-  }, [selectedCard, playerEnergy, playerHand, playerDiscardPile, enemyHp, onBattleEnd]);
+  }, [selectedCard, playerEnergy, playerHand, playerDiscardPile, enemyHp, onBattleEnd, playerTeam, enemy, createBattleState]);
 
   const playCard = useCallback((card: CardInstance, target: 'enemy' | 'self') => {
     const battleState = createBattleState();
