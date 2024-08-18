@@ -60,11 +60,16 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
     drawInitialHand(initialDeck);
   }, [playerTeam]);
 
-  const createCardInstance = (card: CardType): CardInstance => ({
-    ...card,
-    instanceId: `${card.id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-  });
-
+  const createCardInstance = (card: CardType): CardInstance => {
+    if (!card || !card.id) {
+      console.error('Invalid card instance:', card); // Add this line for debugging
+      throw new Error('Card is invalid or missing an id');
+    }
+    return {
+      ...card,
+      instanceId: `${card.id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    };
+  };
   const drawInitialHand = (deck: CardType[]) => {
     const initialHandSize = 3 + playerTeam.length;
     const initialHand = deck.slice(0, initialHandSize).map(createCardInstance);
@@ -82,6 +87,10 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
         setPlayerDiscardPile([]);
       }
       const [newCard, ...remainingDeck] = playerDeck;
+      if (!newCard || !newCard.id) {
+        console.error('Invalid card drawn from deck:', newCard); // Add this line for debugging
+        continue;
+      }
       const newCardInstance = createCardInstance(newCard);
       drawnCards.push(newCardInstance);
       setPlayerHand(prev => [...prev, newCardInstance]);
@@ -281,21 +290,21 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
   const endTurn = () => {
     setTurn(prev => prev + 1);
     setPlayerEnergy(3);
-    drawCard();
-    // enemy turn logic
+    const drawnCards = drawCard(); // Ensure drawCard is working correctly
+    
+    // Enemy turn logic
     // placeholder - just have the enemy deal some damage
     const enemyDamage = 5;
     dealDamageToPlayer(enemyDamage);
-
-    // reduce block at the end of the turn
+  
+    // Reduce block at the end of the turn
     setPlayerTeamBlock(prev => prev.map(block => Math.max(0, block - 1)));
     setEnemyBlock(prev => Math.max(0, prev - 1));
-
+  
     if (playerTeamHp[0] <= 0) {
       onBattleEnd(false);
     }
   };
-
   const battleProps: BattleLogicChildProps = {
     turn,
     playerEnergy,
