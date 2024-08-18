@@ -45,7 +45,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
       <div className="bottom-bar">
         <button className="party-button" onClick={toggleParty}>Party</button>
         <button className="battle-button" onClick={onStartBattle}>Battle</button>
-        <button className="test-arena-button" onClick={toggleTestArena}>Test Arena</button>
+        <button className="test-arena-button" onClick={toggleTestArena}>DEV TEST BATTLE</button>
       </div>
 
       {showStats && (

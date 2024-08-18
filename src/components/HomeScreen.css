@@ -13,6 +13,7 @@
     position: relative;
     overflow: hidden;
   }
+
   
   .top-bar, .bottom-bar {
     display: flex;

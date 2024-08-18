@@ -7,10 +7,18 @@ import { CardCollection } from '../shared/cardCollection';
 //ARENA TEST TEAMS
 const preAssembledTeams: Digimon[][] = [
   [
-    createDigimon('impmon', 'VIRUS', 40, CardCollection.BADA_BOOM),
+    {
+      ...createDigimon('impmon', 'VIRUS', 40, CardCollection.BADA_BOOM),
+      deck: [
+        CardCollection.BADA_BOOM,
+        CardCollection.INFERNAL_FUNNEL,
+        CardCollection.RIDICULE,
+      ]
+    },
     {
       ...createDigimon('beelzemon', 'VIRUS', 80, CardCollection.CORONA_DESTROYER),
       deck: [
+        CardCollection.CORONA_DESTROYER,
         CardCollection.HEART_CRASH,
         CardCollection.BEREJENA,
       ]
@@ -20,6 +28,7 @@ const preAssembledTeams: Digimon[][] = [
       deck: [
         CardCollection.THUNDER_BOMB,
         CardCollection.MAGICAL_GAME,
+        CardCollection.VISIONS_OF_TERROR,
       ]
     }
   ],
