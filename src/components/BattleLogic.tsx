@@ -61,9 +61,6 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
   }, [playerTeam]);
 
   const createCardInstance = (card: CardType): CardInstance => {
-    if (!card || !card.id) {
-      throw new Error('Card is invalid or missing an id');
-    }
     return {
       ...card,
       instanceId: `${card.id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
