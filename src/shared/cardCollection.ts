@@ -40,18 +40,23 @@ export const CardCollection: Record<string, CardType> = {
     },
     digimonType: 'VIRUS'
   },
+
   INFERNAL_FUNNEL: {
     id: 'INFERNAL_FUNNEL',
     name: 'Infernal Funnel',
     type: 'special',
     cost: 0,
-    description: 'Discard 1 card and gain 2 energy.',
-    effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
-      battleState.discardCard(1);
-      battleState.setPlayerEnergy(battleState.playerEnergy + 2);
+    description: 'Select a card to discard and gain 2 energy.',
+    requiresCardSelection: true,
+    effect: (attacker: Digimon, defender: Digimon, battleState: BattleState, selectedCard?: CardInstance) => {
+      if (selectedCard) {
+        battleState.discardSpecificCard(selectedCard);
+        battleState.setPlayerEnergy(battleState.playerEnergy + 2);
+      }
     },
     digimonType: 'VIRUS'
   },
+  
   RIDICULE: {
     id: 'RIDICULE',
     name: 'Ridicule',
@@ -176,6 +181,7 @@ export const CardCollection: Record<string, CardType> = {
     cost: 1,
     description: "Discard your hand, then draw 3 cards.",
     effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
+      const handSize = battleState.playerHand.length;
       battleState.discardHand();
       battleState.drawCard(3);
     },
@@ -273,19 +279,20 @@ export const CardCollection: Record<string, CardType> = {
   },
 
   HEART_CRASH: {
-    id: 'HEART_CRASH',
-    name: 'Heart Crash',
-    type: 'special',
-    cost: 6,
-    description: "Discard up to 6 cards, then draw up to 6 cards. Gain 1 energy for each card discarded.",
-    effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
-      const discardedCards = battleState.discardCard(6);
-      battleState.drawCard(6);
-      const energyGain = discardedCards.length;
-      battleState.setPlayerEnergy(battleState.playerEnergy + energyGain);
-    },
-    digimonType: 'VIRUS'
+  id: 'HEART_CRASH',
+  name: 'Heart Crash',
+  type: 'special',
+  cost: 6,
+  description: "Discard up to 6 cards, then draw up to 6 cards. Gain 1 energy for each card discarded.",
+  effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
+    const cardsToDiscard = Math.min(battleState.playerHand.length, 6);
+    const discardedCards = battleState.discardCard(cardsToDiscard);
+    battleState.drawCard(6);
+    const energyGain = discardedCards.length;
+    battleState.setPlayerEnergy(battleState.playerEnergy + energyGain);
   },
+  digimonType: 'VIRUS'
+},
 
   CORONA_DESTROYER: {
     id: 'CORONA_DESTROYER',
@@ -310,7 +317,8 @@ export const CardCollection: Record<string, CardType> = {
     description: "Discard 2 random cards, gain their energy cost. Can overload.",
     requiresTarget: false,
     effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
-      const discardedCards = battleState.discardRandomCards(2);
+      const cardsToDiscard = Math.min(battleState.playerHand.length, 2);
+      const discardedCards = battleState.discardRandomCards(cardsToDiscard);
       const energyGain = discardedCards.reduce((sum, card) => sum + card.cost, 0);
       battleState.setPlayerEnergy(battleState.playerEnergy + energyGain);
     },

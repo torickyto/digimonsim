@@ -21,6 +21,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemy, onBattle
   const [showDiscardModal, setShowDiscardModal] = useState(false);
   const [isDiscardAnimationPlaying, setIsDiscardAnimationPlaying] = useState(false);
   const [cardsBeingDiscarded, setCardsBeingDiscarded] = useState<CardInstance[]>([]);
+  const [cardToDiscard, setCardToDiscard] = useState<CardInstance | null>(null);
   const battleAreaRef = useRef<HTMLDivElement>(null);
   const cardSidebarRef = useRef<HTMLDivElement>(null);
   const unselectCardRef = useRef<() => void>(() => {});
@@ -35,8 +36,6 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemy, onBattle
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
-
-  
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -53,6 +52,20 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemy, onBattle
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, [arrowStart]);
+
+  const handleDiscardButtonClick = useCallback((handleDiscard: () => void, playerHand: CardInstance[]) => {
+    if (!isDiscardAnimationPlaying && playerHand.length > 0) {
+      const cardToDiscard = playerHand[0];
+      setCardsBeingDiscarded([cardToDiscard]);
+      setIsDiscardAnimationPlaying(true);
+      
+      setTimeout(() => {
+        handleDiscard();
+        setCardsBeingDiscarded([]);
+        setIsDiscardAnimationPlaying(false);
+      }, 1000);
+    }
+  }, [isDiscardAnimationPlaying]);
 
   return (
     <BattleLogic playerTeam={playerTeam} enemy={enemy} onBattleEnd={onBattleEnd}>
@@ -73,6 +86,8 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemy, onBattle
         selectedCard,
         requiresTarget,
         tempEnergy,
+        isDrawingCards,
+        cardsBeingDrawn,
         handleCardClick,
         handleCardSelection,
         handleCardUse,
@@ -82,24 +97,13 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemy, onBattle
         triggerDiscardAnimation,
         handleCardEffect
       }) => {
+        unselectCardRef.current = unselectCard;
+
         const handleOutsideClick = (e: React.MouseEvent) => {
           if (selectedCard && !cardSidebarRef.current?.contains(e.target as Node)) {
             unselectCard();
           }
         };
-
-        const handleDiscardButtonClick = useCallback(() => {
-          if (!isDiscardAnimationPlaying && playerHand.length > 0) {
-            const cardToDiscard = playerHand[0];
-            setCardsBeingDiscarded([cardToDiscard]);
-            setIsDiscardAnimationPlaying(true);
-            setTimeout(() => {
-              handleDiscard();
-              setCardsBeingDiscarded([]);
-              setIsDiscardAnimationPlaying(false);
-            }, 1000);
-          }
-        }, [isDiscardAnimationPlaying, playerHand, handleDiscard]);
 
         const isAttackSelected = selectedCard !== null && 
           (selectedCard.type === 'attack' || (selectedCard.type === 'special' && selectedCard.requiresTarget !== false));
@@ -133,11 +137,9 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemy, onBattle
                   <button onClick={endTurn} className="end-turn-button">END TURN</button>
                   <div className="discard-button-container">
                     <button 
-                      onClick={handleDiscardButtonClick}
-                      className={`discard-button ${isDiscardAnimationPlaying ? 'disabled' : ''}`}
-                      onMouseEnter={() => setShowDiscardTooltip(true)}
-                      onMouseLeave={() => setShowDiscardTooltip(false)}
-                      disabled={isDiscardAnimationPlaying}
+                      onClick={() => handleDiscardButtonClick(handleDiscard, playerHand)}
+                      className="discard-button"
+                      disabled={isDiscardAnimationPlaying || playerHand.length === 0}
                     >
                       DISCARD
                     </button>
@@ -165,28 +167,35 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemy, onBattle
                   </div>
                 </div>
                 <div className="card-list">
-              {playerHand.map((card: CardInstance, index: number) => (
-                <Card
-                  key={card.instanceId}
-                  card={card}
-                  onClick={() => handleCardAction(card)}
-                  isSelected={selectedCard?.instanceId === card.instanceId}
-                  onMouseEnter={() => setHoveredCard(card)}
-                  onMouseLeave={() => setHoveredCard(null)}
-                  disabled={(tempEnergy !== null ? tempEnergy : playerEnergy) < card.cost && !selectingCardForEffect}
-                  isBeingDiscarded={cardsBeingDiscarded.includes(card)}
-                  isTopCard={index === 0 && showDiscardTooltip}
-                />
-              ))}
-            </div>
+                  {playerHand.map((card: CardInstance, index: number) => (
+                    <Card
+                      key={card.instanceId}
+                      card={card}
+                      onClick={() => handleCardAction(card)}
+                      isSelected={selectedCard?.instanceId === card.instanceId}
+                      onMouseEnter={() => setHoveredCard(card)}
+                      onMouseLeave={() => setHoveredCard(null)}
+                      disabled={(tempEnergy !== null ? tempEnergy : playerEnergy) < card.cost && !selectingCardForEffect}
+                      isBeingDiscarded={cardsBeingDiscarded.includes(card)}
+                      isTopCard={index === 0 && showDiscardTooltip}
+                    />
+                  ))}
+                </div>
                 {selectingCardToDiscard && (
                   <div className="overlay">
                     <div className="message">Select a card to discard</div>
                   </div>
                 )}
-                {selectingCardForEffect && (
-                  <div className="overlay">
-                    <div className="message">Select a card for {selectingCardForEffect.name}</div>
+                {isDrawingCards && (
+                  <div className="card-draw-animation-container">
+                    {cardsBeingDrawn.map((card, index) => (
+                      <Card
+                        key={`drawing-${card.instanceId}`}
+                        card={card}
+                        isDrawing={true}
+                        drawIndex={index}
+                      />
+                    ))}
                   </div>
                 )}
               </div>

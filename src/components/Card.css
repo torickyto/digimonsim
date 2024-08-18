@@ -15,10 +15,36 @@
   border-color: #5efdf7;
 }
 
-.game-card.selected {
+.game-card.selected,
+.game-card.requires-selection.selected {
   transform: translateX(10px);
   border-color: #ff5dcc;
   box-shadow: 0 0 20px rgba(74, 144, 226, 0.5);
+}
+
+@keyframes drawCard {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card-draw-animation-container {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+}
+
+.game-card.drawing {
+  position: absolute;
+  bottom: 0;
+  left: 0;
 }
 
 .game-card.disabled {

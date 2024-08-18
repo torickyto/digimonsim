@@ -27,6 +27,8 @@ interface BattleLogicChildProps {
   selectedCardInstanceId: string | null;
   selectingCardToDiscard: boolean;
   tempEnergy: number | null;
+  isDrawingCards: boolean;
+  cardsBeingDrawn: CardInstance[];
   handleCardSelection: (card: CardInstance) => void;
   handleCardUse: (target: 'enemy' | 'self') => void;
   handleDiscard: () => void;
@@ -57,17 +59,14 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
   const [requiresTarget, setRequiresTarget] = useState(false);
   const [cardsBeingDiscarded, setCardsBeingDiscarded] = useState<CardInstance[]>([]);
   const [tempEnergy, setTempEnergy] = useState<number | null>(null);
+  const [cardsBeingDrawn, setCardsBeingDrawn] = useState<CardInstance[]>([]);
+  const [isDrawingCards, setIsDrawingCards] = useState(false);
 
   useEffect(() => {
     const initialDeck = shuffleArray(playerTeam.flatMap(digimon => digimon.deck));
     setPlayerDeck(initialDeck);
     drawInitialHand(initialDeck);
   }, [playerTeam]);
-
-  const createCardInstance = (card: CardType): CardInstance => ({
-    ...card,
-    instanceId: `${card.id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-  });
 
   const drawCard = useCallback((amount: number = 1): CardInstance[] => {
     const drawnCards: CardInstance[] = [];
@@ -96,6 +95,32 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
     setPlayerDiscardPile(newDiscardPile);
     return drawnCards;
   }, [playerDeck, playerHand, playerDiscardPile]);
+
+  const drawCardWithAnimation = useCallback((amount: number) => {
+    setIsDrawingCards(true);
+    const drawnCards = drawCard(amount);
+    setCardsBeingDrawn(drawnCards);
+  
+    const drawNextCard = (index: number) => {
+      if (index < drawnCards.length) {
+        setTimeout(() => {
+          setPlayerHand(prevHand => [...prevHand, drawnCards[index]]);
+          drawNextCard(index + 1);
+        }, 300); // Adjust this delay to control animation speed
+      } else {
+        setIsDrawingCards(false);
+        setCardsBeingDrawn([]);
+      }
+    };
+  
+    drawNextCard(0);
+    return drawnCards;
+  }, [drawCard, setPlayerHand]);
+
+  const createCardInstance = (card: CardType): CardInstance => ({
+    ...card,
+    instanceId: `${card.id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  });
 
   const triggerDiscardAnimation = useCallback((onDiscard: (cards: CardInstance[]) => void) => {
     const cardsToDiscard = playerHand.slice(0, 1); // Discard the first card
@@ -174,7 +199,7 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
       setPlayerDiscardPile(prev => [...prev, cardToDiscard]);
       setPlayerEnergy(prev => prev + cardToDiscard.cost);
     },
-  }), [playerEnergy, playerHand, playerDeck, playerDiscardPile, enemyHp, enemyBlock, discardCard, drawCard, playerTeam]);
+  }), [playerEnergy, playerHand, playerDeck, playerDiscardPile, enemyHp, enemyBlock, discardCard, drawCardWithAnimation, playerTeam]);
 
   const drawInitialHand = (deck: CardType[]) => {
     const initialHandSize = 3 + playerTeam.length;
@@ -292,7 +317,11 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
     setPlayerEnergy(prev => prev - selectedCard.cost);
   
     // Apply card effects
-    playCard(selectedCard, target);
+    if (selectedCard.requiresCardSelection) {
+      setSelectingCardForEffect(selectedCard);
+    } else {
+      playCard(selectedCard, target);
+    }
   
     // Reset selection states
     setSelectedCardInstanceId(null);
@@ -362,7 +391,7 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
     if (playerTeamHp[0] <= 0) {
       onBattleEnd(false);
     }
-  }, [drawCard, playerTeamBlock, playerTeamHp, onBattleEnd]);
+  }, [drawCardWithAnimation, playerTeamBlock, playerTeamHp, onBattleEnd]);
 
   const battleProps: BattleLogicChildProps = {
     turn,
@@ -379,6 +408,8 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
     selectingCardToDiscard,
     handleCardSelection,
     handleCardUse,
+    isDrawingCards,
+    cardsBeingDrawn,
     selectedCard,
     requiresTarget,
     tempEnergy,
