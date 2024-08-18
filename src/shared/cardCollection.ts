@@ -277,11 +277,12 @@ export const CardCollection: Record<string, CardType> = {
     name: 'Heart Crash',
     type: 'special',
     cost: 6,
-    description: "Discard 6 cards, then draw 6 cards. Gain 6 energy.",
+    description: "Discard up to 6 cards, then draw up to 6 cards. Gain 1 energy for each card discarded.",
     effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
-      battleState.discardCard(6);
+      const discardedCards = battleState.discardCard(6);
       battleState.drawCard(6);
-      battleState.setPlayerEnergy(battleState.playerEnergy + 6);
+      const energyGain = discardedCards.length;
+      battleState.setPlayerEnergy(battleState.playerEnergy + energyGain);
     },
     digimonType: 'VIRUS'
   },

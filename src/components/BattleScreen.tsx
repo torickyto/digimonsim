@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Layers } from 'lucide-react';
+import { Layers, Trash2 } from 'lucide-react';
 import { Digimon, CardType, CardInstance } from '../shared/types';
 import DigimonSprite from './DigimonSprite';
 import Card from './Card';
@@ -17,8 +17,23 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemy, onBattle
   const [showDiscardTooltip, setShowDiscardTooltip] = useState(false);
   const [arrowStart, setArrowStart] = useState<{ x: number; y: number } | null>(null);
   const [arrowEnd, setArrowEnd] = useState<{ x: number; y: number } | null>(null);
+  const [showDeckModal, setShowDeckModal] = useState(false);
+  const [showDiscardModal, setShowDiscardModal] = useState(false);
+  const [isDiscardAnimationPlaying, setIsDiscardAnimationPlaying] = useState(false);
   const battleAreaRef = useRef<HTMLDivElement>(null);
   const cardSidebarRef = useRef<HTMLDivElement>(null);
+  const unselectCardRef = useRef<() => void>(() => {});
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        unselectCardRef.current();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -43,6 +58,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemy, onBattle
         playerEnergy,
         playerHand,
         playerDeck,
+        playerDiscardPile,
         selectedCardInstanceId,
         enemyHp,
         enemyBlock,
@@ -57,29 +73,49 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemy, onBattle
         handleCardSelection,
         handleCardUse,
         handleDiscard,
-        endTurn
+        endTurn,
+        unselectCard,
+        triggerDiscardAnimation,
+        handleCardEffect
       }) => {
+        const handleOutsideClick = (e: React.MouseEvent) => {
+          if (selectedCard && !cardSidebarRef.current?.contains(e.target as Node)) {
+            unselectCard();
+          }
+        };
+
         const isAttackSelected = selectedCard !== null && 
           (selectedCard.type === 'attack' || (selectedCard.type === 'special' && selectedCard.requiresTarget !== false));
 
-          const handleCardAction = (card: CardInstance) => {
-            if (selectedCard?.instanceId === card.instanceId) {
-              // if the card is already selected, use it
-              if (card.requiresTarget === false) {
-                handleCardUse('self');
-              } else if (card.requiresTarget === true) {
-              } else {
-                // requiresTarget is undefined, default to 'self'
-                handleCardUse('self');
-              }
+        const handleCardAction = (card: CardInstance) => {
+          if (selectingCardForEffect) {
+            handleCardSelection(card);
+          } else if (selectedCard?.instanceId === card.instanceId) {
+            if (card.requiresTarget === false) {
+              handleCardUse('self');
+            } else if (card.requiresTarget === true) {
+              // Do nothing, wait for target selection
             } else {
-              handleCardClick(card);
+              handleCardUse('self');
             }
-          };
+          } else {
+            handleCardClick(card);
+          }
+        };
 
+        const handleDiscardButtonClick = () => {
+          if (!isDiscardAnimationPlaying && playerHand.length > 0) {
+            triggerDiscardAnimation([playerHand[0]]);
+            setIsDiscardAnimationPlaying(true);
+            setTimeout(() => {
+              handleDiscard();
+              setIsDiscardAnimationPlaying(false);
+            }, 1000);
+          }
+        };
 
         return (
-          <div className="battle-screen">
+          <div className="battle-screen" onClick={handleOutsideClick}>
             <div className="top-bar">
               <div className="turn-display">TURN {turn}</div>
               <div className="tutorial-mode">TESTING AREA</div>
@@ -91,22 +127,27 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemy, onBattle
                   <button onClick={endTurn} className="end-turn-button">END TURN</button>
                   <div className="discard-button-container">
                     <button 
-                      onClick={handleDiscard} 
-                      className="discard-button"
+                      onClick={handleDiscardButtonClick}
+                      className={`discard-button ${isDiscardAnimationPlaying ? 'disabled' : ''}`}
                       onMouseEnter={() => setShowDiscardTooltip(true)}
                       onMouseLeave={() => setShowDiscardTooltip(false)}
+                      disabled={isDiscardAnimationPlaying}
                     >
                       DISCARD
                     </button>
                     {showDiscardTooltip && (
                       <div className="discard-tooltip">
-                        Discard the top card from your deck
+                        Discard the top card from your hand
                       </div>
                     )}
                   </div>
-                  <div className="deck-count">
+                  <div className="deck-count" onClick={() => setShowDeckModal(true)}>
                     <Layers className="deck-icon" />
                     <span>{playerDeck.length}</span>
+                  </div>
+                  <div className="discard-count" onClick={() => setShowDiscardModal(true)}>
+                    <Trash2 className="discard-icon" />
+                    <span>{playerDiscardPile.length}</span>
                   </div>
                 </div>
                 <div className="energy-gauge">
@@ -118,19 +159,21 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemy, onBattle
                   </div>
                 </div>
                 <div className="card-list">
-              {playerHand.map((card: CardInstance) => (
-                <Card
-                  key={card.instanceId}
-                  card={card}
-                  onClick={() => handleCardAction(card)}
-                  onDoubleClick={() => handleCardAction(card)}
-                  isSelected={selectedCard?.instanceId === card.instanceId}
-                  onMouseEnter={() => setHoveredCard(card)}
-                  onMouseLeave={() => setHoveredCard(null)}
-                  disabled={playerEnergy < card.cost && !selectingCardForEffect}
-                />
-              ))}
-            </div>
+                  {playerHand.map((card: CardInstance, index: number) => (
+                    <Card
+                      key={card.instanceId}
+                      card={card}
+                      onClick={() => handleCardAction(card)}
+                      onDoubleClick={() => handleCardAction(card)}
+                      isSelected={selectedCard?.instanceId === card.instanceId}
+                      onMouseEnter={() => setHoveredCard(card)}
+                      onMouseLeave={() => setHoveredCard(null)}
+                      disabled={playerEnergy < card.cost && !selectingCardForEffect}
+                      isBeingDiscarded={isDiscardAnimationPlaying && index === 0}
+                      isTopCard={index === 0 && showDiscardTooltip}
+                    />
+                  ))}
+                </div>
                 {selectingCardToDiscard && (
                   <div className="overlay">
                     <div className="message">Select a card to discard</div>
@@ -143,11 +186,11 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemy, onBattle
                 )}
               </div>
               <div className="battle-area" ref={battleAreaRef}>
-              <div className="battle-background">
-                <div 
-                  className={`enemy enemy-left ${isAttackSelected ? 'attackable' : ''}`}
-                  onClick={() => isAttackSelected && handleCardUse('enemy')}
-                >
+                <div className="battle-background">
+                  <div 
+                    className={`enemy enemy-left ${isAttackSelected ? 'attackable' : ''}`}
+                    onClick={() => isAttackSelected && handleCardUse('enemy')}
+                  >
                     <DigimonSprite name={enemy.name} />
                     <div className="enemy-info">
                       <div className="enemy-name">{enemy.displayName}</div>
@@ -201,10 +244,48 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemy, onBattle
                 </div>
               ))}
             </div>
+
+            {showDeckModal && (
+              <DeckModal 
+                cards={playerDeck} 
+                onClose={() => setShowDeckModal(false)} 
+                title="Your Deck" 
+              />
+            )}
+
+            {showDiscardModal && (
+              <DeckModal 
+                cards={playerDiscardPile} 
+                onClose={() => setShowDiscardModal(false)} 
+                title="Discard Pile" 
+              />
+            )}
           </div>
         );
       }}
     </BattleLogic>
+  );
+};
+
+interface DeckModalProps {
+  cards: CardType[];
+  onClose: () => void;
+  title: string;
+}
+
+const DeckModal: React.FC<DeckModalProps> = ({ cards, onClose, title }) => {
+  return (
+    <div className="deck-modal">
+      <div className="modal-content">
+        <h2>{title}</h2>
+        <div className="card-grid">
+          {cards.map((card, index) => (
+            <Card key={index} card={card} isCompact={true} />
+          ))}
+        </div>
+        <button className="close-button" onClick={onClose}>Close</button>
+      </div>
+    </div>
   );
 };
 

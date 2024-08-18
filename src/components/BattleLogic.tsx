@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Digimon, CardType, BattleState } from '../shared/types';
 import { shuffleArray } from '../utils/deckUtils';
 
@@ -34,6 +34,9 @@ interface BattleLogicChildProps {
   requiresTarget: boolean;
   handleCardClick: (card: CardInstance) => void;
   selectingCardForEffect: CardInstance | null;
+  unselectCard: () => void;
+  triggerDiscardAnimation: (cardsToDiscard: CardInstance[]) => void;
+  handleCardEffect: (effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => void) => void;
 }
 
 const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEnd, children }) => {
@@ -47,12 +50,11 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
   const [enemyBlock, setEnemyBlock] = useState(0);
   const [playerTeamBlock, setPlayerTeamBlock] = useState(playerTeam.map(() => 0));
   const [playerTeamHp, setPlayerTeamHp] = useState(playerTeam.map(d => d.hp));
-  const [discardedCardCount, setDiscardedCardCount] = useState(0);
   const [selectingCardToDiscard, setSelectingCardToDiscard] = useState(false);
-  const [cardToUseAfterDiscard, setCardToUseAfterDiscard] = useState<CardInstance | null>(null);
   const [selectingCardForEffect, setSelectingCardForEffect] = useState<CardInstance | null>(null);
   const [selectedCard, setSelectedCard] = useState<CardInstance | null>(null);
   const [requiresTarget, setRequiresTarget] = useState(false);
+  const [cardsBeingDiscarded, setCardsBeingDiscarded] = useState<CardInstance[]>([]);
 
   useEffect(() => {
     const initialDeck = shuffleArray(playerTeam.flatMap(digimon => digimon.deck));
@@ -65,14 +67,7 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
     instanceId: `${card.id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   });
 
-  const drawInitialHand = (deck: CardType[]) => {
-    const initialHandSize = 3 + playerTeam.length;
-    const initialHand = deck.slice(0, initialHandSize).map(createCardInstance);
-    setPlayerHand(initialHand);
-    setPlayerDeck(deck.slice(initialHandSize));
-  };
-
-  const drawCard = (amount: number = 1): CardInstance[] => {
+  const drawCard = useCallback((amount: number = 1): CardInstance[] => {
     const drawnCards: CardInstance[] = [];
     let newDeck = [...playerDeck];
     let newHand = [...playerHand];
@@ -98,112 +93,26 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
     setPlayerDeck(newDeck);
     setPlayerDiscardPile(newDiscardPile);
     return drawnCards;
-  };
+  }, [playerDeck, playerHand, playerDiscardPile]);
 
+  const triggerDiscardAnimation = useCallback((cardsToDiscard: CardInstance[]) => {
+    setCardsBeingDiscarded(cardsToDiscard);
+    setTimeout(() => {
+      cardsToDiscard.forEach(card => {
+        setPlayerHand(prev => prev.filter(c => c.instanceId !== card.instanceId));
+        setPlayerDiscardPile(prev => [...prev, card]);
+      });
+      setCardsBeingDiscarded([]);
+    }, 1000);
+  }, []);
 
-  const discardCard = (amount: number): CardInstance[] => {
+  const discardCard = useCallback((amount: number): CardInstance[] => {
     const discardedCards = playerHand.slice(0, amount);
-    setPlayerHand(prev => prev.slice(amount));
-    setPlayerDiscardPile(prev => [...prev, ...discardedCards]);
-    setDiscardedCardCount(prev => prev + amount);
+    triggerDiscardAnimation(discardedCards);
     return discardedCards;
-  };
+  }, [playerHand, triggerDiscardAnimation]);
 
-  const discardHand = (): void => {
-    setPlayerDiscardPile(prev => [...prev, ...playerHand]);
-    setDiscardedCardCount(prev => prev + playerHand.length);
-    setPlayerHand([]);
-  };
-
-  const discardRandomCards = (amount: number): CardInstance[] => {
-    const shuffledHand = shuffleArray([...playerHand]);
-    const discardedCards = shuffledHand.slice(0, amount);
-    setPlayerHand(shuffledHand.slice(amount));
-    setPlayerDiscardPile(prev => [...prev, ...discardedCards]);
-    setDiscardedCardCount(prev => prev + amount);
-    return discardedCards;
-  };
-
-  const getDiscardedCardCount = (): number => {
-    return discardedCardCount;
-  };
-
-  const healRandomAlly = (amount: number): void => {
-    const randomIndex = Math.floor(Math.random() * playerTeam.length);
-    setPlayerTeamHp(prev => {
-      const newHp = [...prev];
-      newHp[randomIndex] = Math.min(newHp[randomIndex] + amount, playerTeam[randomIndex].maxHp);
-      return newHp;
-    });
-  };
-
-  const addRandomAllyBlock = (amount: number): void => {
-    const randomIndex = Math.floor(Math.random() * playerTeam.length);
-    setPlayerTeamBlock(prev => {
-      const newBlock = [...prev];
-      newBlock[randomIndex] += amount;
-      return newBlock;
-    });
-  };
-
-  const damageRandomEnemy = (amount: number): void => {
-    setEnemyHp(prev => Math.max(0, prev - amount));
-  };
-
-  const handleCardClick = (card: CardInstance) => {
-    if (selectingCardForEffect) {
-      handleCardSelectionForEffect(card);
-    } else if (selectedCard && selectedCard.instanceId === card.instanceId) {
-      if (!card.requiresTarget) {
-        handleCardUse();
-      }
-    } else {
-      setSelectedCard(card);
-      setRequiresTarget(card.requiresTarget !== false);
-    }
-  };
-
-  const handleCardSelection = (card: CardInstance) => {
-    if (selectingCardToDiscard) {
-      setSelectingCardToDiscard(false);
-      if (cardToUseAfterDiscard && cardToUseAfterDiscard.effect) {
-        const battleState: BattleState = createBattleState();
-        cardToUseAfterDiscard.effect(playerTeam[0], enemy, battleState);
-        playCard(cardToUseAfterDiscard, 'self');
-      }
-      setCardToUseAfterDiscard(null);
-    } else {
-      setSelectedCardInstanceId(prev => prev === card.instanceId ? null : card.instanceId);
-    }
-  };
-
-  const handleCardUse = (target?: 'enemy' | 'self') => {
-    if (!selectedCard || playerEnergy < selectedCard.cost) return;
-  
-    if (selectedCard.requiresCardSelection) {
-      setSelectingCardForEffect(selectedCard);
-      return;
-    }
-  
-    if (selectedCard.requiresTarget && !target) return;
-  
-    const effectiveTarget = selectedCard.requiresTarget ? target! : 'self';
-    playCard(selectedCard, effectiveTarget);
-  };
-  
-  const handleCardSelectionForEffect = (selectedCard: CardInstance) => {
-    if (!selectingCardForEffect) return;
-  
-    const battleState = createBattleState();
-    if (selectingCardForEffect.effect) {
-      selectingCardForEffect.effect(playerTeam[0], enemy, battleState, selectedCard);
-    }
-  
-    playCard(selectingCardForEffect, 'self');
-    setSelectingCardForEffect(null);
-  };
-
-  const createBattleState = (): BattleState => ({
+  const createBattleState = useCallback((): BattleState => ({
     playerEnergy,
     playerHand,
     playerDeck,
@@ -211,13 +120,38 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
     enemyHp,
     enemyBlock,
     discardCard,
-    discardHand,
+    discardHand: () => {
+      setPlayerDiscardPile(prev => [...prev, ...playerHand]);
+      setPlayerHand([]);
+    },
     drawCard,
-    discardRandomCards,
-    getDiscardedCardCount,
-    healRandomAlly,
-    addRandomAllyBlock,
-    damageRandomEnemy,
+    discardRandomCards: (amount: number) => {
+      const shuffledHand = shuffleArray([...playerHand]);
+      const discardedCards = shuffledHand.slice(0, amount);
+      setPlayerHand(shuffledHand.slice(amount));
+      setPlayerDiscardPile(prev => [...prev, ...discardedCards]);
+      return discardedCards;
+    },
+    getDiscardedCardCount: () => playerDiscardPile.length,
+    healRandomAlly: (amount: number) => {
+      const randomIndex = Math.floor(Math.random() * playerTeam.length);
+      setPlayerTeamHp(prev => {
+        const newHp = [...prev];
+        newHp[randomIndex] = Math.min(newHp[randomIndex] + amount, playerTeam[randomIndex].maxHp);
+        return newHp;
+      });
+    },
+    addRandomAllyBlock: (amount: number) => {
+      const randomIndex = Math.floor(Math.random() * playerTeam.length);
+      setPlayerTeamBlock(prev => {
+        const newBlock = [...prev];
+        newBlock[randomIndex] += amount;
+        return newBlock;
+      });
+    },
+    damageRandomEnemy: (amount: number) => {
+      setEnemyHp(prev => Math.max(0, prev - amount));
+    },
     setPlayerEnergy: (amount: number) => setPlayerEnergy(amount),
     damageEnemy: (amount: number) => setEnemyHp(prev => Math.max(0, prev - amount)),
     damagePlayer: (amount: number) => setPlayerTeamHp(prev => {
@@ -237,13 +171,118 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
       setPlayerDiscardPile(prev => [...prev, cardToDiscard]);
       setPlayerEnergy(prev => prev + cardToDiscard.cost);
     },
-  });
+  }), [playerEnergy, playerHand, playerDeck, playerDiscardPile, enemyHp, enemyBlock, discardCard, drawCard, playerTeam]);
 
-  const playCard = (card: CardInstance, target: 'enemy' | 'self') => {
-    setPlayerEnergy(prev => prev - card.cost);
-    setPlayerHand(prev => prev.filter(c => c.instanceId !== card.instanceId));
-    setPlayerDiscardPile(prev => [...prev, card]);
+  const drawInitialHand = (deck: CardType[]) => {
+    const initialHandSize = 3 + playerTeam.length;
+    const initialHand = deck.slice(0, initialHandSize).map(createCardInstance);
+    setPlayerHand(initialHand);
+    setPlayerDeck(deck.slice(initialHandSize));
+  };
 
+  const handleCardClick = useCallback((card: CardInstance) => {
+    if (selectingCardForEffect) {
+      handleCardSelectionForEffect(card);
+    } else if (selectedCard && selectedCard.instanceId === card.instanceId) {
+      if (!card.requiresTarget) {
+        handleCardUse('self');
+      }
+    } else {
+      setSelectedCard(card);
+      setRequiresTarget(card.requiresTarget !== false);
+    }
+  }, [selectingCardForEffect, selectedCard]);
+
+  const handleCardSelection = useCallback((card: CardInstance) => {
+    setSelectedCardInstanceId(prev => prev === card.instanceId ? null : card.instanceId);
+  }, []);
+
+  const handleCardEffect = useCallback((effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => void) => {
+    const battleState: BattleState = {
+      ...createBattleState(),
+      discardCard: (amount: number) => {
+        const discardedCards = playerHand.slice(0, amount);
+        triggerDiscardAnimation(discardedCards);
+        return discardedCards;
+      },
+      discardRandomCards: (amount: number) => {
+        const shuffledHand = shuffleArray([...playerHand]);
+        const discardedCards = shuffledHand.slice(0, amount);
+        triggerDiscardAnimation(discardedCards);
+        return discardedCards;
+      },
+      discardSpecificCard: (cardToDiscard: CardInstance) => {
+        triggerDiscardAnimation([cardToDiscard]);
+        setPlayerHand(prev => prev.filter(c => c.instanceId !== cardToDiscard.instanceId));
+        setPlayerDiscardPile(prev => [...prev, cardToDiscard]);
+        setPlayerEnergy(prev => prev + cardToDiscard.cost);
+      },
+    };
+  
+    effect(playerTeam[0], enemy, battleState);
+  }, [playerTeam, enemy, createBattleState, playerHand, triggerDiscardAnimation, setPlayerHand, setPlayerDiscardPile, setPlayerEnergy]);
+
+  const unselectCard = useCallback(() => {
+    setSelectedCardInstanceId(null);
+    setSelectedCard(null);
+    setRequiresTarget(false);
+  }, []);
+
+  const handleDiscard = useCallback(() => {
+    if (playerHand.length > 0) {
+      const [discardedCard, ...remainingHand] = playerHand;
+      setPlayerHand(remainingHand);
+      setPlayerDiscardPile(prev => [...prev, discardedCard]);
+    }
+  }, [playerHand]);
+
+  const handleCardUse = useCallback((target: 'enemy' | 'self') => {
+    if (!selectedCard || playerEnergy < selectedCard.cost) return;
+  
+    if (selectedCard.requiresCardSelection) {
+      setSelectingCardForEffect(selectedCard);
+      return;
+    }
+  
+    if (selectedCard.requiresTarget && target !== 'enemy') return;
+  
+    // Remove the played card from hand
+    const updatedHand = playerHand.filter(card => card.instanceId !== selectedCard.instanceId);
+    
+    // Add the played card to the discard pile
+    const updatedDiscardPile = [...playerDiscardPile, selectedCard];
+    
+    // Update state
+    setPlayerHand(updatedHand);
+    setPlayerDiscardPile(updatedDiscardPile);
+    setPlayerEnergy(prev => prev - selectedCard.cost);
+  
+    // Apply card effects
+    playCard(selectedCard, target);
+  
+    // Reset selection states
+    setSelectedCardInstanceId(null);
+    setSelectedCard(null);
+    setRequiresTarget(false);
+  
+    if (enemyHp <= 0) {
+      onBattleEnd(true);
+    }
+  }, [selectedCard, playerEnergy, playerHand, playerDiscardPile, enemyHp, onBattleEnd]);
+
+  const handleCardSelectionForEffect = useCallback((selectedCard: CardInstance) => {
+    if (!selectingCardForEffect) return;
+  
+    const battleState = createBattleState();
+    if (selectingCardForEffect.effect) {
+      selectingCardForEffect.effect(playerTeam[0], enemy, battleState, selectedCard);
+    }
+  
+    playCard(selectingCardForEffect, 'self');
+    setSelectingCardForEffect(null);
+  }, [selectingCardForEffect, playerTeam, enemy, createBattleState]);
+
+  const playCard = useCallback((card: CardInstance, target: 'enemy' | 'self') => {
     const battleState = createBattleState();
 
     if (card.effect) {
@@ -269,34 +308,30 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
     if (enemyHp <= 0) {
       onBattleEnd(true);
     }
-  };
+  }, [createBattleState, playerTeam, enemy, enemyHp, onBattleEnd]);
 
-  const dealDamageToPlayer = (damage: number) => {
-    setPlayerTeamHp(prev => {
-      const newHp = [...prev];
-      if (playerTeamBlock[0] > 0) {
-        const remainingDamage = Math.max(0, damage - playerTeamBlock[0]);
-        setPlayerTeamBlock(prevBlock => {
-          const newBlock = [...prevBlock];
-          newBlock[0] = Math.max(0, newBlock[0] - damage);
-          return newBlock;
-        });
-        newHp[0] = Math.max(0, newHp[0] - remainingDamage);
-      } else {
-        newHp[0] = Math.max(0, newHp[0] - damage);
-      }
-      return newHp;
-    });
-  };
-
-  const endTurn = () => {
+  const endTurn = useCallback(() => {
     setTurn(prev => prev + 1);
     setPlayerEnergy(3);
     drawCard();
     // enemy turn logic
     // placeholder - just have the enemy deal some damage
     const enemyDamage = 5;
-    dealDamageToPlayer(enemyDamage);
+    setPlayerTeamHp(prev => {
+      const newHp = [...prev];
+      if (playerTeamBlock[0] > 0) {
+        const remainingDamage = Math.max(0, enemyDamage - playerTeamBlock[0]);
+        setPlayerTeamBlock(prevBlock => {
+          const newBlock = [...prevBlock];
+          newBlock[0] = Math.max(0, newBlock[0] - enemyDamage);
+          return newBlock;
+        });
+        newHp[0] = Math.max(0, newHp[0] - remainingDamage);
+      } else {
+        newHp[0] = Math.max(0, newHp[0] - enemyDamage);
+      }
+      return newHp;
+    });
 
     // reduce block at the end of the turn
     setPlayerTeamBlock(prev => prev.map(block => Math.max(0, block - 1)));
@@ -305,7 +340,7 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
     if (playerTeamHp[0] <= 0) {
       onBattleEnd(false);
     }
-  };
+  }, [drawCard, playerTeamBlock, playerTeamHp, onBattleEnd]);
 
   const battleProps: BattleLogicChildProps = {
     turn,
@@ -325,9 +360,12 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
     selectedCard,
     requiresTarget,
     handleCardClick,
-    handleDiscard: () => discardCard(1),
+    unselectCard,
+    triggerDiscardAnimation,
+    handleDiscard,
     endTurn,
-    selectingCardForEffect
+    selectingCardForEffect,
+    handleCardEffect
   };
 
   return <>{children(battleProps)}</>;

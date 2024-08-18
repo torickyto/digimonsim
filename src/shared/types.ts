@@ -13,6 +13,7 @@ export interface CardType {
   block?: number;
   requiresCardSelection?: boolean;
   requiresTarget?: boolean;
+
 }
 
 export interface DigimonTemplate {

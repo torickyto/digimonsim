@@ -1,15 +1,18 @@
 import React from 'react';
 import { CardType } from '../shared/types';
+import './Card.css';
 
 interface CardProps {
   card: CardType;
-  onClick: () => void;
+  onClick?: () => void;
   onDoubleClick?: () => void;
-  isSelected: boolean;
+  isSelected?: boolean;
   isCompact?: boolean;
   onMouseEnter?: () => void; 
   onMouseLeave?: () => void; 
-  disabled?: boolean;  
+  disabled?: boolean;
+  isBeingDiscarded?: boolean;
+  isTopCard?: boolean;
 }
 
 const Card: React.FC<CardProps> = ({ 
@@ -20,13 +23,15 @@ const Card: React.FC<CardProps> = ({
   isCompact = false, 
   onMouseEnter, 
   onMouseLeave, 
-  disabled = false
+  disabled = false,
+  isBeingDiscarded = false,
+  isTopCard = false
 }) => {
   const imageSrc = require(`../assets/cards/${card.name.toLowerCase().replace(/\s+/g, '')}.png`);
   
   return (
     <div 
-      className={`game-card ${isSelected ? 'selected' : ''} ${isCompact ? 'compact' : ''} ${disabled ? 'disabled' : ''}`}
+      className={`game-card ${isSelected ? 'selected' : ''} ${isCompact ? 'compact' : ''} ${disabled ? 'disabled' : ''} ${isBeingDiscarded ? 'discarding' : ''} ${isTopCard ? 'top-card' : ''}`}
       onClick={disabled ? undefined : onClick}
       onDoubleClick={disabled ? undefined : onDoubleClick}
       onMouseEnter={onMouseEnter}
