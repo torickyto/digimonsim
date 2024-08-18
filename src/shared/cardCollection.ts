@@ -158,12 +158,13 @@ export const CardCollection: Record<string, CardType> = {
     name: 'Thunder Bomb',
     type: 'special',
     cost: 4,
-    description: "Draw 3 cards then deal their combined cost * 2 to all enemies",
+    description: "Draw up to 3 cards then deal their combined cost * 2 to all enemies",
     requiresTarget: false,
     effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => {
       const drawnCards = battleState.drawCard(3);
       const totalCost = drawnCards.reduce((sum, card) => sum + card.cost, 0);
-      battleState.damageEnemy(totalCost * 2);
+      const damage = totalCost * 2;
+      battleState.damageEnemy(damage);
     },
     digimonType: 'VACCINE'
   },

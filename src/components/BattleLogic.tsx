@@ -74,21 +74,32 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
 
   const drawCard = (amount: number = 1): CardInstance[] => {
     const drawnCards: CardInstance[] = [];
-    for (let i = 0; i < amount; i++) {
-      if (playerDeck.length === 0) {
-        if (playerDiscardPile.length === 0) break;
-        const shuffledDiscard = shuffleArray(playerDiscardPile);
-        setPlayerDeck(shuffledDiscard);
-        setPlayerDiscardPile([]);
+    let newDeck = [...playerDeck];
+    let newHand = [...playerHand];
+    let newDiscardPile = [...playerDiscardPile];
+
+    const availableCards = Math.min(amount, newDeck.length + newDiscardPile.length);
+  
+    for (let i = 0; i < availableCards; i++) {
+      if (newDeck.length === 0) {
+        if (newDiscardPile.length === 0) break;
+        newDeck = shuffleArray(newDiscardPile);
+        newDiscardPile = [];
       }
-      const [newCard, ...remainingDeck] = playerDeck;
+  
+      const [newCard, ...remainingDeck] = newDeck;
       const newCardInstance = createCardInstance(newCard);
       drawnCards.push(newCardInstance);
-      setPlayerHand(prev => [...prev, newCardInstance]);
-      setPlayerDeck(remainingDeck);
+      newHand.push(newCardInstance);
+      newDeck = remainingDeck;
     }
+  
+    setPlayerHand(newHand);
+    setPlayerDeck(newDeck);
+    setPlayerDiscardPile(newDiscardPile);
     return drawnCards;
   };
+
 
   const discardCard = (amount: number): CardInstance[] => {
     const discardedCards = playerHand.slice(0, amount);
