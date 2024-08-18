@@ -1,9 +1,7 @@
 .digimon {
-    width: 64px; /* Adjust based on your sprite size */
-    height: 80px; /* Adjust based on your sprite size */
-    background-repeat: no-repeat;
-    image-rendering: pixelated;
-  }
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
   
   .agumon {
     background-image: url('../assets/images/agumon-sprite.png');
@@ -15,25 +13,130 @@
   
   .impmon {
     background-image: url('../assets/images/impmon-sprite.png');
+  }   
+
+  .wizardmon {
+    background-image: url('../assets/images/wizardmon-sprite.png');
   }    
   
-  .breathing {
-    animation: breathe 1.5s steps(1, end) infinite;
+  .beelzemon {
+    background-image: url('../assets/images/beelzemon-sprite.png');
+  }    
+
+
+
+  /* small spritesheets */
+  .agumon, .gabumon, .impmon {
+    width: 64px;
+    height: 80px;
   }
   
-  @keyframes breathe {
-    0% { background-position: 0 0; }     /* Frame 1 */
-    25%, 75% { background-position: -64px 0; } /* Frame 2 */
-    50% { background-position: -128px 0; } /* Frame 3 */
+  .agumon.breathing, .gabumon.breathing, .impmon.breathing {
+    animation: breathe-small 1.5s steps(1, end) infinite;
+  }
+
+  .agumon.attacking, .gabumon.attacking, .impmon.attacking {
+    background-size: 192px 160px; /* spritesheet size */
+    animation: attack-small 0.4s steps(1, end) 1;
+    width: 96px; 
+    height: 80px;
+  }
+
+  .agumon.onHit, .gabumon.onHit, .impmon.onHit {
+    background-size: 192px 160px; 
+    background-position: 0 -80px; 
+    width: 96px; 
+    height: 80px;
   }
   
-  
-  .attacking {
-    animation: attack 0.4s steps(1, end) 1;
+  @keyframes breathe-small {
+    0% { background-position: 0 0; }
+    25%, 75% { background-position: -64px 0; }
+    50% { background-position: -128px 0; }
   }
-  
-  @keyframes attack {
-    0% { background-position: 0 -80px; }     /* First attack frame */
-    50% { background-position: -64px -80px; } /* Second attack frame */
-    100% { background-position: 0 0; }      /* Return to first breathing frame */
+
+  .small.onHit {
+    background-position: 0 -80px; /* left half of the bottom section */
   }
+
+  .small.attacking {
+    background-position: -96px -80px;
+  }
+
+  /* Medium sprite */
+.wizardmon {
+  width: 113px;
+  height: 112px;
+}
+
+.wizardmon.breathing {
+  animation: breathe-medium 1.5s steps(1, end) infinite;
+}
+
+@keyframes breathe-medium {
+  0% { background-position: 0 0; }
+  25%, 75% { background-position: -113px 0; }
+  50% { background-position: -226px 0; }
+}
+
+.wizardmon.attacking {
+  animation: attack-medium 0.4s steps(1, end) 1;
+}
+
+@keyframes attack-medium {
+  0% { background-position: 0 -112px; }
+  50% { background-position: -113px -112px; }
+  100% { background-position: 0 0; }
+}
+
+/* Large sprite */
+.beelzemon {
+  width: 161px;
+  height: 177px;
+}
+
+.beelzemon.breathing {
+  animation: breathe-large 1.5s steps(1, end) infinite;
+}
+
+@keyframes breathe-large {
+  0% { background-position: 0 0; }
+  25%, 75% { background-position: -161px 0; }
+  50% { background-position: -322px 0; }
+}
+
+.beelzemon.attacking {
+  animation: attack-large 0.4s steps(1, end) 1;
+}
+
+@keyframes attack-large {
+  0% { background-position: 0 -177px; }
+  50% { background-position: -161px -177px; }
+  100% { background-position: 0 0; }
+}
+
+/* Huge sprite */
+.huge {
+  width: 208px;
+  height: 144px;
+}
+
+.huge.breathing {
+  animation: breathe-huge 1.5s steps(1, end) infinite;
+}
+
+@keyframes breathe-huge {
+  0% { background-position: 0 0; }
+  25%, 75% { background-position: -208px 0; }
+  50% { background-position: -416px 0; }
+}
+
+.huge.attacking {
+  animation: attack-huge 0.4s steps(1, end) 1;
+}
+
+@keyframes attack-huge {
+  0% { background-position: 0 -144px; }
+  50% { background-position: -208px -144px; }
+  100% { background-position: 0 0; }
+}

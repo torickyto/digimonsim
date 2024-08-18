@@ -1,11 +1,5 @@
 .App {
   text-align: center;
-  padding: 20px;
-}
-
-.start-screen, .home-screen {
-  max-width: 600px;
-  margin: 0 auto;
 }
 
 .digimon-list {
@@ -32,4 +26,10 @@
 img {
   max-width: 100px;
   height: auto;
+}
+
+:root {
+  --data-color: #85daeb;
+  --vaccine-color: #f5daa7;
+  --virus-color: #ca60ae;
 }
