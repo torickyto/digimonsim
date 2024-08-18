@@ -26,6 +26,7 @@ interface BattleLogicChildProps {
   playerHand: CardInstance[];
   selectedCardInstanceId: string | null;
   selectingCardToDiscard: boolean;
+  tempEnergy: number | null;
   handleCardSelection: (card: CardInstance) => void;
   handleCardUse: (target: 'enemy' | 'self') => void;
   handleDiscard: () => void;
@@ -35,7 +36,7 @@ interface BattleLogicChildProps {
   handleCardClick: (card: CardInstance) => void;
   selectingCardForEffect: CardInstance | null;
   unselectCard: () => void;
-  triggerDiscardAnimation: (cardsToDiscard: CardInstance[]) => void;
+  triggerDiscardAnimation: (onDiscard: (cards: CardInstance[]) => void) => void;
   handleCardEffect: (effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => void) => void;
 }
 
@@ -55,6 +56,7 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
   const [selectedCard, setSelectedCard] = useState<CardInstance | null>(null);
   const [requiresTarget, setRequiresTarget] = useState(false);
   const [cardsBeingDiscarded, setCardsBeingDiscarded] = useState<CardInstance[]>([]);
+  const [tempEnergy, setTempEnergy] = useState<number | null>(null);
 
   useEffect(() => {
     const initialDeck = shuffleArray(playerTeam.flatMap(digimon => digimon.deck));
@@ -95,20 +97,21 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
     return drawnCards;
   }, [playerDeck, playerHand, playerDiscardPile]);
 
-  const triggerDiscardAnimation = useCallback((cardsToDiscard: CardInstance[]) => {
-    setCardsBeingDiscarded(cardsToDiscard);
+  const triggerDiscardAnimation = useCallback((onDiscard: (cards: CardInstance[]) => void) => {
+    const cardsToDiscard = playerHand.slice(0, 1); // Discard the first card
+    onDiscard(cardsToDiscard);
     setTimeout(() => {
-      cardsToDiscard.forEach(card => {
-        setPlayerHand(prev => prev.filter(c => c.instanceId !== card.instanceId));
-        setPlayerDiscardPile(prev => [...prev, card]);
-      });
-      setCardsBeingDiscarded([]);
+      setPlayerHand(prev => prev.filter(c => !cardsToDiscard.includes(c)));
+      setPlayerDiscardPile(prev => [...prev, ...cardsToDiscard]);
     }, 1000);
-  }, []);
+  }, [playerHand]);
 
   const discardCard = useCallback((amount: number): CardInstance[] => {
     const discardedCards = playerHand.slice(0, amount);
-    triggerDiscardAnimation(discardedCards);
+    triggerDiscardAnimation((cards) => {
+      setPlayerHand(prev => prev.filter(c => !cards.includes(c)));
+      setPlayerDiscardPile(prev => [...prev, ...cards]);
+    });
     return discardedCards;
   }, [playerHand, triggerDiscardAnimation]);
 
@@ -184,17 +187,47 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
     if (selectingCardForEffect) {
       handleCardSelectionForEffect(card);
     } else if (selectedCard && selectedCard.instanceId === card.instanceId) {
-      if (!card.requiresTarget) {
+      if (!card.requiresTarget && !card.requiresCardSelection) {
         handleCardUse('self');
       }
     } else {
-      setSelectedCard(card);
-      setRequiresTarget(card.requiresTarget !== false);
+      if (card.requiresCardSelection) {
+        setSelectingCardForEffect(card);
+        setTempEnergy(playerEnergy - card.cost);
+      } else {
+        setSelectedCard(card);
+        setRequiresTarget(card.requiresTarget !== false);
+      }
     }
-  }, [selectingCardForEffect, selectedCard]);
+  }, [selectingCardForEffect, selectedCard, playerEnergy]);
 
   const handleCardSelection = useCallback((card: CardInstance) => {
-    setSelectedCardInstanceId(prev => prev === card.instanceId ? null : card.instanceId);
+    if (selectingCardForEffect) {
+      handleCardSelectionForEffect(card);
+    } else {
+      setSelectedCardInstanceId(prev => prev === card.instanceId ? null : card.instanceId);
+    }
+  }, [selectingCardForEffect]);
+
+  const handleCardSelectionForEffect = useCallback((selectedCard: CardInstance) => {
+    if (!selectingCardForEffect) return;
+  
+    const battleState = createBattleState();
+    if (selectingCardForEffect.effect) {
+      selectingCardForEffect.effect(playerTeam[0], enemy, battleState, selectedCard);
+    }
+  
+    playCard(selectingCardForEffect, 'self');
+    setSelectingCardForEffect(null);
+    setTempEnergy(null);
+  }, [selectingCardForEffect, playerTeam, enemy, createBattleState]);
+
+  const unselectCard = useCallback(() => {
+    setSelectedCardInstanceId(null);
+    setSelectedCard(null);
+    setRequiresTarget(false);
+    setSelectingCardForEffect(null);
+    setTempEnergy(null);
   }, []);
 
   const handleCardEffect = useCallback((effect: (attacker: Digimon, defender: Digimon, battleState: BattleState) => void) => {
@@ -202,31 +235,32 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
       ...createBattleState(),
       discardCard: (amount: number) => {
         const discardedCards = playerHand.slice(0, amount);
-        triggerDiscardAnimation(discardedCards);
+        triggerDiscardAnimation((cards) => {
+          setPlayerHand(prev => prev.filter(c => !cards.includes(c)));
+          setPlayerDiscardPile(prev => [...prev, ...cards]);
+        });
         return discardedCards;
       },
       discardRandomCards: (amount: number) => {
         const shuffledHand = shuffleArray([...playerHand]);
         const discardedCards = shuffledHand.slice(0, amount);
-        triggerDiscardAnimation(discardedCards);
+        triggerDiscardAnimation((cards) => {
+          setPlayerHand(prev => prev.filter(c => !cards.includes(c)));
+          setPlayerDiscardPile(prev => [...prev, ...cards]);
+        });
         return discardedCards;
       },
       discardSpecificCard: (cardToDiscard: CardInstance) => {
-        triggerDiscardAnimation([cardToDiscard]);
-        setPlayerHand(prev => prev.filter(c => c.instanceId !== cardToDiscard.instanceId));
-        setPlayerDiscardPile(prev => [...prev, cardToDiscard]);
+        triggerDiscardAnimation((cards) => {
+          setPlayerHand(prev => prev.filter(c => c.instanceId !== cardToDiscard.instanceId));
+          setPlayerDiscardPile(prev => [...prev, cardToDiscard]);
+        });
         setPlayerEnergy(prev => prev + cardToDiscard.cost);
       },
     };
   
     effect(playerTeam[0], enemy, battleState);
   }, [playerTeam, enemy, createBattleState, playerHand, triggerDiscardAnimation, setPlayerHand, setPlayerDiscardPile, setPlayerEnergy]);
-
-  const unselectCard = useCallback(() => {
-    setSelectedCardInstanceId(null);
-    setSelectedCard(null);
-    setRequiresTarget(false);
-  }, []);
 
   const handleDiscard = useCallback(() => {
     if (playerHand.length > 0) {
@@ -269,18 +303,6 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
       onBattleEnd(true);
     }
   }, [selectedCard, playerEnergy, playerHand, playerDiscardPile, enemyHp, onBattleEnd]);
-
-  const handleCardSelectionForEffect = useCallback((selectedCard: CardInstance) => {
-    if (!selectingCardForEffect) return;
-  
-    const battleState = createBattleState();
-    if (selectingCardForEffect.effect) {
-      selectingCardForEffect.effect(playerTeam[0], enemy, battleState, selectedCard);
-    }
-  
-    playCard(selectingCardForEffect, 'self');
-    setSelectingCardForEffect(null);
-  }, [selectingCardForEffect, playerTeam, enemy, createBattleState]);
 
   const playCard = useCallback((card: CardInstance, target: 'enemy' | 'self') => {
     const battleState = createBattleState();
@@ -359,6 +381,7 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
     handleCardUse,
     selectedCard,
     requiresTarget,
+    tempEnergy,
     handleCardClick,
     unselectCard,
     triggerDiscardAnimation,
