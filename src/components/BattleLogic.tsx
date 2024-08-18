@@ -62,7 +62,6 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
 
   const createCardInstance = (card: CardType): CardInstance => {
     if (!card || !card.id) {
-      console.error('Invalid card instance:', card); // Add this line for debugging
       throw new Error('Card is invalid or missing an id');
     }
     return {
@@ -88,7 +87,6 @@ const BattleLogic: React.FC<BattleLogicProps> = ({ playerTeam, enemy, onBattleEn
       }
       const [newCard, ...remainingDeck] = playerDeck;
       if (!newCard || !newCard.id) {
-        console.error('Invalid card drawn from deck:', newCard); // Add this line for debugging
         continue;
       }
       const newCardInstance = createCardInstance(newCard);
