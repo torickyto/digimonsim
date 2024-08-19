@@ -3,14 +3,17 @@
 // Enums and basic types
 export type DigimonType = 'NULL' | 'DATA' | 'VACCINE' | 'VIRUS';
 export type CardEffectType = 'attack' | 'shield' | 'special';
-export type TargetType = 'self' | 'enemy' | 'all_enemies' | 'random_enemy' | 'all_allies' | 'random_ally' | 'none';
-export type StatusEffectType = 'counter' | 'corruption' | 'bugged' | 'rage';
+export type TargetType = 'self' | 'single_ally' | 'enemy' | 'all_enemies' | 'random_enemy' | 'all_allies' | 'random_ally' | 'none';
+export type StatusEffectType = 'corruption' | 'bugged' | 'taunt';
 export type ComboTrigger = 'attack' | 'shield' | 'special';
 export type ScalingFactor = 'turnNumber' | 'cardsPlayedThisTurn' | 'damageTakenThisTurn' | 'cardsDiscardedThisTurn' | 'corruptionStacks' | 'enemyCorruptionStacks';
 
 // Card-related interfaces
 export interface CardEffect {
-  damage?: number;
+  damage?: {
+    formula: string;
+    target: TargetType;
+  };
   shield?: number;
   heal?: number;
   drawCards?: number;
@@ -68,6 +71,7 @@ export interface CardEffect {
     trigger: ComboTrigger;
     effect: CardEffect;
   };
+  
   scaling?: {
     factor: ScalingFactor;
     effect: (value: number) => Partial<CardEffect>;
@@ -77,6 +81,12 @@ export interface CardEffect {
     effect: CardEffect;
   };
   customEffect?: (state: GameState) => void;
+}
+
+export interface TargetInfo {
+  targetType: TargetType;
+  sourceDigimonIndex: number;
+  targetDigimonIndex?: number;
 }
 
 export interface Card {
@@ -91,6 +101,7 @@ export interface Card {
   requiresCardSelection?: boolean;
   instanceId?: string; // For CardInstance
   createdThisTurn?: boolean;
+  ownerDigimonIndex: number;
 }
 
 // Game state interfaces
@@ -98,6 +109,7 @@ export interface StatusEffect {
   type: StatusEffectType;
   duration: number;
   value?: number;
+  source?: number;
 }
 
 export interface DigimonState {
@@ -113,7 +125,6 @@ export interface DigimonState {
   statusEffects: StatusEffect[];
   evasion: number;
   critChance: number;
-  critDamage: number;
 }
 
 export interface GameState {
@@ -132,6 +143,7 @@ export interface GameState {
   cardsPlayedThisTurn: number;
   damageTakenThisTurn: number;
   cardsDiscardedThisTurn: number;
+  cardsDiscardedThisBattle: number;
   lastPlayedCardType?: CardEffectType;
   temporaryEffects: {
     costModification: CardEffect['modifyCost'][];
@@ -165,7 +177,6 @@ export interface DigimonState {
   // Percentage stats (represented as decimals, e.g., 0.15 for 15%)
   evasion: number;  
   critChance: number;
-  critDamage: number; 
   accuracy: number;
   
   // Resistances (represented as decimals, e.g., 0.3 for 30% resistance)
@@ -188,7 +199,6 @@ export interface DigimonTemplate {
   baseHealing: number;
   baseEvadeChance: number;  
   baseCritChance: number;
-  baseCritDamage: number;
   baseAccuracy: number;
   baseCorruptionResistance: number;
   baseBuggedResistance: number;

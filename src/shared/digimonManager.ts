@@ -1,5 +1,6 @@
 import { Digimon, DigimonTemplate, DigimonState, Card } from '../shared/types';
 import { getStarterDeck, getCardById } from './cardCollection';
+import { DAMAGE_MULTIPLIERS } from '../game/gameConstants';
 
 export function createDigimon(template: DigimonTemplate, level: number = 1): Digimon {
   const digimonState: DigimonState = {
@@ -17,7 +18,6 @@ export function createDigimon(template: DigimonTemplate, level: number = 1): Dig
     
     evasion: template.baseEvadeChance,
     critChance: template.baseCritChance,
-    critDamage: template.baseCritDamage,
     accuracy: template.baseAccuracy,
     
     corruptionResistance: template.baseCorruptionResistance,

@@ -1,151 +1,150 @@
 .digimon-stat-screen {
-  width: 320px;
+  width: 100%;
+  max-width: 800px;
   border-radius: 15px;
-  padding: 10px;
-  color: #32313b;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  padding: 20px;
+  color: #ffffff;
+  background-color: rgba(0, 0, 0, 0.8);
+  font-family: 'Arial', sans-serif;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
 }
 
 .stat-inner {
-  background-color: rgba(255, 255, 255, 0.8);
-  border-radius: 10px;
-  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .stat-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 .digimon-name {
+  font-size: 28px;
   font-weight: bold;
-  font-size: 20px;
-  display: flex;
-  align-items: center;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-.obtained-status {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  margin-right: 8px;
-}
-
-.obtained { background-color: #4CAF50; }
-.not-obtained { background-color: #F44336; }
-
-.digimon-level, .digimon-type {
-  font-size: 14px;
+.digimon-type {
+  font-size: 18px;
+  padding: 5px 15px;
+  border-radius: 20px;
+  color: #000;
   font-weight: bold;
 }
 
 .stat-content {
   display: flex;
-  margin-bottom: 15px;
-  background-color: rgba(255, 255, 255, 0.5);
-  border-radius: 8px;
-  padding: 10px;
+  gap: 30px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 20px;
 }
 
 .digimon-image {
-  width: 96px;
-  height: 96px;
+  width: 200px;
+  height: 200px;
+  background-color: rgba(0, 0, 0, 0.3);
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-right: 15px;
-  border-radius: 8px;
+  border-radius: 10px;
+  overflow: hidden;
 }
 
-.stat-table {
+.stat-details {
   flex-grow: 1;
+  display: flex;
+  gap: 30px;
+}
+
+.stat-column {
+  flex: 1;
 }
 
 .stat-row {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 8px;
-}
-
-.stat-label, .stat-value {
-  font-size: 14px;
+  margin-bottom: 15px;
 }
 
 .stat-label {
-  font-weight: bold;
+  color: #aaa;
+  font-size: 14px;
 }
 
-.digimon-starting-card {
-  background-color: rgba(255, 255, 255, 0.5);
-  padding: 10px;
-  border-radius: 8px;
-}
-
-.ability-label {
-  font-weight: bold;
-  margin-bottom: 5px;
+.stat-value {
   font-size: 16px;
+  font-weight: bold;
 }
 
-/* Card styles */
-.game-card {
-  transition: all 0.3s ease;
-  border: 2px solid transparent;
+.resistance-section,
+.passive-section {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.resistance-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.resistance-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.resistance-label {
+  width: 100px;
+  font-size: 14px;
+}
+
+.bar-container {
+  flex-grow: 1;
+  height: 10px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background-color: #4CAF50;
+  transition: width 0.3s ease;
+}
+
+.resistance-value {
+  width: 50px;
+  text-align: right;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.passive-skill {
+  display: flex;
+  align-items: center;
+  gap: 15px;
   margin-top: 10px;
 }
 
-.card-content {
-  display: flex;
-  align-items: stretch;
-  height: 4rem;
-  background-color: #201f25;
-  border-radius: 5px;
-}
-
-.card-image {
-  width: max-content;
-  height: auto;
-  justify-content: center;
-  align-items: center;
-}
-
-.card-info {
-  flex: 1;
-  padding: 0.5rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.card-name {
-  font-size: 0.9rem;
-  font-weight: bold;
-  color: #f3a787;
-  margin: 0;
-}
-
-.card-description {
-  font-size: .9rem;
-  color: white;
-  margin: 0;
-}
-
-.card-cost {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: white;
+.passive-skill img {
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  margin: auto 5px;
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 5px;
 }
 
-.card-cost[data-type="NULL"] { background-color: #808080; }
-.card-cost[data-type="VACCINE"] { background-color: #f5daa7; }
-.card-cost[data-type="VIRUS"] { background-color: #ca60ae; }
-.card-cost[data-type="DATA"] { background-color: #85daeb; }
+h3 {
+  margin-bottom: 15px;
+  color: #ddd;
+  font-size: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 10px;
+}

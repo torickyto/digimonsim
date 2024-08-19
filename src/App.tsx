@@ -4,7 +4,7 @@ import HomeScreen from './components/HomeScreen';
 import BattleScreen from './components/BattleScreen';
 import { Digimon, DigimonEgg } from './shared/types';
 import { createDigimon } from './shared/digimonManager';
-import { DigimonTemplates } from './shared/DigimonTemplate';
+import { DigimonTemplates } from './data/DigimonTemplate';
 import './App.css';
 
 const App: React.FC = () => {

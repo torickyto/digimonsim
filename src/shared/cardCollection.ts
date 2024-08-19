@@ -1,16 +1,16 @@
-import { CardTemplate, CardEffect, CardType, DigimonType, TargetType } from './types';
+import { Card, CardEffect, CardEffectType, DigimonType, TargetType } from './types';
 
-export const createCard = (
+const createCard = (
   id: string,
   name: string,
-  type: CardType,
+  type: CardEffectType,
   cost: number,
   digimonType: DigimonType,
   description: string,
   target: TargetType,
   effects: CardEffect[],
   requiresCardSelection: boolean = false
-): CardTemplate => ({
+): Card => ({
   id,
   name,
   type,
@@ -22,10 +22,10 @@ export const createCard = (
   requiresCardSelection
 });
 
-export const CardCollection: Record<string, CardTemplate> = {
+export const CardCollection: Record<string, Card> = {
   ATTACK_BASIC: createCard(
     'ATTACK_BASIC',
-    'Attack',
+    'Punch',
     'attack',
     1,
     'NULL',
@@ -37,12 +37,12 @@ export const CardCollection: Record<string, CardTemplate> = {
   BLOCK_BASIC: createCard(
     'BLOCK_BASIC',
     'Block',
-    'block',
+    'shield',
     1,
     'NULL',
     'Gain 5 shield.',
     'self',
-    [{ block: 5 }]
+    [{ shield: 5 }]
   ),
 
   // Impmon 
