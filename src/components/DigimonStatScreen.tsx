@@ -44,7 +44,7 @@ const DigimonStatScreen: React.FC<DigimonStatScreenProps> = ({ digimon, isObtain
             <div className="stat-column">
               <div className="stat-row">
                 <span className="stat-label">Evade</span>
-                <span className="stat-value">{(digimon.evadeChance * 100).toFixed(1)}%</span>
+                <span className="stat-value">{(digimon.evasion * 100).toFixed(1)}%</span>
               </div>
               <div className="stat-row">
                 <span className="stat-label">Accuracy</span>
@@ -53,10 +53,6 @@ const DigimonStatScreen: React.FC<DigimonStatScreenProps> = ({ digimon, isObtain
               <div className="stat-row">
                 <span className="stat-label">Crit Chance</span>
                 <span className="stat-value">{(digimon.critChance * 100).toFixed(1)}%</span>
-              </div>
-              <div className="stat-row">
-                <span className="stat-label">Crit Damage</span>
-                <span className="stat-value">{(digimon.critDamage * 100).toFixed(1)}%</span>
               </div>
             </div>
           </div>

@@ -1,303 +1,202 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Layers, Trash2 } from 'lucide-react';
-import { Digimon, CardType, CardInstance } from '../shared/types';
+// BattleScreen.tsx
+
+import React, { useState, useEffect, useRef } from 'react';
+import { GameState, Card, Digimon, BattleAction } from '../shared/types';
+import { initializeBattle, startPlayerTurn, playCard, endPlayerTurn, executeEnemyTurn, checkBattleEnd } from '../game/battle';
 import DigimonSprite from './DigimonSprite';
-import Card from './Card';
-import BattleLogic from './BattleLogic';
+import CompactCard from './CompactCard';
 import './BattleScreen.css';
+import './BattleScreenAnimations.css';
 
 interface BattleScreenProps {
   playerTeam: Digimon[];
-  enemy: Digimon;
-  onBattleEnd: (playerWon: boolean) => void;
+  enemyTeam: Digimon[];
+  onBattleEnd: (result: 'win' | 'lose') => void;
 }
 
-const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemy, onBattleEnd }) => {
-  const [hoveredCard, setHoveredCard] = useState<CardType | null>(null);
-  const [showDiscardTooltip, setShowDiscardTooltip] = useState(false);
-  const [arrowStart, setArrowStart] = useState<{ x: number; y: number } | null>(null);
-  const [arrowEnd, setArrowEnd] = useState<{ x: number; y: number } | null>(null);
-  const [showDeckModal, setShowDeckModal] = useState(false);
-  const [showDiscardModal, setShowDiscardModal] = useState(false);
-  const [isDiscardAnimationPlaying, setIsDiscardAnimationPlaying] = useState(false);
-  const [cardsBeingDiscarded, setCardsBeingDiscarded] = useState<CardInstance[]>([]);
-  const [cardToDiscard, setCardToDiscard] = useState<CardInstance | null>(null);
-  const battleAreaRef = useRef<HTMLDivElement>(null);
-  const cardSidebarRef = useRef<HTMLDivElement>(null);
-  const unselectCardRef = useRef<() => void>(() => {});
+const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBattleEnd }) => {
+  const [gameState, setGameState] = useState<GameState>(() => initializeBattle(playerTeam, enemyTeam));
+  const [selectedCard, setSelectedCard] = useState<Card | null>(null);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const animationQueue = useRef<BattleAction[]>([]);
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        unselectCardRef.current();
-      }
-    };
+    processAnimations();
+  }, [gameState]);
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+  const processAnimations = async () => {
+    if (isAnimating || animationQueue.current.length === 0) return;
+
+    setIsAnimating(true);
+    const action = animationQueue.current.shift()!;
+    await animateAction(action);
+    setIsAnimating(false);
+    processAnimations();
+  };
+
+  useEffect(() => {
+    setGameState(startPlayerTurn(gameState));
   }, []);
 
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (arrowStart && battleAreaRef.current && cardSidebarRef.current) {
-        const battleRect = battleAreaRef.current.getBoundingClientRect();
-        const sidebarRect = cardSidebarRef.current.getBoundingClientRect();
-        setArrowEnd({
-          x: e.clientX - battleRect.left,
-          y: e.clientY - battleRect.top,
-        });
-      }
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [arrowStart]);
-
-  const handleDiscardButtonClick = useCallback((handleDiscard: () => void, playerHand: CardInstance[]) => {
-    if (!isDiscardAnimationPlaying && playerHand.length > 0) {
-      const cardToDiscard = playerHand[0];
-      setCardsBeingDiscarded([cardToDiscard]);
-      setIsDiscardAnimationPlaying(true);
-      
-      setTimeout(() => {
-        handleDiscard();
-        setCardsBeingDiscarded([]);
-        setIsDiscardAnimationPlaying(false);
-      }, 1000);
+  const animateAction = async (action: BattleAction) => {
+    switch (action.type) {
+      case 'DRAW_CARD':
+        await animateCardDraw(action.card);
+        break;
+      case 'BURN_CARD':
+        await animateCardBurn(action.card);
+        break;
+      case 'SHUFFLE_DISCARD_TO_DECK':
+        await animateShuffleDiscardToDeck();
+        break;
+      // ... handle other action types
     }
-  }, [isDiscardAnimationPlaying]);
+  };
+
+  const animateCardDraw = async (card: Card) => {
+    const cardElement = document.createElement('div');
+    cardElement.classList.add('card-animation', 'draw');
+    cardElement.style.backgroundImage = `url('/assets/cards/${card.id}.png')`;
+    document.querySelector('.battle-screen')?.appendChild(cardElement);
+
+    await new Promise(resolve => setTimeout(resolve, 500)); // Duration of the animation
+
+    cardElement.remove();
+    // Update the UI to show the new card in the player's hand
+    setGameState(prevState => ({
+      ...prevState,
+      player: {
+        ...prevState.player,
+        hand: [...prevState.player.hand, card]
+      }
+    }));
+  };
+
+   const animateCardBurn = async (card: Card) => {
+    const cardElement = document.createElement('div');
+    cardElement.classList.add('card-animation', 'burn');
+    cardElement.style.backgroundImage = `url('/assets/cards/${card.id}.png')`;
+    document.querySelector('.battle-screen')?.appendChild(cardElement);
+
+    await new Promise(resolve => setTimeout(resolve, 1000)); // Duration of the animation
+
+    cardElement.remove();
+    // Update the UI to show the card has been discarded
+    setGameState(prevState => ({
+      ...prevState,
+      player: {
+        ...prevState.player,
+        discardPile: [...prevState.player.discardPile, card]
+      }
+    }));
+  };
+
+  const animateShuffleDiscardToDeck = async () => {
+    const discardPile = document.querySelector('.discard-pile');
+    const deck = document.querySelector('.deck');
+
+    if (discardPile && deck) {
+      discardPile.classList.add('shuffle');
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Duration of the shuffle animation
+      discardPile.classList.remove('shuffle');
+    }
+
+    // Update the game state to reflect the shuffle
+    setGameState(prevState => ({
+      ...prevState,
+      player: {
+        ...prevState.player,
+        deck: [...prevState.player.deck, ...prevState.player.discardPile],
+        discardPile: []
+      }
+    }));
+  };
+
+  const handleCardClick = (card: Card) => {
+    if (gameState.player.energy >= card.cost) {
+      setSelectedCard(card);
+    }
+  };
+
+  const handleCardPlay = (targetIndex: number) => {
+    if (selectedCard) {
+      const updatedState = playCard(gameState, gameState.player.hand.indexOf(selectedCard), { targetType: selectedCard.target, sourceDigimonIndex: 0, targetDigimonIndex: targetIndex });
+      setGameState(updatedState);
+      setSelectedCard(null);
+    }
+  };
+
+  const handleEndTurn = () => {
+    let updatedState = endPlayerTurn(gameState);
+    updatedState = executeEnemyTurn(updatedState);
+    const battleResult = checkBattleEnd(updatedState);
+    
+    if (battleResult === 'ongoing') {
+      updatedState = startPlayerTurn(updatedState);
+      setGameState(updatedState);
+    } else {
+      onBattleEnd(battleResult === 'player_win' ? 'win' : 'lose');
+    }
+  };
+
+  const handleDiscard = () => {
+    if (gameState.player.hand.length > 0) {
+      const updatedState = { ...gameState };
+      const discardedCard = updatedState.player.hand.pop()!;
+      updatedState.player.discardPile.push(discardedCard);
+      setGameState(updatedState);
+    }
+  };
 
   return (
-    <BattleLogic playerTeam={playerTeam} enemy={enemy} onBattleEnd={onBattleEnd}>
-      {({
-        turn,
-        playerEnergy,
-        playerHand,
-        playerDeck,
-        playerDiscardPile,
-        selectedCardInstanceId,
-        enemyHp,
-        enemyBlock,
-        enemy,
-        playerTeamHp,
-        playerTeamBlock,
-        selectingCardToDiscard,
-        selectingCardForEffect,
-        selectedCard,
-        requiresTarget,
-        tempEnergy,
-        isDrawingCards,
-        cardsBeingDrawn,
-        handleCardClick,
-        handleCardSelection,
-        handleCardUse,
-        handleDiscard,
-        endTurn,
-        unselectCard,
-        triggerDiscardAnimation,
-        handleCardEffect
-      }) => {
-        unselectCardRef.current = unselectCard;
-
-        const handleOutsideClick = (e: React.MouseEvent) => {
-          if (selectedCard && !cardSidebarRef.current?.contains(e.target as Node)) {
-            unselectCard();
-          }
-        };
-
-        const isAttackSelected = selectedCard !== null && 
-          (selectedCard.type === 'attack' || (selectedCard.type === 'special' && selectedCard.requiresTarget !== false));
-
-        const handleCardAction = (card: CardInstance) => {
-          if (selectingCardForEffect) {
-            handleCardSelection(card);
-          } else if (selectedCard?.instanceId === card.instanceId) {
-            if (card.requiresTarget === false) {
-              handleCardUse('self');
-            } else if (card.requiresTarget === true) {
-              // Do nothing, wait for target selection
-            } else {
-              handleCardUse('self');
-            }
-          } else {
-            handleCardClick(card);
-          }
-        };
-
-        return (
-          <div className="battle-screen" onClick={handleOutsideClick}>
-            <div className="top-bar">
-              <div className="turn-display">TURN {turn}</div>
-              <div className="tutorial-mode">TESTING AREA</div>
-            </div>
-
-            <div className="main-content">
-              <div className="card-sidebar" ref={cardSidebarRef}>
-                <div className="action-buttons">
-                  <button onClick={endTurn} className="end-turn-button">END TURN</button>
-                  <div className="discard-button-container">
-                    <button 
-                      onClick={() => handleDiscardButtonClick(handleDiscard, playerHand)}
-                      className="discard-button"
-                      disabled={isDiscardAnimationPlaying || playerHand.length === 0}
-                    >
-                      DISCARD
-                    </button>
-                    {showDiscardTooltip && (
-                      <div className="discard-tooltip">
-                        Discard the top card from your hand
-                      </div>
-                    )}
-                  </div>
-                  <div className="deck-count" onClick={() => setShowDeckModal(true)}>
-                    <Layers className="deck-icon" />
-                    <span>{playerDeck.length}</span>
-                  </div>
-                  <div className="discard-count" onClick={() => setShowDiscardModal(true)}>
-                    <Trash2 className="discard-icon" />
-                    <span>{playerDiscardPile.length}</span>
-                  </div>
-                </div>
-                <div className="energy-gauge">
-                  Energy {playerEnergy}
-                  <div className="energy-stars">
-                    {[...Array(10)].map((_, i) => (
-                      <span key={i} className={`energy-star ${i < playerEnergy ? 'active' : ''}`}>★</span>
-                    ))}
-                  </div>
-                </div>
-                <div className="card-list">
-                  {playerHand.map((card: CardInstance, index: number) => (
-                    <Card
-                      key={card.instanceId}
-                      card={card}
-                      onClick={() => handleCardAction(card)}
-                      isSelected={selectedCard?.instanceId === card.instanceId}
-                      onMouseEnter={() => setHoveredCard(card)}
-                      onMouseLeave={() => setHoveredCard(null)}
-                      disabled={(tempEnergy !== null ? tempEnergy : playerEnergy) < card.cost && !selectingCardForEffect}
-                      isBeingDiscarded={cardsBeingDiscarded.includes(card)}
-                      isTopCard={index === 0 && showDiscardTooltip}
-                    />
-                  ))}
-                </div>
-                {selectingCardToDiscard && (
-                  <div className="overlay">
-                    <div className="message">Select a card to discard</div>
-                  </div>
-                )}
-                {isDrawingCards && (
-                  <div className="card-draw-animation-container">
-                    {cardsBeingDrawn.map((card, index) => (
-                      <Card
-                        key={`drawing-${card.instanceId}`}
-                        card={card}
-                        isDrawing={true}
-                        drawIndex={index}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-              <div className="battle-area" ref={battleAreaRef}>
-                <div className="battle-background">
-                  <div 
-                    className={`enemy enemy-left ${isAttackSelected ? 'attackable' : ''}`}
-                    onClick={() => isAttackSelected && handleCardUse('enemy')}
-                  >
-                    <DigimonSprite name={enemy.name} />
-                    <div className="enemy-info">
-                      <div className="enemy-name">{enemy.displayName}</div>
-                      <div className="health-bar">
-                        <div className="health-fill" style={{ width: `${(enemyHp / enemy.maxHp) * 100}%` }}></div>
-                        <div className="health-text">{enemyHp}/{enemy.maxHp}</div>
-                      </div>
-                      {enemyBlock > 0 && <div className="block-indicator">Shield: {enemyBlock}</div>}
-                    </div>
-                  </div>
-                  {arrowStart && arrowEnd && (
-                    <svg className="targeting-arrow" style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      height: '100%',
-                      pointerEvents: 'none',
-                    }}>
-                      <line
-                        x1={arrowStart.x}
-                        y1={arrowStart.y}
-                        x2={arrowEnd.x}
-                        y2={arrowEnd.y}
-                        stroke="red"
-                        strokeWidth="2"
-                      />
-                    </svg>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="player-party">
-              {playerTeam.map((digimon, index) => (
-                <div key={digimon.id} className="party-member" onClick={() => handleCardUse('self')}>
-                  <DigimonSprite name={digimon.name} />
-                  <div className="digimon-info">
-                    <div className="digimon-name">{digimon.displayName}</div>
-                    <div className="health-bar">
-                      <div 
-                        className="health-fill" 
-                        style={{ width: `${(playerTeamHp[index] / digimon.maxHp) * 100}%` }}
-                      ></div>
-                      <div className="health-text">
-                        {playerTeamHp[index]}/{digimon.maxHp}
-                      </div>
-                    </div>
-                    {playerTeamBlock[index] > 0 && <div className="block-indicator">Shield: {playerTeamBlock[index]}</div>}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {showDeckModal && (
-              <DeckModal 
-                cards={playerDeck} 
-                onClose={() => setShowDeckModal(false)} 
-                title="Your Deck" 
-              />
-            )}
-
-            {showDiscardModal && (
-              <DeckModal 
-                cards={playerDiscardPile} 
-                onClose={() => setShowDiscardModal(false)} 
-                title="Discard Pile" 
-              />
-            )}
-          </div>
-        );
-      }}
-    </BattleLogic>
-  );
-};
-
-interface DeckModalProps {
-  cards: CardType[];
-  onClose: () => void;
-  title: string;
-}
-
-const DeckModal: React.FC<DeckModalProps> = ({ cards, onClose, title }) => {
-  return (
-    <div className="deck-modal">
-      <div className="modal-content">
-        <h2>{title}</h2>
-        <div className="card-grid">
-          {cards.map((card, index) => (
-            <Card key={index} card={card} isCompact={true} />
+    <div className="battle-screen">
+      <div className="battle-background"></div>
+      <div className="top-bar">
+        <button className="discard-button" onClick={handleDiscard}>Discard</button>
+        <div className="deck-info">
+          <span>Deck: {gameState.player.deck.length}</span>
+          <span>Discard: {gameState.player.discardPile.length}</span>
+        </div>
+        <button className="end-turn-button" onClick={handleEndTurn}>End Turn</button>
+      </div>
+      
+      <div className="battle-area">
+        <div className="enemy-digimon">
+          <DigimonSprite name={gameState.enemy.digimon[0].name} />
+        </div>
+        <div className="player-digimon">
+          {playerTeam.map((digimon, index) => (
+            <DigimonSprite key={index} name={digimon.name} />
           ))}
         </div>
-        <button className="close-button" onClick={onClose}>Close</button>
+      </div>
+
+      <div className="deck"></div>
+      <div className="discard-pile"></div>
+      
+      <div className="hand-area">
+        {gameState.player.hand.map((card, index) => (
+          <CompactCard 
+            key={index} 
+            card={card} 
+            onClick={() => handleCardClick(card)}
+            isSelected={selectedCard === card}
+            disabled={gameState.player.energy < card.cost}
+          />
+        ))}
+      </div>
+      
+      <div className="bottom-bar">
+        {playerTeam.map((digimon, index) => (
+          <div key={index} className="digimon-info">
+            <img src={`/assets/images/${digimon.name}-icon.png`} alt={digimon.displayName} />
+            <span>{digimon.displayName}</span>
+            <span>{digimon.hp}/{digimon.maxHp}</span>
+            <div className="hp-bar">
+              <div className="hp-fill" style={{width: `${(digimon.hp / digimon.maxHp) * 100}%`}}></div>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

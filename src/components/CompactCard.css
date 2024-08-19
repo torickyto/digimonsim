@@ -1,0 +1,46 @@
+.compact-card {
+    width: 200px;
+    height: 60px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    padding: 5px;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  
+  .compact-card:hover {
+    transform: translateX(5px);
+  }
+  
+  .compact-card.selected {
+    border: 2px solid #ff5dcc;
+  }
+  
+  .compact-card.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .compact-card img {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+    margin-right: 10px;
+  }
+  
+  .card-info {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .card-name {
+    font-size: 14px;
+    color: white;
+  }
+  
+  .card-cost {
+    font-size: 12px;
+    color: #ffcc00;
+  }

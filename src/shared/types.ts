@@ -92,6 +92,17 @@ export interface CardEffect {
   customEffect?: (state: GameState) => void;
 }
 
+export type BattleAction =
+  | { type: 'DRAW_CARD'; card: Card }
+  | { type: 'BURN_CARD'; card: Card }
+  | { type: 'SHUFFLE_DISCARD_TO_DECK' }
+  | { type: 'START_PLAYER_TURN' }
+  | { type: 'PLAY_CARD'; card: Card; targetInfo: TargetInfo }
+  | { type: 'END_PLAYER_TURN' }
+  | { type: 'ENEMY_ACTION' }
+  | { type: 'APPLY_DAMAGE'; target: TargetInfo; damage: number; newHp: number }
+  | { type: 'DISCARD_CARD'; card: Card };
+
 export interface TargetInfo {
   targetType: TargetType;
   sourceDigimonIndex: number;
@@ -148,6 +159,7 @@ export interface GameState {
   enemy: {
     digimon: DigimonState[];
   };
+  actionQueue: BattleAction[];
   turn: number;
   phase: 'player' | 'enemy';
   cardsPlayedThisTurn: number;

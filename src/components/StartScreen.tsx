@@ -1,111 +1,82 @@
 import React, { useState } from 'react';
-import DigimonSprite from './DigimonSprite';
-import DigimonStatScreen from './DigimonStatScreen';
-import WeaknessTriangle from './WeaknessTriangle';
+import { Digimon, DigimonTemplate } from '../shared/types';
 import { createDigimon } from '../shared/digimonManager';
-import { Digimon, DigimonType, CardType, BattleState, TYPE_COLORS } from '../shared/types';
-import { CardCollection } from '../shared/cardCollection';
+import { DigimonTemplates } from '../data/DigimonTemplate';
+import DigimonSprite from './DigimonSprite';
+import WeaknessTriangle from './WeaknessTriangle';
 import './StartScreen.css';
 
-const STARTER_DIGIMON: Omit<Digimon, 'id' | 'deck'>[] = [
-  { 
-    name: 'agumon',
-    displayName: 'Agumon',
-    type: 'DATA',
-    hp: 50,
-    maxHp: 50,
-    block: 0,
-    level: 1,
-    exp: 0,
-    baseHp: 50,
-    startingCard: CardCollection.PEPPER_BREATH
-  },
-  { 
-    name: 'gabumon',
-    displayName: 'Gabumon',
-    type: 'VACCINE',
-    hp: 45,
-    maxHp: 45,
-    block: 0,
-    level: 1,
-    exp: 0,
-    baseHp: 45,
-    startingCard: CardCollection.BLUE_BLASTER
-  },
-  { 
-    name: 'impmon',
-    displayName: 'Impmon',
-    type: 'VIRUS',
-    hp: 40,
-    maxHp: 40,
-    block: 0,
-    level: 1,
-    exp: 0,
-    baseHp: 40,
-    startingCard: CardCollection.BADA_BOOM
-  },
-];
+const STARTER_DIGIMON: string[] = ['agumon', 'gabumon', 'impmon'];
 
 interface StartScreenProps {
-  onChooseDigimon: (digimon: Digimon) => void;
+  onStartGame: (party: Digimon[]) => void;
 }
 
-const StartScreen: React.FC<StartScreenProps> = ({ onChooseDigimon }) => {
-  const [selectedDigimon, setSelectedDigimon] = useState<Omit<Digimon, 'id' | 'deck'> | null>(null);
+const StartScreen: React.FC<StartScreenProps> = ({ onStartGame }) => {
+  const [party, setParty] = useState<Digimon[]>([]);
 
-  const handleChooseDigimon = (template: Omit<Digimon, 'id' | 'deck'>) => {
-    const newDigimon = createDigimon(
-      template.name,
-      template.type,
-      template.baseHp,
-      template.startingCard
-    );
-    onChooseDigimon(newDigimon);
+  const addToParty = (templateName: string) => {
+    if (party.length < 3) {
+      const template = DigimonTemplates[templateName];
+      if (template) {
+        const newDigimon = createDigimon(template);
+        setParty([...party, newDigimon]);
+      }
+    }
   };
 
-  const openStatsModal = (digimon: Omit<Digimon, 'id' | 'deck'>) => {
-    setSelectedDigimon(digimon);
+  const removeFromParty = (digimon: Digimon) => {
+    setParty(party.filter(d => d.id !== digimon.id));
   };
 
-  const closeStatsModal = () => {
-    setSelectedDigimon(null);
+  const startGame = () => {
+    if (party.length > 0) {
+      onStartGame(party);
+    } else {
+      alert("Please select at least one Digimon for your party.");
+    }
   };
 
   return (
     <div className="start-screen">
-      <h1>Choose Your Partner</h1>
+      <h1>Choose Your Digimon Party</h1>
+      
       <div className="digimon-selection">
-      {STARTER_DIGIMON.map((digimon, index) => (
-        <div 
-          key={index} 
-          className="digimon-option"
-          style={{ backgroundColor: TYPE_COLORS[digimon.type] }}
-        >
-            <div className="spotlight">
-              <DigimonSprite name={digimon.name} />
+        {STARTER_DIGIMON.map((digimonName) => {
+          const template = DigimonTemplates[digimonName];
+          return (
+            <div key={digimonName} className="digimon-option">
+              <DigimonSprite name={digimonName} />
+              <h3>{template.displayName}</h3>
+              <p>Type: {template.type}</p>
+              <p>HP: {template.baseHp}</p>
+              <p>Starting Card: {template.startingCard.name}</p>
+              <button onClick={() => addToParty(digimonName)} disabled={party.length >= 3}>
+                Add to Party
+              </button>
             </div>
-            <div className="info-box">
-              <h2>{digimon.displayName}</h2>
-              <p>{digimon.type}</p>
-            </div>
-            <div className="button-container">
-            <button className="view-stats-button" onClick={() => setSelectedDigimon(digimon)}>View Stats</button>
-            <button className="select-digimon-button" onClick={() => handleChooseDigimon(digimon)}>Select</button>
-          </div>
-        </div>
-      ))}
+          );
+        })}
       </div>
 
-      <WeaknessTriangle />
-
-      {selectedDigimon && (
-        <div className="stats-modal">
-          <div className="stats-content">
-            <DigimonStatScreen digimon={{...selectedDigimon, id: 0, deck: []}} isObtained={false} />
-            <button className="view-stats-button" onClick={closeStatsModal}>Close</button>
+      <h2>Your Party ({party.length}/3)</h2>
+      <div className="party-selection">
+        {party.map((digimon) => (
+          <div key={digimon.id} className="party-member">
+            <DigimonSprite name={digimon.name} />
+            <h3>{digimon.displayName}</h3>
+            <p>Type: {digimon.type}</p>
+            <p>HP: {digimon.hp}/{digimon.maxHp}</p>
+            <button onClick={() => removeFromParty(digimon)}>Remove</button>
           </div>
-        </div>
-      )}
+        ))}
+      </div>
+
+      <button className="start-game-button" onClick={startGame} disabled={party.length === 0}>
+        Start Game
+      </button>
+
+      <WeaknessTriangle />
     </div>
   );
 };

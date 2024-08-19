@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import DigimonSprite from './DigimonSprite';
 import DigimonStatScreen from './DigimonStatScreen';
 import CardDex from './CardDex'; 
-import TestArena from './TestArena';
-import { Digimon, DigimonEgg, CardType } from '../shared/types';
+import { Digimon, DigimonEgg } from '../shared/types';
 import { CardCollection as AllCards } from '../shared/cardCollection';  // Import all cards
 import './HomeScreen.css';
 
@@ -25,10 +24,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
   const toggleEggs = () => setShowEggs(!showEggs);
   const toggleCardCollection = () => setShowCardCollection(!showCardCollection);
   const toggleTestArena = () => setShowTestArena(!showTestArena);
-
-  if (showTestArena) {
-    return <TestArena />;
-  }
 
   return (
     <div className="home-screen">

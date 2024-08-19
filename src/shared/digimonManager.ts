@@ -2,6 +2,9 @@ import { Digimon, DigimonTemplate, DigimonState, Card } from '../shared/types';
 import { getStarterDeck, getCardById } from './cardCollection';
 import { DAMAGE_MULTIPLIERS } from '../game/gameConstants';
 
+
+
+
 export function createDigimon(template: DigimonTemplate, level: number = 1): Digimon {
   const digimonState: DigimonState = {
     id: Date.now(),

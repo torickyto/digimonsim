@@ -1,20 +1,22 @@
-import { Digimon, GameState, Card, TargetInfo, DigimonState } from '../shared/types';
+// battle.ts
+
+import { Digimon, GameState, Card, BattleAction, TargetInfo } from '../shared/types';
+import { STARTING_ENERGY, MAX_HAND_SIZE, CARDS_DRAWN_PER_TURN, MAX_ENERGY } from './gameConstants';
 import { calculateDamage } from '../shared/damageCalculations';
 import { applyStatusEffects } from './statusEffects';
-import { STARTING_ENERGY, CARDS_DRAWN_PER_TURN, MAX_ENERGY } from './gameConstants';
 import { resolveCardEffects } from './cardEffects';
 
-export const initializeBattle = (playerDigimon: Digimon, enemyDigimon: Digimon): GameState => {
-  return {
+export const initializeBattle = (playerTeam: Digimon[], enemyTeam: Digimon[]): GameState => {
+  const initialState: GameState = {
     player: {
-      digimon: [playerDigimon],
+      digimon: playerTeam,
       hand: [],
-      deck: [...playerDigimon.deck],
+      deck: playerTeam.flatMap(digimon => digimon.deck),
       discardPile: [],
       energy: STARTING_ENERGY,
     },
     enemy: {
-      digimon: [enemyDigimon],
+      digimon: enemyTeam,
     },
     turn: 1,
     phase: 'player',
@@ -27,90 +29,134 @@ export const initializeBattle = (playerDigimon: Digimon, enemyDigimon: Digimon):
       statMultipliers: [],
       burstCards: [],
     },
+    actionQueue: [],
   };
+
+  initialState.player.deck = shuffleDeck(initialState.player.deck);
+
+  return drawInitialHand(initialState);
+};
+
+const shuffleDeck = (deck: Card[]): Card[] => {
+  for (let i = deck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+  return deck;
+};
+
+const drawInitialHand = (gameState: GameState): GameState => {
+  const cardsToDraw = Math.min(gameState.player.digimon.length + 2, 5);
+  let updatedState = { ...gameState };
+
+  for (let i = 0; i < cardsToDraw; i++) {
+    updatedState = drawSingleCard(updatedState);
+  }
+
+  return updatedState;
+};
+
+const drawSingleCard = (gameState: GameState): GameState => {
+  if (gameState.player.deck.length === 0) {
+    gameState.player.deck = shuffleDeck([...gameState.player.discardPile]);
+    gameState.player.discardPile = [];
+    gameState.actionQueue.push({ type: 'SHUFFLE_DISCARD_TO_DECK' });
+  }
+
+  if (gameState.player.deck.length > 0) {
+    const drawnCard = gameState.player.deck.pop()!;
+
+    if (gameState.player.hand.length < MAX_HAND_SIZE) {
+      gameState.player.hand.push(drawnCard);
+      gameState.actionQueue.push({ type: 'DRAW_CARD', card: drawnCard });
+    } else {
+      gameState.player.discardPile.push(drawnCard);
+      gameState.cardsDiscardedThisBattle++;
+      gameState.actionQueue.push({ type: 'BURN_CARD', card: drawnCard });
+    }
+  }
+
+  return { ...gameState };
 };
 
 export const startPlayerTurn = (gameState: GameState): GameState => {
-    let updatedState = { ...gameState };
-    updatedState.player.energy = Math.min(gameState.turn, MAX_ENERGY);
-    updatedState = drawCards(updatedState, CARDS_DRAWN_PER_TURN);
-    
-    // Apply status effects to the player's Digimon
-    const playerDigimon = updatedState.player.digimon[0] as Digimon;
-    const updatedDigimonState = applyStatusEffects(playerDigimon);
-    
-    // Reconstruct the Digimon object with the updated state
-    updatedState.player.digimon[0] = {
-      ...playerDigimon,
-      ...updatedDigimonState
-    };
+  let updatedState = { ...gameState };
+  updatedState.player.energy = Math.min(gameState.turn, MAX_ENERGY);
+  updatedState = drawCards(updatedState, CARDS_DRAWN_PER_TURN);
   
-    updatedState.cardsPlayedThisTurn = 0;
-    updatedState.damageTakenThisTurn = 0;
-    updatedState.cardsDiscardedThisTurn = 0;
-    return updatedState;
+  const playerDigimon = updatedState.player.digimon[0];
+  const updatedDigimonState = applyStatusEffects(playerDigimon);
+  
+  updatedState.player.digimon[0] = {
+    ...playerDigimon,
+    ...updatedDigimonState
   };
 
-  export const playCard = (gameState: GameState, cardIndex: number, targetInfo: TargetInfo): GameState => {
-    const card = gameState.player.hand[cardIndex];
-    if (!card) {
-      throw new Error('Invalid card index');
-    }
-  
-    const updatedHand = gameState.player.hand.filter((_, index) => index !== cardIndex);
-  
-    // Apply card effects
-    let updatedState = resolveCardEffects(card, { ...gameState, player: { ...gameState.player, hand: updatedHand } }, targetInfo);
-  
-    updatedState = {
-      ...updatedState,
-      player: {
-        ...updatedState.player,
-        discardPile: [...updatedState.player.discardPile, card]
-      },
-      cardsPlayedThisTurn: updatedState.cardsPlayedThisTurn + 1
-    };
-  
-    return updatedState;
+  updatedState.cardsPlayedThisTurn = 0;
+  updatedState.damageTakenThisTurn = 0;
+  updatedState.cardsDiscardedThisTurn = 0;
+
+  updatedState.actionQueue.push({ type: 'START_PLAYER_TURN' });
+
+  return updatedState;
+};
+
+export const playCard = (gameState: GameState, cardIndex: number, targetInfo: TargetInfo): GameState => {
+  const card = gameState.player.hand[cardIndex];
+  if (!card) {
+    throw new Error('Invalid card index');
   }
 
+  const updatedHand = gameState.player.hand.filter((_, index) => index !== cardIndex);
+
+  let updatedState = resolveCardEffects(card, { ...gameState, player: { ...gameState.player, hand: updatedHand } }, targetInfo);
+
+  updatedState = {
+    ...updatedState,
+    player: {
+      ...updatedState.player,
+      discardPile: [...updatedState.player.discardPile, card]
+    },
+    cardsPlayedThisTurn: updatedState.cardsPlayedThisTurn + 1
+  };
+
+  updatedState.actionQueue.push({ type: 'PLAY_CARD', card, targetInfo });
+
+  return updatedState;
+};
+
 export const endPlayerTurn = (gameState: GameState): GameState => {
-  // Implement end of turn logic
-  return {
+  const updatedState: GameState = {
     ...gameState,
     phase: 'enemy',
   };
+
+  updatedState.actionQueue.push({ type: 'END_PLAYER_TURN' });
+
+  return updatedState;
 };
 
 export const executeEnemyTurn = (gameState: GameState): GameState => {
   // Implement enemy AI and turn execution
-  return gameState;
+  const updatedState = { ...gameState };
+
+  // Placeholder for enemy actions
+  updatedState.actionQueue.push({ type: 'ENEMY_ACTION' });
+
+  return updatedState;
 };
 
 const drawCards = (gameState: GameState, amount: number): GameState => {
-  const newHand = [...gameState.player.hand];
-  const newDeck = [...gameState.player.deck];
+  let updatedState = { ...gameState };
 
   for (let i = 0; i < amount; i++) {
-    if (newDeck.length > 0) {
-      const drawnCard = newDeck.pop();
-      if (drawnCard) {
-        newHand.push(drawnCard);
-      }
-    }
+    updatedState = drawSingleCard(updatedState);
   }
 
-  return {
-    ...gameState,
-    player: {
-      ...gameState.player,
-      hand: newHand,
-      deck: newDeck,
-    },
-  };
+  return updatedState;
 };
 
-export function applyDamage(damage: number, target: DigimonState, gameState: GameState, targetInfo: TargetInfo): GameState {
+export const applyDamage = (damage: number, target: Digimon, gameState: GameState, targetInfo: TargetInfo): GameState => {
   const updatedState = { ...gameState };
   const isPlayerDigimon = updatedState.player.digimon.includes(target);
   const digimonList = isPlayerDigimon ? updatedState.player.digimon : updatedState.enemy.digimon;
@@ -120,9 +166,10 @@ export function applyDamage(damage: number, target: DigimonState, gameState: Gam
     throw new Error('Target Digimon not found');
   }
 
+  const updatedHp = Math.max(0, digimonList[targetIndex].hp - damage);
   digimonList[targetIndex] = {
     ...digimonList[targetIndex],
-    hp: Math.max(0, digimonList[targetIndex].hp - damage)
+    hp: updatedHp
   };
 
   if (isPlayerDigimon) {
@@ -131,23 +178,42 @@ export function applyDamage(damage: number, target: DigimonState, gameState: Gam
     updatedState.enemy.digimon = digimonList;
   }
 
+  updatedState.actionQueue.push({ 
+    type: 'APPLY_DAMAGE', 
+    target: targetInfo, 
+    damage, 
+    newHp: updatedHp 
+  });
+
   return updatedState;
-}
+};
 
 export const checkBattleEnd = (gameState: GameState): 'ongoing' | 'player_win' | 'enemy_win' => {
-  if (gameState.player.digimon[0].hp <= 0) {
+  if (gameState.player.digimon.every(d => d.hp <= 0)) {
     return 'enemy_win';
-  } else if (gameState.enemy.digimon[0].hp <= 0) {
+  } else if (gameState.enemy.digimon.every(d => d.hp <= 0)) {
     return 'player_win';
   }
   return 'ongoing';
 };
 
-export const calculateDamageWithCrit = (attacker: DigimonState, baseDamage: number): number => {
+export const calculateDamageWithCrit = (attacker: Digimon, baseDamage: number): number => {
   const isCritical = Math.random() < attacker.critChance;
   const critMultiplier = isCritical ? 1.5 : 1; 
   
   return Math.round(baseDamage * critMultiplier);
 };
 
-// more battle-related functions as needed
+export const discardCard = (gameState: GameState, cardIndex: number): GameState => {
+  const updatedState = { ...gameState };
+  if (cardIndex >= 0 && cardIndex < updatedState.player.hand.length) {
+    const discardedCard = updatedState.player.hand.splice(cardIndex, 1)[0];
+    updatedState.player.discardPile.push(discardedCard);
+    updatedState.cardsDiscardedThisTurn++;
+    updatedState.cardsDiscardedThisBattle++;
+    updatedState.actionQueue.push({ type: 'DISCARD_CARD', card: discardedCard });
+  }
+  return updatedState;
+};
+
+// Add more battle-related functions as needed
