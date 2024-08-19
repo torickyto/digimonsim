@@ -3,22 +3,29 @@
 // Enums and basic types
 export type DigimonType = 'NULL' | 'DATA' | 'VACCINE' | 'VIRUS';
 export type CardEffectType = 'attack' | 'shield' | 'special';
-export type TargetType = 'self' | 'single_ally' | 'enemy' | 'all_enemies' | 'random_enemy' | 'all_allies' | 'random_ally' | 'none';
+export type TargetType = 'self' | 'single_ally' | 'enemy' | 'all_enemies' | 'random_enemy' | 'all_allies' | 'random_ally' | 'none'| 'all';
 export type StatusEffectType = 'corruption' | 'bugged' | 'taunt';
 export type ComboTrigger = 'attack' | 'shield' | 'special';
-export type ScalingFactor = 'turnNumber' | 'cardsPlayedThisTurn' | 'damageTakenThisTurn' | 'cardsDiscardedThisTurn' | 'corruptionStacks' | 'enemyCorruptionStacks';
+export type StatType = 'attack' | 'defense' | 'speed' | 'evasion' | 'critChance' | 'critDamage';
+export type ScalingFactor = 'enemiesHit' | 'drawnCardsCost' | 'turnNumber' | 'cardsPlayedThisTurn' | 'damageTakenThisTurn' | 'cardsDiscardedThisTurn' | 'cardsDiscardedThisBattle' | 'userShield' | 'corruptionStacks' | 'enemyCorruptionStacks' | 'discardedCardCount';
+export type DamageFormulaKey = 'LIGHT' | 'LIGHT2' | 'WEAK' | 'WEAK2' | 'BASIC' | 'BASIC2' | 'STRONG' | 'STRONG2' | 'HEAVY' | 'HEAVY2' | 'MEGA' | 'MEGA2' | 'CRITICAL_ATTACK' | 'LIGHT_HEAL' | 'WEAK_HEAL' | 'BASIC_HEAL' | 'STRONG_HEAL' | 'HEAVY_HEAL' | 'MEGA_HEAL' | 'CUSTOM';
 
 // Card-related interfaces
 export interface CardEffect {
   damage?: {
-    formula: string;
+    formula: DamageFormulaKey;
     target: TargetType;
   };
-  shield?: number;
-  heal?: number;
+  shield?: {
+    formula: DamageFormulaKey;
+  };
+  heal?: {
+    formula: DamageFormulaKey;
+  };
   drawCards?: number;
-  discardCards?: number;
-  gainEnergy?: number;
+  repeat?: number;
+  discardCards?: number | 'all';
+  gainEnergy?: number | 'discardedCardCost' | 'discardedCardCount';
   removeEnemyShield?: boolean;
   removeAllShield?: boolean;
   removeAilments?: boolean;
@@ -29,6 +36,8 @@ export interface CardEffect {
     type: StatusEffectType;
     duration: number;
     value?: number;
+    isResistable?: boolean;
+    source?: number;
   };
   createCards?: {
     cardId: string;
@@ -63,7 +72,7 @@ export interface CardEffect {
   };
   requireEnemyShield?: boolean;
   modifyStatMultiplier?: {
-    stat: 'evasion' | 'critChance' | 'critDamage';
+    stat: StatType;
     multiplier: number;
     duration: number;
   };
@@ -77,7 +86,7 @@ export interface CardEffect {
     effect: (value: number) => Partial<CardEffect>;
   };
   conditional?: {
-    condition: (state: GameState) => boolean;
+    condition: (state: GameState, targetInfo: TargetInfo) => boolean;
     effect: CardEffect;
   };
   customEffect?: (state: GameState) => void;
@@ -108,7 +117,8 @@ export interface Card {
 export interface StatusEffect {
   type: StatusEffectType;
   duration: number;
-  value?: number;
+  value: number;
+  isResistable?: boolean;
   source?: number;
 }
 
@@ -146,9 +156,20 @@ export interface GameState {
   cardsDiscardedThisBattle: number;
   lastPlayedCardType?: CardEffectType;
   temporaryEffects: {
-    costModification: CardEffect['modifyCost'][];
-    criticalHits: CardEffect['criticalHit'][];
-    statMultipliers: CardEffect['modifyStatMultiplier'][];
+    costModifications: Array<{
+      target: 'all' | 'specific';
+      cardId?: string;
+      amount: number;
+      duration: number;
+      turnsRemaining: number;
+    }>;
+    statMultipliers: Array<{
+      stat: StatType;
+      multiplier: number;
+      duration: number;
+      turnsRemaining: number;
+    }>;
+    burstCards: Card[];
   };
 }
 
@@ -279,4 +300,4 @@ export const TYPE_COLORS: Record<DigimonType, string> = {
   VIRUS: '#ca60ae'
 };
 
-export const CORRUPTION_DAMAGE_PER_STACK = 5;
+export const CORRUPTION_DAMAGE_PER_STACK = 7;

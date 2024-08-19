@@ -9,20 +9,21 @@ export const addStatusEffect = (digimon: DigimonState, effect: StatusEffect): Di
     if (effect.type === 'corruption') {
       updatedEffects[existingEffectIndex] = {
         ...updatedEffects[existingEffectIndex],
-        value: (updatedEffects[existingEffectIndex].value || 0) + 1,
+        value: updatedEffects[existingEffectIndex].value + 1,
         duration: STATUS_EFFECT_DURATIONS.CORRUPTION
       };
     } else {
       updatedEffects[existingEffectIndex] = {
         ...updatedEffects[existingEffectIndex],
         duration: Math.max(updatedEffects[existingEffectIndex].duration, effect.duration),
-        value: effect.value || updatedEffects[existingEffectIndex].value,
-        source: effect.source || updatedEffects[existingEffectIndex].source
+        value: effect.value,
+        source: effect.source,
+        isResistable: effect.isResistable
       };
     }
     return { ...digimon, statusEffects: updatedEffects };
   } else {
-    const newEffect = {
+    const newEffect: StatusEffect = {
       ...effect,
       duration: STATUS_EFFECT_DURATIONS[effect.type.toUpperCase() as keyof typeof STATUS_EFFECT_DURATIONS],
       value: effect.type === 'corruption' ? 1 : effect.value
@@ -55,7 +56,7 @@ export const applyStatusEffects = (digimon: DigimonState): DigimonState => {
   for (const effect of updatedDigimon.statusEffects) {
     switch (effect.type) {
       case 'corruption':
-        updatedDigimon.hp -= (effect.value || 1) * CORRUPTION_DAMAGE_PER_STACK;
+        updatedDigimon.hp -= effect.value * CORRUPTION_DAMAGE_PER_STACK;
         break;
       case 'bugged':
         // Bugged (stun) is handled in the battle logic, not here

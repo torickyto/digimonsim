@@ -23,9 +23,9 @@ export const initializeBattle = (playerDigimon: Digimon, enemyDigimon: Digimon):
     cardsDiscardedThisTurn: 0,
     cardsDiscardedThisBattle: 0,
     temporaryEffects: {
-      costModification: [],
-      criticalHits: [],
+      costModifications: [],
       statMultipliers: [],
+      burstCards: [],
     },
   };
 };

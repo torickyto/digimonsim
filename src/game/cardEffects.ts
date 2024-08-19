@@ -1,5 +1,3 @@
-// cardEffects.ts
-
 import { 
   GameState, 
   Card, 
@@ -7,9 +5,12 @@ import {
   TargetInfo, 
   DigimonState,
   StatusEffect,
-  StatusEffectType
+  StatusEffectType,
+  ScalingFactor,
+  StatType
 } from '../shared/types';
 import { CORRUPTION_DAMAGE_PER_STACK } from '../game/gameConstants';
+import { DamageCalculations } from '../shared/damageCalculations';
 
 function getTargets(gameState: GameState, targetInfo: TargetInfo): DigimonState[] {
   const { targetType, sourceDigimonIndex, targetDigimonIndex } = targetInfo;
@@ -41,33 +42,36 @@ function resolveCardEffects(card: Card, gameState: GameState, targetInfo: Target
   let updatedState = { ...gameState };
   const targets = getTargets(updatedState, targetInfo);
 
-  card.effects.forEach(effect => {
+   card.effects.forEach(effect => {
     if (effect.damage && effect.damage.formula) {
-      const damage = calculateDamage(effect.damage.formula, updatedState.player.digimon[targetInfo.sourceDigimonIndex], updatedState);
-      
-      if (effect.damage.target === 'random_enemy') {
-        const numberOfEnemies = updatedState.enemy.digimon.length;
-        for (let i = 0; i < numberOfEnemies; i++) {
-          const randomIndex = Math.floor(Math.random() * updatedState.enemy.digimon.length);
-          updatedState = applyDamage(damage, updatedState.enemy.digimon[randomIndex], updatedState, targetInfo);
-        }
-      } else {
-        targets.forEach(target => {
-          updatedState = applyDamage(damage, target, updatedState, targetInfo);
-        });
+      const damage = DamageCalculations[effect.damage.formula](updatedState.player.digimon[targetInfo.sourceDigimonIndex]);
+      targets.forEach(target => {
+        updatedState = applyDamage(damage, target, updatedState, targetInfo);
+      });
+    }
+
+    if (effect.shield && effect.shield.formula) {
+      const shieldAmount = DamageCalculations[effect.shield.formula](updatedState.player.digimon[targetInfo.sourceDigimonIndex]);
+      targets.forEach(target => {
+        updatedState = applyShield(shieldAmount, target, updatedState);
+      });
+    }
+
+    if (effect.repeat) {
+      for (let i = 0; i < effect.repeat; i++) {
+        updatedState = resolveCardEffects({ ...card, effects: [{ ...effect, repeat: undefined }] }, updatedState, targetInfo);
       }
     }
 
-    if (effect.shield !== undefined) {
+    if (effect.heal && effect.heal.formula) {
+      const healAmount = DamageCalculations[effect.heal.formula](updatedState.player.digimon[targetInfo.sourceDigimonIndex]);
       targets.forEach(target => {
-        updatedState = applyShield(effect.shield!, target, updatedState);
+        updatedState = applyHeal(healAmount, target, updatedState);
       });
     }
 
-    if (effect.heal !== undefined) {
-      targets.forEach(target => {
-        updatedState = applyHeal(effect.heal!, target, updatedState);
-      });
+    if (effect.scaling) {
+      updatedState = handleScaling(effect, updatedState, targetInfo);
     }
 
     if (effect.applyStatus) {
@@ -76,38 +80,50 @@ function resolveCardEffects(card: Card, gameState: GameState, targetInfo: Target
       });
     }
 
-    // Handle effects that don't require targets
     if (effect.drawCards) updatedState = drawCards(effect.drawCards, updatedState);
-    if (effect.discardCards) updatedState = discardCards(effect.discardCards, updatedState);
-    if (effect.gainEnergy) updatedState = gainEnergy(effect.gainEnergy, updatedState);
+
+    if (effect.discardCards) {
+      updatedState = discardCards(effect.discardCards, updatedState);
+      if (effect.gainEnergy === 'discardedCardCost') {
+        const discardedCard = updatedState.player.discardPile[updatedState.player.discardPile.length - 1];
+        if (discardedCard) {
+          updatedState = gainEnergy(discardedCard.cost, updatedState);
+        }
+      }
+    }
+
+    if (typeof effect.gainEnergy === 'number') {
+      updatedState = gainEnergy(effect.gainEnergy, updatedState);
+    }
+
+    if (effect.gainEnergy !== undefined) {
+      updatedState = gainEnergyFromDiscardedCards(effect.gainEnergy, updatedState);
+    }
+
     if (effect.removeEnemyShield) updatedState = removeEnemyShield(updatedState);
     if (effect.removeAllShield) updatedState = removeAllShield(updatedState);
     if (effect.removeAilments) updatedState = removeAilments(updatedState);
+    if (effect.modifyCost) updatedState = modifyCost(effect.modifyCost, updatedState);
+    if (effect.modifyStatMultiplier) updatedState = modifyStatMultiplier(effect.modifyStatMultiplier, updatedState);
+    if (effect.scaling) updatedState = applyScalingEffect(effect.scaling, updatedState, targetInfo);
   });
 
-  // Apply combo, scaling, and conditional effects
-  const comboEffect = checkCombo(card, updatedState);
-  if (comboEffect) {
-    updatedState = resolveCardEffects({ ...card, effects: [comboEffect] }, updatedState, targetInfo);
-  }
+  // Apply conditional effects
+  card.effects.forEach(effect => {
+    if (effect.conditional) {
+      const condition = effect.conditional.condition(updatedState, targetInfo);
+      if (condition) {
+        updatedState = resolveCardEffects({ ...card, effects: [effect.conditional.effect] }, updatedState, targetInfo);
+      }
+    }
+  });
 
-  const scaledEffect = applyScaling(card, updatedState);
-  if (Object.keys(scaledEffect).length > 0) {
-    updatedState = resolveCardEffects({ ...card, effects: [scaledEffect] }, updatedState, targetInfo);
-  }
-
-  const conditionalEffect = checkConditional(card, updatedState);
-  if (conditionalEffect) {
-    updatedState = resolveCardEffects({ ...card, effects: [conditionalEffect] }, updatedState, targetInfo);
-  }
-
-  // Apply consumable, burst, and recompile effects
-  if (card.effects.some(effect => effect.consumable)) {
-    updatedState = applyConsumable(card, updatedState);
-  }
+  // Apply burst effect
   if (card.effects.some(effect => effect.burst)) {
     updatedState = applyBurst(card, updatedState);
   }
+
+  // Apply recompile effect
   if (card.effects.some(effect => effect.recompile)) {
     updatedState = applyRecompile(card, updatedState);
   }
@@ -130,12 +146,23 @@ function applyHeal(amount: number, target: DigimonState, gameState: GameState): 
   return updateDigimonInState(gameState, updatedTarget);
 }
 
-function applyStatusEffect(statusEffect: CardEffect['applyStatus'], target: DigimonState, gameState: GameState): GameState {
+function applyStatusEffect(statusEffect: StatusEffect | CardEffect['applyStatus'], target: DigimonState, gameState: GameState): GameState {
   if (!statusEffect) return gameState;
+
+  const effect: StatusEffect = {
+    type: statusEffect.type,
+    duration: statusEffect.duration,
+    value: statusEffect.value ?? 1, // Default to 1 if value is not provided
+    isResistable: 'isResistable' in statusEffect ? statusEffect.isResistable : true // Default to true if isResistable is not provided
+  };
   
-  const updatedStatusEffects = [...target.statusEffects, statusEffect];
-  const updatedTarget = { ...target, statusEffects: updatedStatusEffects };
-  return updateDigimonInState(gameState, updatedTarget);
+  if (!effect.isResistable || Math.random() > target.corruptionResistance) {
+    const updatedStatusEffects = [...target.statusEffects, effect];
+    const updatedTarget = { ...target, statusEffects: updatedStatusEffects };
+    return updateDigimonInState(gameState, updatedTarget);
+  }
+  
+  return gameState;
 }
 
 function drawCards(amount: number, gameState: GameState): GameState {
@@ -153,19 +180,35 @@ function drawCards(amount: number, gameState: GameState): GameState {
   };
 }
 
-function discardCards(amount: number, gameState: GameState): GameState {
-  const discardedCards = gameState.player.hand.slice(0, amount);
-  const newHand = gameState.player.hand.slice(amount);
-  const newDiscardPile = [...gameState.player.discardPile, ...discardedCards];
-  
-  return {
-    ...gameState,
-    player: {
-      ...gameState.player,
-      hand: newHand,
-      discardPile: newDiscardPile
-    }
-  };
+function discardCards(amount: number | 'all', gameState: GameState): GameState {
+  if (amount === 'all') {
+    const discardedCards = [...gameState.player.hand];
+    return {
+      ...gameState,
+      player: {
+        ...gameState.player,
+        hand: [],
+        discardPile: [...gameState.player.discardPile, ...discardedCards]
+      },
+      cardsDiscardedThisTurn: gameState.cardsDiscardedThisTurn + discardedCards.length,
+      cardsDiscardedThisBattle: gameState.cardsDiscardedThisBattle + discardedCards.length
+    };
+  } else {
+    const discardedCards = gameState.player.hand.slice(0, amount);
+    const newHand = gameState.player.hand.slice(amount);
+    const newDiscardPile = [...gameState.player.discardPile, ...discardedCards];
+    
+    return {
+      ...gameState,
+      player: {
+        ...gameState.player,
+        hand: newHand,
+        discardPile: newDiscardPile
+      },
+      cardsDiscardedThisTurn: gameState.cardsDiscardedThisTurn + discardedCards.length,
+      cardsDiscardedThisBattle: gameState.cardsDiscardedThisBattle + discardedCards.length
+    };
+  }
 }
 
 function gainEnergy(amount: number, gameState: GameState): GameState {
@@ -176,6 +219,19 @@ function gainEnergy(amount: number, gameState: GameState): GameState {
       energy: gameState.player.energy + amount
     }
   };
+}
+
+function gainEnergyFromDiscardedCards(amount: number | 'discardedCardCost' | 'discardedCardCount', gameState: GameState): GameState {
+  let energyGain = 0;
+  if (amount === 'discardedCardCost') {
+    energyGain = gameState.player.discardPile.reduce((total, card) => total + card.cost, 0);
+  } else if (amount === 'discardedCardCount') {
+    energyGain = gameState.cardsDiscardedThisTurn;
+  } else {
+    energyGain = amount;
+  }
+  
+  return gainEnergy(energyGain, gameState);
 }
 
 function removeEnemyShield(gameState: GameState): GameState {
@@ -212,6 +268,115 @@ function removeAilments(gameState: GameState): GameState {
     player: {
       ...gameState.player,
       digimon: updatedPlayerDigimon
+    }
+  };
+}
+
+function modifyCost(modifyCostEffect: CardEffect['modifyCost'], gameState: GameState): GameState {
+  if (!modifyCostEffect) return gameState;
+
+  const { target, cardId, amount, duration } = modifyCostEffect;
+  let updatedHand = gameState.player.hand.map(card => {
+    if ((target === 'all') || (target === 'specific' && card.id === cardId)) {
+      return { ...card, cost: Math.max(0, card.cost + amount) };
+    }
+    return card;
+  });
+
+  return {
+    ...gameState,
+    player: {
+      ...gameState.player,
+      hand: updatedHand
+    },
+    temporaryEffects: {
+      ...gameState.temporaryEffects,
+      costModifications: [
+        ...(gameState.temporaryEffects.costModifications || []),
+        { target, cardId, amount, duration, turnsRemaining: duration }
+      ]
+    }
+  };
+}
+
+
+function modifyStatMultiplier(modifyStatEffect: CardEffect['modifyStatMultiplier'], gameState: GameState): GameState {
+  if (!modifyStatEffect) return gameState;
+
+  const { stat, multiplier, duration } = modifyStatEffect;
+  return {
+    ...gameState,
+    temporaryEffects: {
+      ...gameState.temporaryEffects,
+      statMultipliers: [
+        ...(gameState.temporaryEffects.statMultipliers || []),
+        { stat, multiplier, duration, turnsRemaining: duration } as {
+          stat: StatType;
+          multiplier: number;
+          duration: number;
+          turnsRemaining: number;
+        }
+      ]
+    }
+  };
+}
+
+
+function applyScalingEffect(scalingEffect: CardEffect['scaling'], gameState: GameState, targetInfo: TargetInfo): GameState {
+  if (!scalingEffect) return gameState;
+
+  const { factor, effect } = scalingEffect;
+  const scalingValue = getScalingValue(factor, gameState, targetInfo.sourceDigimonIndex);
+  const scaledEffect = effect(scalingValue);
+
+  return resolveCardEffects({ effects: [scaledEffect] } as Card, gameState, targetInfo);
+}
+
+function getScalingValue(factor: ScalingFactor, gameState: GameState, sourceDigimonIndex: number): number {
+  switch (factor) {
+    case 'enemiesHit':
+      return gameState.enemy.digimon.length;
+    case 'drawnCardsCost':
+      return gameState.player.hand.reduce((total, card) => total + card.cost, 0);
+    case 'cardsDiscardedThisTurn':
+      return gameState.cardsDiscardedThisTurn;
+      case 'userShield':
+        return gameState.player.digimon[sourceDigimonIndex].shield;
+      case 'discardedCardCount':
+        return gameState.cardsDiscardedThisTurn;
+      case 'cardsDiscardedThisBattle':
+        return gameState.cardsDiscardedThisBattle;
+      default:
+        return 0;
+    }
+}
+
+function applyBurst(card: Card, gameState: GameState): GameState {
+  const updatedHand = gameState.player.hand.filter(c => c.id !== card.id);
+  const burstCards = [...(gameState.temporaryEffects.burstCards || []), card];
+
+  return {
+    ...gameState,
+    player: {
+      ...gameState.player,
+      hand: updatedHand
+    },
+    temporaryEffects: {
+      ...gameState.temporaryEffects,
+      burstCards
+    }
+  };
+}
+
+function applyRecompile(card: Card, gameState: GameState): GameState {
+  // Add the card back to the player's hand
+  const updatedHand = [...gameState.player.hand, card];
+
+  return {
+    ...gameState,
+    player: {
+      ...gameState.player,
+      hand: updatedHand
     }
   };
 }
@@ -259,16 +424,6 @@ function applyConsumable(card: Card, gameState: GameState): GameState {
   return gameState;
 }
 
-function applyBurst(card: Card, gameState: GameState): GameState {
-  // Implement burst logic
-  return gameState;
-}
-
-function applyRecompile(card: Card, gameState: GameState): GameState {
-  // Implement recompile logic
-  return gameState;
-}
-
 function calculateDamage(formula: string, attacker: DigimonState, gameState: GameState): number {
 
   // uniques
@@ -288,6 +443,34 @@ function calculateDamage(formula: string, attacker: DigimonState, gameState: Gam
   return attacker.attack;
 }
 
+function handleScaling(effect: CardEffect, gameState: GameState, targetInfo: TargetInfo): GameState {
+  if (effect.scaling) {
+    const scalingValue = getScalingValue(effect.scaling.factor, gameState, targetInfo.sourceDigimonIndex);
+    const scaledEffect = effect.scaling.effect(scalingValue);
+    return resolveCardEffects({ effects: [scaledEffect] } as Card, gameState, targetInfo);
+  }
+  return gameState;
+}
+
+
+function endOfBattleCleanup(gameState: GameState): GameState {
+  const updatedDeck = [...gameState.player.deck, ...(gameState.temporaryEffects.burstCards || [])];
+
+  return {
+    ...gameState,
+    player: {
+      ...gameState.player,
+      deck: updatedDeck
+    },
+    temporaryEffects: {
+      ...gameState.temporaryEffects,
+      burstCards: [],
+      costModifications: [],
+      statMultipliers: []
+    }
+  };
+}
+
 export {
   resolveCardEffects,
   applyDamage,
@@ -298,5 +481,6 @@ export {
   gainEnergy,
   removeEnemyShield,
   removeAllShield,
-  removeAilments
+  removeAilments,
+  endOfBattleCleanup
 };
