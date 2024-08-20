@@ -1,6 +1,7 @@
 .digimon {
   background-repeat: no-repeat;
   image-rendering: pixelated;
+  transform-origin: center bottom;
 }
   
   .agumon {

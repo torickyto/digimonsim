@@ -1,5 +1,4 @@
 // BattleScreen.tsx
-
 import React, { useState, useEffect, useRef } from 'react';
 import { GameState, Card, Digimon, BattleAction } from '../shared/types';
 import { initializeBattle, startPlayerTurn, playCard, endPlayerTurn, executeEnemyTurn, checkBattleEnd } from '../game/battle';
@@ -18,11 +17,31 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   const [gameState, setGameState] = useState<GameState>(() => initializeBattle(playerTeam, enemyTeam));
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [spriteScale, setSpriteScale] = useState(1);
+  const battleScreenRef = useRef<HTMLDivElement>(null);
   const animationQueue = useRef<BattleAction[]>([]);
 
   useEffect(() => {
     processAnimations();
   }, [gameState]);
+
+  useEffect(() => {
+    const updateScaleFactor = () => {
+      if (battleScreenRef.current) {
+        const { width, height } = battleScreenRef.current.getBoundingClientRect();
+        const uiScaleFactor = Math.min(.7, width / 1280, height / 720);
+        battleScreenRef.current.style.setProperty('--scale-factor', uiScaleFactor.toString());
+        
+        const scale = Math.min(width / 1280, height / 720);
+        // Update sprite scale
+        setSpriteScale(scale);
+      }
+    };
+
+    updateScaleFactor();
+    window.addEventListener('resize', updateScaleFactor);
+    return () => window.removeEventListener('resize', updateScaleFactor);
+  }, []);
 
   const processAnimations = async () => {
     if (isAnimating || animationQueue.current.length === 0) return;
@@ -149,54 +168,73 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   };
 
   return (
-    <div className="battle-screen">
+    <div className="battle-screen-container">
+    <div className="battle-screen" ref={battleScreenRef}>
       <div className="battle-background"></div>
-      <div className="top-bar">
-        <button className="discard-button" onClick={handleDiscard}>Discard</button>
-        <div className="deck-info">
-          <span>Deck: {gameState.player.deck.length}</span>
-          <span>Discard: {gameState.player.discardPile.length}</span>
+        <div className="top-bar">
+          <button className="discard-button">Discard</button>
+          <div className="deck-info">
+            <span>Deck: {gameState.player.deck.length}</span>
+            <span>Discard: {gameState.player.discardPile.length}</span>
+          </div>
+          <button className="end-turn-button">End Turn</button>
         </div>
-        <button className="end-turn-button" onClick={handleEndTurn}>End Turn</button>
-      </div>
-      
-      <div className="battle-area">
-        <div className="enemy-digimon">
-          <DigimonSprite name={gameState.enemy.digimon[0].name} />
+        
+        <div className="battle-area">
+          <div className="enemy-digimon">
+            <DigimonSprite 
+              name={gameState.enemy.digimon[0].name} 
+              scale={spriteScale * 1}
+              style={{
+                position: 'absolute',
+                left: '50%',
+                bottom: '0',
+                transform: `translateX(-50%) scale(${spriteScale * 1.75})`,
+              }}
+            />
+          </div>
+          <div className="player-digimon">
+            {playerTeam.map((digimon, index) => (
+              <DigimonSprite 
+                key={index} 
+                name={digimon.name} 
+                scale={spriteScale * 1}
+                style={{
+                  position: 'absolute',
+                  left: `${16.67 + index * 33.33}%`,
+                  bottom: '0',
+                  transform: `translateX(-50%) scale(${spriteScale * 1.6})`,
+                }}
+              />
+            ))}
+          </div>
         </div>
-        <div className="player-digimon">
-          {playerTeam.map((digimon, index) => (
-            <DigimonSprite key={index} name={digimon.name} />
+        
+        <div className="hand-area">
+          {gameState.player.hand.map((card, index) => (
+            <CompactCard 
+              key={index} 
+              card={card} 
+              onClick={() => handleCardClick(card)}
+              isSelected={selectedCard === card}
+              disabled={gameState.player.energy < card.cost}
+            />
           ))}
         </div>
-      </div>
-
-      <div className="deck"></div>
-      <div className="discard-pile"></div>
-      
-      <div className="hand-area">
-        {gameState.player.hand.map((card, index) => (
-          <CompactCard 
-            key={index} 
-            card={card} 
-            onClick={() => handleCardClick(card)}
-            isSelected={selectedCard === card}
-            disabled={gameState.player.energy < card.cost}
-          />
-        ))}
-      </div>
-      
-      <div className="bottom-bar">
-        {playerTeam.map((digimon, index) => (
-          <div key={index} className="digimon-info">
-            <img src={`/assets/images/${digimon.name}-icon.png`} alt={digimon.displayName} />
-            <span>{digimon.displayName}</span>
-            <span>{digimon.hp}/{digimon.maxHp}</span>
-            <div className="hp-bar">
-              <div className="hp-fill" style={{width: `${(digimon.hp / digimon.maxHp) * 100}%`}}></div>
+        
+        <div className="bottom-bar">
+          {playerTeam.map((digimon, index) => (
+            <div key={index} className="digimon-info">
+              <span className="digimon-name">{digimon.displayName}</span>
+              <div className="hp-container">
+                <span className="hp-number">{digimon.hp}/{digimon.maxHp}</span>
+                <div className="hp-bar">
+                  <div className="hp-fill" style={{width: `${(digimon.hp / digimon.maxHp) * 100}%`}}></div>
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );

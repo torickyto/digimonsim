@@ -1,14 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import './DigimonSprite.css'; 
+import './DigimonSprite.css';
 
 interface DigimonSpriteProps {
   name: string;
   isAttacking?: boolean;
   isOnHit?: boolean;
   onAttackComplete?: () => void;
+  scale?: number;
+  style?: React.CSSProperties;
 }
 
-const DigimonSprite: React.FC<DigimonSpriteProps> = ({ name, isAttacking = false, isOnHit = false, onAttackComplete }) => {
+const DigimonSprite: React.FC<DigimonSpriteProps> = ({ 
+  name, 
+  isAttacking = false, 
+  isOnHit = false, 
+  onAttackComplete,
+  scale = 1,
+  style = {}
+}) => {
   const [animationClass, setAnimationClass] = useState<'breathing' | 'attacking' | 'onHit'>('breathing');
 
   useEffect(() => {
@@ -31,7 +40,14 @@ const DigimonSprite: React.FC<DigimonSpriteProps> = ({ name, isAttacking = false
   }, [isAttacking, isOnHit, onAttackComplete]);
 
   return (
-    <div className={`digimon ${name} ${animationClass}`}></div>
+    <div 
+      className={`digimon ${name} ${animationClass}`}
+      style={{
+        ...style,
+        transform: `${style.transform || ''} scale(${scale})`,
+        transformOrigin: 'bottom center'
+      }}
+    ></div>
   );
 };
 

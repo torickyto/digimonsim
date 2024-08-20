@@ -15,7 +15,7 @@ const CompactCard: React.FC<CompactCardProps> = ({ card, onClick, isSelected, di
       className={`compact-card ${isSelected ? 'selected' : ''} ${disabled ? 'disabled' : ''}`}
       onClick={disabled ? undefined : onClick}
     >
-      <img src={`/assets/cards/${card.id.toLowerCase()}.png`} alt={card.name} />
+      <img src={`/assets/cards/${card.id}.png`} alt={card.name} className="card-image" />
       <div className="card-info">
         <span className="card-name">{card.name}</span>
         <span className="card-cost">{card.cost}</span>
