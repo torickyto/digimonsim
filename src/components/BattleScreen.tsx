@@ -238,15 +238,14 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
           </div>
         </div>
         <div className="hand-area">
-  {gameState.player.hand.map((card, index) => (
-    <CompactCard 
-    key={card.instanceId}
-    card={card} 
-    onClick={() => handleCardClick(card)}
-    isSelected={selectedCard?.instanceId === card.instanceId}
-    isPlayable={gameState.player.ram >= card.cost}
-    disabled={gameState.player.ram < card.cost}
-  />
+        {gameState.player.hand.map((card, index) => (
+          <CompactCard 
+            key={card.instanceId}
+            card={card} 
+            onClick={() => handleCardClick(card)}
+            isSelected={selectedCard?.instanceId === card.instanceId}
+            isPlayable={gameState.player.ram >= card.cost}
+          />
   ))}
 </div>
         <div className="bottom-bar">

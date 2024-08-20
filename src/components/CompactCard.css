@@ -8,60 +8,81 @@
   padding: calc(0.2 * var(--battle-vh));
   margin-bottom: calc(0.5 * var(--battle-vh));
   border: calc(0.2 * var(--battle-vh)) solid transparent;
-  transition: transform 0.2s ease-in-out, border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  transition: transform 0.2s ease-in-out, border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, left 0.2s ease-in-out;
 }
 
 .compact-card:hover {
   transform: translateY(calc(-0.3 * var(--battle-vh)));
-  }
-  .compact-card.selected {
-  border-color: #ffd700;
+}
+
+.compact-card.playable {
+  border-color: rgb(229, 255, 0);
+  box-shadow: 0 0 calc(0.5 * var(--battle-vh)) rgba(229, 255, 0, 0.5);
+}
+
+.compact-card.selected {
+  box-shadow: 0 0 calc(1 * var(--battle-vh)) rgb(0, 255, 234);
   transform: translateY(calc(-0.3 * var(--battle-vh)));
+  border: calc(0.4 * var(--battle-vh)) solid rgb(0, 255, 234);
+  animation: selectCard 0.2s ease-in-out forwards;
+}
+
+@keyframes selectCard {
+  0% {
+    left: 0;
   }
-  .compact-card.disabled {
+  100% {
+    left: calc(2 * var(--battle-vh));
+  }
+}
+
+.compact-card.disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  }
-  .compact-card.playable {
-  box-shadow: 0 0 calc(0.5 * var(--battle-vh)) rgba(0, 255, 255, 0.5);
-  }
-  .card-image {
+}
+
+.card-image {
   width: calc(6 * var(--battle-vh) * 1.2);
   height: calc(3.82 * var(--battle-vh) * 1.2);
   border-radius: calc(0.3 * var(--battle-vh));
   object-fit: cover;
-  }
+}
 
-  .card-info {
-    display: flex;
-    flex-direction: column;
-    margin-left: calc(0.5 * var(--battle-vh));
-    flex-grow: 1;
-    }
-    .card-name {
-    color: white;
-    font-size: calc(1.5 * var(--battle-vh));
-    font-weight: bold;
-    text-shadow: 0 0 calc(0.2 * var(--battle-vh)) rgba(0, 0, 0, 0.5);
-    }
-    .card-cost {
-    position: absolute;
-    top: calc(0.2 * var(--battle-vh));
-    right: calc(0.2 * var(--battle-vh));
-    color: #000;
-    font-size: calc(1.2 * var(--battle-vh));
-    font-weight: bold;
-    border-radius: 50%;
-    width: calc(2.5 * var(--battle-vh));
-    height: calc(2.5 * var(--battle-vh));
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 0 calc(0.3 * var(--battle-vh)) rgba(0, 0, 0, 0.5);
-    transition: background-color 0.2s ease-in-out;
-    }
-    .card-cost.playable {
-      background-color: #ffd700;
-      }
-      .card-cost.unplayable {
-      background-color: #808080;}
+.card-info {
+  display: flex;
+  flex-direction: column;
+  margin-left: calc(0.5 * var(--battle-vh));
+  flex-grow: 1;
+}
+
+.card-name {
+  color: white;
+  font-size: calc(1.5 * var(--battle-vh));
+  font-weight: bold;
+  text-shadow: 0 0 calc(0.2 * var(--battle-vh)) rgba(0, 0, 0, 0.5);
+}
+
+.card-cost {
+  position: absolute;
+  top: calc(0.2 * var(--battle-vh));
+  right: calc(0.2 * var(--battle-vh));
+  color: #000;
+  font-size: calc(1.2 * var(--battle-vh));
+  font-weight: bold;
+  border-radius: 50%;
+  width: calc(2.5 * var(--battle-vh));
+  height: calc(2.5 * var(--battle-vh));
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 0 calc(0.3 * var(--battle-vh)) rgba(0, 0, 0, 0.5);
+  transition: background-color 0.2s ease-in-out;
+}
+
+.card-cost.playable {
+  background-color: #ffd700;
+}
+
+.card-cost.not-playable {
+  background-color: #808080;
+}
