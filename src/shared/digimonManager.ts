@@ -1,6 +1,7 @@
 import { Digimon, DigimonTemplate, DigimonState, Card } from '../shared/types';
 import { getStarterDeck, getCardById } from './cardCollection';
 import { DAMAGE_MULTIPLIERS } from '../game/gameConstants';
+import { v4 as uuidv4 } from 'uuid';
 
 
 
@@ -34,12 +35,14 @@ export function createDigimon(template: DigimonTemplate, level: number = 1): Dig
 
   const digimon: Digimon = {
     ...digimonState,
-    deck: [template.startingCard, ...getStarterDeck(template.name)]
+    deck: [
+      { ...template.startingCard, instanceId: uuidv4() },
+      ...getStarterDeck(template.name)
+    ]
   };
 
   return digimon;
 }
-
 function calculateStat(baseStat: number, level: number): number {
   // simple linear scaling placeholder
   return Math.round(baseStat * (1 + (level - 1) * 0.1));
@@ -51,13 +54,13 @@ export const addCardToDigimon = (digimon: Digimon, cardId: string): Digimon => {
   
   return {
     ...digimon,
-    deck: [...digimon.deck, newCard]
+    deck: [...digimon.deck, { ...newCard, instanceId: uuidv4() }]
   };
 };
 
-export const upgradeDigimonCard = (digimon: Digimon, cardId: string, upgrades: Partial<Card>): Digimon => {
+export const upgradeDigimonCard = (digimon: Digimon, cardInstanceId: string, upgrades: Partial<Card>): Digimon => {
   const updatedDeck = digimon.deck.map(card => 
-    card.id === cardId ? { ...card, ...upgrades } : card
+    card.instanceId === cardInstanceId ? { ...card, ...upgrades } : card
   );
   return { ...digimon, deck: updatedDeck };
 };

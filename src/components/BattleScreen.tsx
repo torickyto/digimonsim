@@ -140,9 +140,16 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
 
   const handleCardPlay = (targetIndex: number) => {
     if (selectedCard) {
-      const updatedState = playCard(gameState, gameState.player.hand.indexOf(selectedCard), { targetType: selectedCard.target, sourceDigimonIndex: 0, targetDigimonIndex: targetIndex });
-      setGameState(updatedState);
-      setSelectedCard(null);
+      const cardIndex = gameState.player.hand.findIndex(card => card.instanceId === selectedCard.instanceId);
+      if (cardIndex !== -1) {
+        const updatedState = playCard(gameState, cardIndex, {
+          targetType: selectedCard.target,
+          sourceDigimonIndex: 0,
+          targetDigimonIndex: targetIndex,
+        });
+        setGameState(updatedState);
+        setSelectedCard(null);
+      }
     }
   };
 
@@ -150,7 +157,6 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     let updatedState = endPlayerTurn(gameState);
     updatedState = executeEnemyTurn(updatedState);
     const battleResult = checkBattleEnd(updatedState);
-    
     if (battleResult === 'ongoing') {
       updatedState = startPlayerTurn(updatedState);
       setGameState(updatedState);
@@ -168,41 +174,40 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     }
   };
 
- return (
-  <div className="battle-screen-container">
-    <div className="battle-screen" ref={battleScreenRef}>
-      <div className="battle-background"></div>
-      <div className="top-bar">
-        <div className="left-controls">
-          <div className="button-container">
-            <button className="discard-button" onClick={handleDiscard}>Discard</button>
-            <button className="end-turn-button" onClick={handleEndTurn}>End Turn</button>
-          </div>
-          <div className="ram-and-deck">
-            <div className="ram-info">
-              <span className="ram-label">RAM</span>
-              <span className="ram-text">{gameState.player.ram}</span>
-              <div className="ram-crystals">
-                {Array.from({ length: Math.max(gameState.turn, 10) }, (_, i) => (
-                  <div 
-                    key={i} 
-                    className={`ram-crystal ${i < gameState.player.ram ? 'filled' : 'empty'}`}
-                  ></div>
-                ))}
+  return (
+    <div className="battle-screen-container">
+      <div className="battle-screen" ref={battleScreenRef}>
+        <div className="battle-background"></div>
+        <div className="top-bar">
+          <div className="left-controls">
+            <div className="button-container">
+              <button className="discard-button" onClick={handleDiscard}>Discard</button>
+              <button className="end-turn-button" onClick={handleEndTurn}>End Turn</button>
+            </div>
+            <div className="ram-and-deck">
+              <div className="ram-info">
+                <span className="ram-label">RAM</span>
+                <span className="ram-text">{gameState.player.ram}</span>
+                <div className="ram-crystals">
+                  {Array.from({ length: Math.max(gameState.turn, 10) }, (_, i) => (
+                    <div
+                      key={i}
+                      className={`ram-crystal ${i < gameState.player.ram ? 'filled' : 'empty'}`}
+                    ></div>
+                  ))}
+                </div>
               </div>
-            </div>
-            <div className="deck-info">
-              <div className="deck-icon">D</div>
-              <span className="deck-count">{gameState.player.deck.length}</span>
-            </div>
-            <div className="discard-info">
-              <div className="discard-icon">X</div>
-              <span className="discard-count">{gameState.player.discardPile.length}</span>
+              <div className="deck-info">
+                <div className="deck-icon">D</div>
+                <span className="deck-count">{gameState.player.deck.length}</span>
+              </div>
+              <div className="discard-info">
+                <div className="discard-icon">X</div>
+                <span className="discard-count">{gameState.player.discardPile.length}</span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-        
         <div className="battle-area">
           <div className="enemy-digimon">
             <DigimonSprite 
@@ -232,19 +237,18 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
             ))}
           </div>
         </div>
-        
         <div className="hand-area">
-          {gameState.player.hand.map((card, index) => (
-            <CompactCard 
-              key={index} 
-              card={card} 
-              onClick={() => handleCardClick(card)}
-              isSelected={selectedCard === card}
-              disabled={gameState.player.ram < card.cost}
-            />
-          ))}
-        </div>
-        
+  {gameState.player.hand.map((card, index) => (
+    <CompactCard 
+    key={card.instanceId}
+    card={card} 
+    onClick={() => handleCardClick(card)}
+    isSelected={selectedCard?.instanceId === card.instanceId}
+    isPlayable={gameState.player.ram >= card.cost}
+    disabled={gameState.player.ram < card.cost}
+  />
+  ))}
+</div>
         <div className="bottom-bar">
           {playerTeam.map((digimon, index) => (
             <div key={index} className="digimon-info">
@@ -252,7 +256,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
               <div className="hp-container">
                 <span className="hp-number">{digimon.hp}/{digimon.maxHp}</span>
                 <div className="hp-bar">
-                  <div className="hp-fill" style={{width: `${(digimon.hp / digimon.maxHp) * 100}%`}}></div>
+                  <div className="hp-fill" style={{ width: `${(digimon.hp / digimon.maxHp) * 100}%` }}></div>
                 </div>
               </div>
             </div>
@@ -262,4 +266,5 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     </div>
   );
 };
+
 export default BattleScreen;

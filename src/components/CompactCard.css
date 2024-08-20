@@ -8,57 +8,60 @@
   padding: calc(0.2 * var(--battle-vh));
   margin-bottom: calc(0.5 * var(--battle-vh));
   border: calc(0.2 * var(--battle-vh)) solid transparent;
-  transition: transform 0.2s ease-in-out, border-color 0.2s ease-in-out;
+  transition: transform 0.2s ease-in-out, border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
 .compact-card:hover {
   transform: translateY(calc(-0.3 * var(--battle-vh)));
-}
-
-.compact-card.selected {
+  }
+  .compact-card.selected {
   border-color: #ffd700;
   transform: translateY(calc(-0.3 * var(--battle-vh)));
-}
-
-.compact-card.disabled {
+  }
+  .compact-card.disabled {
   opacity: 0.5;
   cursor: not-allowed;
-}
-
-.card-image {
-  width: calc(6 * var(--battle-vh) * 1.2); 
+  }
+  .compact-card.playable {
+  box-shadow: 0 0 calc(0.5 * var(--battle-vh)) rgba(0, 255, 255, 0.5);
+  }
+  .card-image {
+  width: calc(6 * var(--battle-vh) * 1.2);
   height: calc(3.82 * var(--battle-vh) * 1.2);
   border-radius: calc(0.3 * var(--battle-vh));
   object-fit: cover;
-}
+  }
 
-.card-info {
-  display: flex;
-  flex-direction: column;
-  margin-left: calc(0.5 * var(--battle-vh));
-  flex-grow: 1;
-}
-
-.card-name {
-  color: white;
-  font-size: calc(1.5 * var(--battle-vh));
-  font-weight: bold;
-  text-shadow: 0 0 calc(0.2 * var(--battle-vh)) rgba(0, 0, 0, 0.5);
-}
-
-.card-cost {
-  position: absolute;
-  top: calc(0.2 * var(--battle-vh));
-  right: calc(0.2 * var(--battle-vh));
-  background-color: #ffd700;
-  color: #000;
-  font-size: calc(1.2 * var(--battle-vh));
-  font-weight: bold;
-  border-radius: 50%;
-  width: calc(2.5 * var(--battle-vh));
-  height: calc(2.5 * var(--battle-vh));
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-shadow: 0 0 calc(0.3 * var(--battle-vh)) rgba(0, 0, 0, 0.5);
-}
+  .card-info {
+    display: flex;
+    flex-direction: column;
+    margin-left: calc(0.5 * var(--battle-vh));
+    flex-grow: 1;
+    }
+    .card-name {
+    color: white;
+    font-size: calc(1.5 * var(--battle-vh));
+    font-weight: bold;
+    text-shadow: 0 0 calc(0.2 * var(--battle-vh)) rgba(0, 0, 0, 0.5);
+    }
+    .card-cost {
+    position: absolute;
+    top: calc(0.2 * var(--battle-vh));
+    right: calc(0.2 * var(--battle-vh));
+    color: #000;
+    font-size: calc(1.2 * var(--battle-vh));
+    font-weight: bold;
+    border-radius: 50%;
+    width: calc(2.5 * var(--battle-vh));
+    height: calc(2.5 * var(--battle-vh));
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 0 calc(0.3 * var(--battle-vh)) rgba(0, 0, 0, 0.5);
+    transition: background-color 0.2s ease-in-out;
+    }
+    .card-cost.playable {
+      background-color: #ffd700;
+      }
+      .card-cost.unplayable {
+      background-color: #808080;}

@@ -1,4 +1,5 @@
-import { Card, CardEffect, CardEffectType, DigimonType, TargetType, DigimonState } from './types';
+import { v4 as uuidv4 } from 'uuid';
+import { Card, CardEffect, CardEffectType, DigimonType, Digimon, TargetType, DigimonState } from './types';
 import { DamageCalculations } from './damageCalculations';
 
 const createCard = (
@@ -13,6 +14,7 @@ const createCard = (
   requiresCardSelection: boolean = false
 ): Card => ({
   id,
+  instanceId: uuidv4(),
   name,
   type,
   cost,
@@ -795,17 +797,39 @@ HEAT_VIPER: createCard(
 }
 
 export const getCardById = (id: string): Card | undefined => {
-  return CardCollection[id];
+  const baseCard = CardCollection[id];
+  return baseCard ? createCard(
+    baseCard.id,
+    baseCard.name,
+    baseCard.type,
+    baseCard.cost,
+    baseCard.digimonType,
+    baseCard.description,
+    baseCard.target,
+    baseCard.effects,
+    baseCard.requiresCardSelection
+  ) : undefined;
 };
+
 
 export const getStarterDeck = (digimonName: string): Card[] => {
   const basicDeck = [
-    CardCollection.PUNCH_BASIC,
-    CardCollection.PUNCH_BASIC,
-    CardCollection.BLOCK_BASIC,
-    CardCollection.BLOCK_BASIC,
+    getCardById('PUNCH_BASIC')!,
+    getCardById('PUNCH_BASIC')!,
+    getCardById('BLOCK_BASIC')!,
+    getCardById('BLOCK_BASIC')!,
   ];
   return basicDeck;
+};
+
+export const addCardToDigimon = (digimon: Digimon, cardId: string): Digimon => {
+  const newCard = getCardById(cardId);
+  if (!newCard) return digimon;
+  
+  return {
+    ...digimon,
+    deck: [...digimon.deck, newCard]
+  };
 };
 
 export const updateCardDescription = (card: Card, attacker: DigimonState): Card => {
