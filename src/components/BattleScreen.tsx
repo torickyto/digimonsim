@@ -168,13 +168,16 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     }
   };
 
-  return (
+ return (
   <div className="battle-screen-container">
     <div className="battle-screen" ref={battleScreenRef}>
       <div className="battle-background"></div>
       <div className="top-bar">
         <div className="left-controls">
-          <button className="discard-button" onClick={handleDiscard}>Discard</button>
+          <div className="button-container">
+            <button className="discard-button" onClick={handleDiscard}>Discard</button>
+            <button className="end-turn-button" onClick={handleEndTurn}>End Turn</button>
+          </div>
           <div className="ram-and-deck">
             <div className="ram-info">
               <span className="ram-label">RAM</span>
@@ -189,13 +192,15 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
               </div>
             </div>
             <div className="deck-info">
-              <div className="deck-icon">
-                <span className="deck-count">{gameState.player.deck.length}</span>
-              </div>
+              <div className="deck-icon">D</div>
+              <span className="deck-count">{gameState.player.deck.length}</span>
+            </div>
+            <div className="discard-info">
+              <div className="discard-icon">X</div>
+              <span className="discard-count">{gameState.player.discardPile.length}</span>
             </div>
           </div>
         </div>
-        <button className="end-turn-button" onClick={handleEndTurn}>End Turn</button>
       </div>
         
         <div className="battle-area">

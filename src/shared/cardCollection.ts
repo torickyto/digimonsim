@@ -97,7 +97,7 @@ export const CardCollection: Record<string, Card> = {
     'special',
     0,
     'VIRUS',
-    'Select a card to discard and gain 2 ram.',
+    'Select a card to discard and gain 2 RAM.',
     'none',
     [{
       discardCards: 1,
@@ -496,7 +496,7 @@ MAGICAL_GAME: createCard(
   'special',
   1,
   'VACCINE',
-  'Select a card to discard then gain its ram.',
+  'Select a card to discard then gain its RAM.',
   'none',
   [{
     discardCards: 1,
@@ -698,7 +698,7 @@ HEART_CRASH: createCard(
   'special',
   6,
   'VIRUS',
-  'Discard up to 6 cards, then draw up to 6 cards. Gain 1 ram for each card discarded.',
+  'Discard up to 6 cards, then draw up to 6 cards. Gain 1 RAM for each card discarded.',
   'none',
   [{
     discardCards: 6,
@@ -739,7 +739,7 @@ BEREJENA: createCard(
   'special',
   3,
   'VIRUS',
-  'Discard 2 random cards, gain their ram cost. Can overload.',
+  'Discard 2 random cards, gain their RAM cost. Can overload.',
   'none',
   [{
     discardCards: 2,
