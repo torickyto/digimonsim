@@ -4,6 +4,7 @@ import { createDigimon } from '../shared/digimonManager';
 import { DigimonTemplates } from '../data/DigimonTemplate';
 import DigimonSprite from './DigimonSprite';
 import WeaknessTriangle from './WeaknessTriangle';
+import Card from './Card';
 import './StartScreen.css';
 
 const STARTER_DIGIMON: string[] = ['agumon', 'gabumon', 'impmon'];
@@ -50,7 +51,8 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStartGame }) => {
               <h3>{template.displayName}</h3>
               <p>Type: {template.type}</p>
               <p>HP: {template.baseHp}</p>
-              <p>Starting Card: {template.startingCard.name}</p>
+              <p>Attack: {template.baseAttack}</p>
+
               <button onClick={() => addToParty(digimonName)} disabled={party.length >= 3}>
                 Add to Party
               </button>
@@ -67,6 +69,7 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStartGame }) => {
             <h3>{digimon.displayName}</h3>
             <p>Type: {digimon.type}</p>
             <p>HP: {digimon.hp}/{digimon.maxHp}</p>
+            <p>Attack: {digimon.attack}</p>
             <button onClick={() => removeFromParty(digimon)}>Remove</button>
           </div>
         ))}

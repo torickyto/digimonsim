@@ -1,40 +1,40 @@
 /* CompactCard.css */
 
 .compact-card {
-    display: flex;
-    align-items: center;
-    background-color: rgba(0, 0, 0, 0.7);
-    border-radius: 5px;
-    padding: 5px;
-    cursor: pointer;
-  }
-  
-  .compact-card.selected {
-    border: 2px solid yellow;
-  }
-  
-  .compact-card.disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-  
-  .card-image {
-    width: 40px;
-    height: 40px;
-    margin-right: 10px;
-  }
-  
-  .card-info {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .card-name {
-    color: white;
-    font-size: 14px;
-  }
-  
-  .card-cost {
-    color: yellow;
-    font-size: 12px;
-  }
+  display: flex;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.7);
+  border-radius: 5px;
+  padding: 5px;
+  cursor: pointer;
+}
+
+.compact-card.selected {
+  border: 2px solid yellow;
+}
+
+.compact-card.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.card-image {
+  width: 40px;
+  height: 40px;
+  margin-right: 10px;
+}
+
+.card-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.card-name {
+  color: white;
+  font-size: 14px;
+}
+
+.card-cost {
+  color: yellow;
+  font-size: 12px;
+}

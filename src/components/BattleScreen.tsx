@@ -1,4 +1,3 @@
-// BattleScreen.tsx
 import React, { useState, useEffect, useRef } from 'react';
 import { GameState, Card, Digimon, BattleAction } from '../shared/types';
 import { initializeBattle, startPlayerTurn, playCard, endPlayerTurn, executeEnemyTurn, checkBattleEnd } from '../game/battle';
@@ -29,11 +28,10 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     const updateScaleFactor = () => {
       if (battleScreenRef.current) {
         const { width, height } = battleScreenRef.current.getBoundingClientRect();
-        const uiScaleFactor = Math.min(.7, width / 1280, height / 720);
+        const uiScaleFactor = Math.min(1, width / 1280, height / 720);
         battleScreenRef.current.style.setProperty('--scale-factor', uiScaleFactor.toString());
         
         const scale = Math.min(width / 1280, height / 720);
-        // Update sprite scale
         setSpriteScale(scale);
       }
     };
@@ -42,7 +40,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     window.addEventListener('resize', updateScaleFactor);
     return () => window.removeEventListener('resize', updateScaleFactor);
   }, []);
-
+  
   const processAnimations = async () => {
     if (isAnimating || animationQueue.current.length === 0) return;
 
@@ -169,41 +167,44 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
 
   return (
     <div className="battle-screen-container">
-    <div className="battle-screen" ref={battleScreenRef}>
-      <div className="battle-background"></div>
+      <div className="battle-screen" ref={battleScreenRef}>
+        <div className="battle-background"></div>
         <div className="top-bar">
-          <button className="discard-button">Discard</button>
+          <button className="discard-button" onClick={handleDiscard}>Discard</button>
           <div className="deck-info">
             <span>Deck: {gameState.player.deck.length}</span>
             <span>Discard: {gameState.player.discardPile.length}</span>
           </div>
-          <button className="end-turn-button">End Turn</button>
+          <button className="end-turn-button" onClick={handleEndTurn}>End Turn</button>
         </div>
         
         <div className="battle-area">
           <div className="enemy-digimon">
-            <DigimonSprite 
-              name={gameState.enemy.digimon[0].name} 
-              scale={spriteScale * 1}
-              style={{
-                position: 'absolute',
-                left: '50%',
-                bottom: '0',
-                transform: `translateX(-50%) scale(${spriteScale * 1.75})`,
-              }}
-            />
+            {enemyTeam.map((digimon, index) => (
+              <DigimonSprite 
+                key={index}
+                name={digimon.name} 
+                scale={spriteScale * 1.5}
+                style={{
+                  position: 'absolute',
+                  left: `${50 + index * 25}%`,
+                  bottom: '60%',
+                  transform: `translateX(-50%) scale(${spriteScale * 1.5})`,
+                }}
+              />
+            ))}
           </div>
           <div className="player-digimon">
             {playerTeam.map((digimon, index) => (
               <DigimonSprite 
-                key={index} 
+                key={index}
                 name={digimon.name} 
-                scale={spriteScale * 1}
+                scale={spriteScale * 1.5}
                 style={{
                   position: 'absolute',
                   left: `${16.67 + index * 33.33}%`,
-                  bottom: '0',
-                  transform: `translateX(-50%) scale(${spriteScale * 1.6})`,
+                  bottom: '5%',
+                  transform: `translateX(-50%) scale(${spriteScale * 1.5})`,
                 }}
               />
             ))}
@@ -239,5 +240,4 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     </div>
   );
 };
-
 export default BattleScreen;

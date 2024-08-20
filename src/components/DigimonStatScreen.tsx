@@ -12,7 +12,7 @@ const DigimonStatScreen: React.FC<DigimonStatScreenProps> = ({ digimon, isObtain
   const typeColor = TYPE_COLORS[digimon.type] || '#ffffff';
   
   return (
-    <div className="digimon-stat-screen" style={{ backgroundColor: `${typeColor}22` }}>
+    <div className="digimon-stat-screen">
       <div className="stat-inner">
         <div className="stat-header">
           <h2 className="digimon-name">{digimon.displayName}</h2>
@@ -79,7 +79,6 @@ const DigimonStatScreen: React.FC<DigimonStatScreenProps> = ({ digimon, isObtain
         <div className="passive-section">
           <h3>Passive Skill</h3>
           <div className="passive-skill">
-            <img src={`/assets/skills/${digimon.passiveSkill?.name.toLowerCase().replace(' ', '_')}.png`} alt={digimon.passiveSkill?.name} />
             <span>{digimon.passiveSkill?.name || 'None'}</span>
           </div>
         </div>

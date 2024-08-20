@@ -184,24 +184,25 @@
 }
 
 .card-image {
-  width: 2.5em;
-  height: 2.5em;
-  margin-right: 0.5em;
+  width: 7em; 
+  height: calc(7em / 1.573);
 }
 
 .card-info {
   display: flex;
   flex-direction: column;
-  flex-grow: 1;
 }
 
 .card-name {
   color: white;
-  font-size: 0.9em;
+  padding-left: 20%;
+  padding-top: 1%;
+  font-size: 1.2em;
+  justify-content: center;
 }
 
 .card-cost {
-  color: yellow;
+  color: rgb(255, 255, 255);
   font-size: 0.8em;
   align-self: flex-end;
 }
