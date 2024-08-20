@@ -25,7 +25,7 @@ export interface CardEffect {
   drawCards?: number;
   repeat?: number;
   discardCards?: number | 'all';
-  gainEnergy?: number | 'discardedCardCost' | 'discardedCardCount';
+  gainRam?: number | 'discardedCardCost' | 'discardedCardCount';
   removeEnemyShield?: boolean;
   removeAllShield?: boolean;
   removeAilments?: boolean;
@@ -252,7 +252,7 @@ export interface DigimonEgg {
 // Battle-related interfaces
 export interface BattleActions {
   drawCard: (amount: number) => void;
-  setPlayerEnergy: (amount: number) => void;
+  setPlayerRam: (amount: number) => void;
   damageEnemy: (amount: number, target: number, isTrueDamage?: boolean) => void;
   damagePlayer: (amount: number, target: number, isTrueDamage?: boolean) => void;
   addPlayerShield: (amount: number, target: number) => void;
@@ -280,7 +280,7 @@ export interface BattleActions {
   removeCardFromBattle: (card: Card) => void;
   addCardCopy: (card: Card, destination: 'hand' | 'deck' | 'discardPile') => void;
   getScalingValue: (factor: ScalingFactor) => number;
-  gainEnergy: (amount: number) => void;
+  gainRam: (amount: number) => void;
   removeAilments: (target: 'player' | 'enemy', index: number) => void;
 }
 

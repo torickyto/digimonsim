@@ -101,7 +101,7 @@ export const CardCollection: Record<string, Card> = {
     'none',
     [{
       discardCards: 1,
-      gainEnergy: 2
+      gainRam: 2
     }],
     true
   ),
@@ -500,7 +500,7 @@ MAGICAL_GAME: createCard(
   'none',
   [{
     discardCards: 1,
-    gainEnergy: 'discardedCardCost'
+    gainRam: 'discardedCardCost'
   }],
   true
 ),
@@ -565,7 +565,7 @@ BLOODTHIRST: createCard(
     }
   },
   {
-    gainEnergy: 4
+    gainRam: 4
   }]
 ),
 
@@ -596,7 +596,7 @@ DARK_MIND: createCard(
   'special',
   5,
   'VIRUS',
-  'GAIN 3 STACKS OF CORRUPTION. GAIN 10 ENERGY. CANNOT OVERLOAD.',
+  'GAIN 3 STACKS OF CORRUPTION. GAIN 10 RAM. CANNOT OVERLOAD.',
   'self',
   [{
     applyStatus: {
@@ -606,7 +606,7 @@ DARK_MIND: createCard(
     }
   },
   {
-    gainEnergy: 10
+    gainRam: 10
   }]
 ),
 
@@ -703,7 +703,7 @@ HEART_CRASH: createCard(
   [{
     discardCards: 6,
     drawCards: 6,
-    gainEnergy: 'discardedCardCount' as const
+    gainRam: 'discardedCardCount' as const
   }]
 ),
 
@@ -743,7 +743,7 @@ BEREJENA: createCard(
   'none',
   [{
     discardCards: 2,
-    gainEnergy: 'discardedCardCost'
+    gainRam: 'discardedCardCost'
   }]
 ),
 

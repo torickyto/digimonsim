@@ -1,7 +1,7 @@
 export const EXPERIENCE_PER_LEVEL = 100;
 export const MAX_HAND_SIZE = 7;
-export const STARTING_ENERGY = 3;
-export const MAX_ENERGY = 10;
+export const STARTING_RAM = 3;
+export const MAX_RAM = 10;
 export const CARDS_DRAWN_PER_TURN = 2;
 
 export const STATUS_EFFECT_DURATIONS = {

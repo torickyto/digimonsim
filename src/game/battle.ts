@@ -1,7 +1,7 @@
 // battle.ts
 
 import { Digimon, GameState, Card, BattleAction, TargetInfo } from '../shared/types';
-import { STARTING_ENERGY, MAX_HAND_SIZE, CARDS_DRAWN_PER_TURN, MAX_ENERGY } from './gameConstants';
+import { STARTING_RAM, MAX_HAND_SIZE, CARDS_DRAWN_PER_TURN, MAX_RAM } from './gameConstants';
 import { calculateDamage } from '../shared/damageCalculations';
 import { applyStatusEffects } from './statusEffects';
 import { resolveCardEffects } from './cardEffects';
@@ -13,7 +13,7 @@ export const initializeBattle = (playerTeam: Digimon[], enemyTeam: Digimon[]): G
       hand: [],
       deck: playerTeam.flatMap(digimon => digimon.deck),
       discardPile: [],
-      ram: STARTING_ENERGY,
+      ram: STARTING_RAM,
     },
     enemy: {
       digimon: enemyTeam,
@@ -81,7 +81,7 @@ const drawSingleCard = (gameState: GameState): GameState => {
 
 export const startPlayerTurn = (gameState: GameState): GameState => {
   let updatedState = { ...gameState };
-  updatedState.player.ram = Math.min(gameState.turn, MAX_ENERGY);
+  updatedState.player.ram = Math.min(gameState.turn, MAX_RAM);
   updatedState = drawCards(updatedState, CARDS_DRAWN_PER_TURN);
   
   const playerDigimon = updatedState.player.digimon[0];

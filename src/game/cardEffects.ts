@@ -84,20 +84,20 @@ function resolveCardEffects(card: Card, gameState: GameState, targetInfo: Target
 
     if (effect.discardCards) {
       updatedState = discardCards(effect.discardCards, updatedState);
-      if (effect.gainEnergy === 'discardedCardCost') {
+      if (effect.gainRam === 'discardedCardCost') {
         const discardedCard = updatedState.player.discardPile[updatedState.player.discardPile.length - 1];
         if (discardedCard) {
-          updatedState = gainEnergy(discardedCard.cost, updatedState);
+          updatedState = gainRam(discardedCard.cost, updatedState);
         }
       }
     }
 
-    if (typeof effect.gainEnergy === 'number') {
-      updatedState = gainEnergy(effect.gainEnergy, updatedState);
+    if (typeof effect.gainRam === 'number') {
+      updatedState = gainRam(effect.gainRam, updatedState);
     }
 
-    if (effect.gainEnergy !== undefined) {
-      updatedState = gainEnergyFromDiscardedCards(effect.gainEnergy, updatedState);
+    if (effect.gainRam !== undefined) {
+      updatedState = gainRamFromDiscardedCards(effect.gainRam, updatedState);
     }
 
     if (effect.removeEnemyShield) updatedState = removeEnemyShield(updatedState);
@@ -211,7 +211,7 @@ function discardCards(amount: number | 'all', gameState: GameState): GameState {
   }
 }
 
-function gainEnergy(amount: number, gameState: GameState): GameState {
+function gainRam(amount: number, gameState: GameState): GameState {
   return {
     ...gameState,
     player: {
@@ -221,17 +221,17 @@ function gainEnergy(amount: number, gameState: GameState): GameState {
   };
 }
 
-function gainEnergyFromDiscardedCards(amount: number | 'discardedCardCost' | 'discardedCardCount', gameState: GameState): GameState {
-  let energyGain = 0;
+function gainRamFromDiscardedCards(amount: number | 'discardedCardCost' | 'discardedCardCount', gameState: GameState): GameState {
+  let ramGain = 0;
   if (amount === 'discardedCardCost') {
-    energyGain = gameState.player.discardPile.reduce((total, card) => total + card.cost, 0);
+    ramGain = gameState.player.discardPile.reduce((total, card) => total + card.cost, 0);
   } else if (amount === 'discardedCardCount') {
-    energyGain = gameState.cardsDiscardedThisTurn;
+    ramGain = gameState.cardsDiscardedThisTurn;
   } else {
-    energyGain = amount;
+    ramGain = amount;
   }
   
-  return gainEnergy(energyGain, gameState);
+  return gainRam(ramGain, gameState);
 }
 
 function removeEnemyShield(gameState: GameState): GameState {
@@ -478,7 +478,7 @@ export {
   applyHeal,
   drawCards,
   discardCards,
-  gainEnergy,
+  gainRam,
   removeEnemyShield,
   removeAllShield,
   removeAilments,
