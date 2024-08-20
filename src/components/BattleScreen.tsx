@@ -26,20 +26,23 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
 
   useEffect(() => {
     const updateScaleFactor = () => {
-      if (battleScreenRef.current) {
-        const { width, height } = battleScreenRef.current.getBoundingClientRect();
-        const uiScaleFactor = Math.min(1, width / 1280, height / 720);
-        battleScreenRef.current.style.setProperty('--scale-factor', uiScaleFactor.toString());
-        
-        const scale = Math.min(width / 1280, height / 720);
-        setSpriteScale(scale);
-      }
+        if (battleScreenRef.current) {
+            const battleBackground = battleScreenRef.current.querySelector('.battle-background');
+            if (battleBackground) {
+                const { width, height } = battleBackground.getBoundingClientRect();
+                const uiScaleFactor = Math.min(1, width / 1280, height / 720);
+                battleScreenRef.current.style.setProperty('--scale-factor', uiScaleFactor.toString());
+
+                const scale = Math.min(width / 1280, height / 720);
+                setSpriteScale(scale);
+            }
+        }
     };
 
     updateScaleFactor();
     window.addEventListener('resize', updateScaleFactor);
     return () => window.removeEventListener('resize', updateScaleFactor);
-  }, []);
+}, []);
   
   const processAnimations = async () => {
     if (isAnimating || animationQueue.current.length === 0) return;
@@ -166,45 +169,59 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   };
 
   return (
-    <div className="battle-screen-container">
-      <div className="battle-screen" ref={battleScreenRef}>
-        <div className="battle-background"></div>
-        <div className="top-bar">
+  <div className="battle-screen-container">
+    <div className="battle-screen" ref={battleScreenRef}>
+      <div className="battle-background"></div>
+      <div className="top-bar">
+        <div className="left-controls">
           <button className="discard-button" onClick={handleDiscard}>Discard</button>
-          <div className="deck-info">
-            <span>Deck: {gameState.player.deck.length}</span>
-            <span>Discard: {gameState.player.discardPile.length}</span>
+          <div className="energy-and-deck">
+            <div className="energy-info">
+              <span className="energy-label">RAM</span>
+              <span className="energy-text">{gameState.player.energy}</span>
+              <div className="energy-crystals">
+                {Array.from({ length: Math.max(gameState.turn, 10) }, (_, i) => (
+                  <div 
+                    key={i} 
+                    className={`energy-crystal ${i < gameState.player.energy ? 'filled' : 'empty'}`}
+                  ></div>
+                ))}
+              </div>
+            </div>
+            <div className="deck-info">
+              <div className="deck-icon">
+                <span className="deck-count">{gameState.player.deck.length}</span>
+              </div>
+            </div>
           </div>
-          <button className="end-turn-button" onClick={handleEndTurn}>End Turn</button>
         </div>
+        <button className="end-turn-button" onClick={handleEndTurn}>End Turn</button>
+      </div>
         
         <div className="battle-area">
           <div className="enemy-digimon">
-            {enemyTeam.map((digimon, index) => (
-              <DigimonSprite 
-                key={index}
-                name={digimon.name} 
-                scale={spriteScale * 1.5}
-                style={{
-                  position: 'absolute',
-                  left: `${50 + index * 25}%`,
-                  bottom: '60%',
-                  transform: `translateX(-50%) scale(${spriteScale * 1.5})`,
-                }}
-              />
-            ))}
+            <DigimonSprite 
+              name={gameState.enemy.digimon[0].name} 
+              scale={spriteScale * 1.75}
+              style={{
+                position: 'absolute',
+                left: '50%',
+                bottom: '0',
+                transform: 'translateX(-50%)',
+              }}
+            />
           </div>
           <div className="player-digimon">
             {playerTeam.map((digimon, index) => (
               <DigimonSprite 
-                key={index}
+                key={index} 
                 name={digimon.name} 
-                scale={spriteScale * 1.5}
+                scale={spriteScale * 1.6}
                 style={{
                   position: 'absolute',
                   left: `${16.67 + index * 33.33}%`,
-                  bottom: '5%',
-                  transform: `translateX(-50%) scale(${spriteScale * 1.5})`,
+                  bottom: '0',
+                  transform: 'translateX(-50%)',
                 }}
               />
             ))}
