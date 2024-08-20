@@ -97,7 +97,7 @@ export const CardCollection: Record<string, Card> = {
     'special',
     0,
     'VIRUS',
-    'Select a card to discard and gain 2 energy.',
+    'Select a card to discard and gain 2 ram.',
     'none',
     [{
       discardCards: 1,
@@ -496,7 +496,7 @@ MAGICAL_GAME: createCard(
   'special',
   1,
   'VACCINE',
-  'Select a card to discard then gain its energy.',
+  'Select a card to discard then gain its ram.',
   'none',
   [{
     discardCards: 1,
@@ -556,7 +556,7 @@ BLOODTHIRST: createCard(
   'attack',
   1,
   'VIRUS',
-  'Deal {damage} damage to an ally and gain 4 energy.',
+  'Deal {damage} damage to an ally and gain 4 ram.',
   'single_ally',
   [{
     damage: {
@@ -698,7 +698,7 @@ HEART_CRASH: createCard(
   'special',
   6,
   'VIRUS',
-  'Discard up to 6 cards, then draw up to 6 cards. Gain 1 energy for each card discarded.',
+  'Discard up to 6 cards, then draw up to 6 cards. Gain 1 ram for each card discarded.',
   'none',
   [{
     discardCards: 6,
@@ -739,7 +739,7 @@ BEREJENA: createCard(
   'special',
   3,
   'VIRUS',
-  'Discard 2 random cards, gain their energy cost. Can overload.',
+  'Discard 2 random cards, gain their ram cost. Can overload.',
   'none',
   [{
     discardCards: 2,

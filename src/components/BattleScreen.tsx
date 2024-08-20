@@ -133,7 +133,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   };
 
   const handleCardClick = (card: Card) => {
-    if (gameState.player.energy >= card.cost) {
+    if (gameState.player.ram >= card.cost) {
       setSelectedCard(card);
     }
   };
@@ -175,15 +175,15 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
       <div className="top-bar">
         <div className="left-controls">
           <button className="discard-button" onClick={handleDiscard}>Discard</button>
-          <div className="energy-and-deck">
-            <div className="energy-info">
-              <span className="energy-label">RAM</span>
-              <span className="energy-text">{gameState.player.energy}</span>
-              <div className="energy-crystals">
+          <div className="ram-and-deck">
+            <div className="ram-info">
+              <span className="ram-label">RAM</span>
+              <span className="ram-text">{gameState.player.ram}</span>
+              <div className="ram-crystals">
                 {Array.from({ length: Math.max(gameState.turn, 10) }, (_, i) => (
                   <div 
                     key={i} 
-                    className={`energy-crystal ${i < gameState.player.energy ? 'filled' : 'empty'}`}
+                    className={`ram-crystal ${i < gameState.player.ram ? 'filled' : 'empty'}`}
                   ></div>
                 ))}
               </div>
@@ -235,7 +235,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
               card={card} 
               onClick={() => handleCardClick(card)}
               isSelected={selectedCard === card}
-              disabled={gameState.player.energy < card.cost}
+              disabled={gameState.player.ram < card.cost}
             />
           ))}
         </div>

@@ -60,7 +60,7 @@
   width: 25%; 
 }
 
-.energy-and-deck {
+.ram-and-deck {
   display: flex;
   align-items: center;
   margin-top: 0; /* Removed calc() */
@@ -69,7 +69,7 @@
   border-radius: calc(0.5vmin * var(--scale-factor));
 }
 
-.energy-info {
+.ram-info {
   display: flex;
   align-items: center;
   flex-grow: 1;
@@ -78,7 +78,7 @@
   padding-left: 3px;
 }
 
-.energy-label {
+.ram-label {
   color: white;
   font-weight: 700;
   font-size: calc(3vmin * var(--scale-factor));
@@ -87,7 +87,7 @@
   white-space: nowrap;
 }
 
-.energy-meter {
+.ram-meter {
   display: flex;
   align-items: center;
   flex-grow: 1;
@@ -95,7 +95,7 @@
 
 /*-webkit-text-stroke: 1px black;*/
 
-.energy-text {
+.ram-text {
   color: white;
   font-size: calc(3.5vmin * var(--scale-factor));
   font-weight: 700;
@@ -104,24 +104,24 @@
   -webkit-text-stroke: calc(0.8px * var(--scale-factor)) black;
 }
 
-.energy-crystals {
+.ram-crystals {
   display: flex;
   gap: calc(1vmin * var(--scale-factor));
   flex-wrap: nowrap;
   overflow: hidden;
 }
-.energy-crystal {
+.ram-crystal {
   width: calc(1.8vmin * var(--scale-factor));
   height: calc(2.2vmin * var(--scale-factor));
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
   flex-shrink: 1;
   background-size: contain;
 }
-.energy-crystal.filled {
+.ram-crystal.filled {
   background-color: #f0f6f0;
 }
 
-.energy-crystal.empty {
+.ram-crystal.empty {
   background-color: rgb(29, 31, 34); /* Slightly transparent for empty crystals */
 }
 

@@ -13,7 +13,7 @@ export const initializeBattle = (playerTeam: Digimon[], enemyTeam: Digimon[]): G
       hand: [],
       deck: playerTeam.flatMap(digimon => digimon.deck),
       discardPile: [],
-      energy: STARTING_ENERGY,
+      ram: STARTING_ENERGY,
     },
     enemy: {
       digimon: enemyTeam,
@@ -81,7 +81,7 @@ const drawSingleCard = (gameState: GameState): GameState => {
 
 export const startPlayerTurn = (gameState: GameState): GameState => {
   let updatedState = { ...gameState };
-  updatedState.player.energy = Math.min(gameState.turn, MAX_ENERGY);
+  updatedState.player.ram = Math.min(gameState.turn, MAX_ENERGY);
   updatedState = drawCards(updatedState, CARDS_DRAWN_PER_TURN);
   
   const playerDigimon = updatedState.player.digimon[0];

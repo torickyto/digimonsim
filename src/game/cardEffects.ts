@@ -216,7 +216,7 @@ function gainEnergy(amount: number, gameState: GameState): GameState {
     ...gameState,
     player: {
       ...gameState.player,
-      energy: gameState.player.energy + amount
+      ram: gameState.player.ram + amount
     }
   };
 }

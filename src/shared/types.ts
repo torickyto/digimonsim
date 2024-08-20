@@ -150,7 +150,7 @@ export interface DigimonState {
 
 export interface GameState {
   player: {
-    energy: number;
+    ram: number;
     hand: Card[];
     deck: Card[];
     discardPile: Card[];
