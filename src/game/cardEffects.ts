@@ -4,6 +4,7 @@ import {
   CardEffect, 
   TargetInfo, 
   DigimonState,
+  Digimon,
   StatusEffect,
   StatusEffectType,
   ScalingFactor,
@@ -388,7 +389,9 @@ function updateDigimonInState(gameState: GameState, updatedDigimon: DigimonState
       ...gameState,
       player: {
         ...gameState.player,
-        digimon: gameState.player.digimon.map(d => d.id === updatedDigimon.id ? updatedDigimon : d)
+        digimon: gameState.player.digimon.map(d => 
+          d.id === updatedDigimon.id ? { ...d, ...updatedDigimon } as Digimon : d
+        )
       }
     };
   } else {
@@ -396,7 +399,9 @@ function updateDigimonInState(gameState: GameState, updatedDigimon: DigimonState
       ...gameState,
       enemy: {
         ...gameState.enemy,
-        digimon: gameState.enemy.digimon.map(d => d.id === updatedDigimon.id ? updatedDigimon : d)
+        digimon: gameState.enemy.digimon.map(d => 
+          d.id === updatedDigimon.id ? updatedDigimon : d
+        )
       }
     };
   }

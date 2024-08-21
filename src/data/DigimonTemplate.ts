@@ -12,6 +12,7 @@ const nullPassiveSkill: PassiveSkill = {
   effect: (state, digimon) => state // No effect
 };
 
+
 export const DigimonTemplates: Record<string, DigimonTemplate> = {
   impmon: {
     name: 'impmon',

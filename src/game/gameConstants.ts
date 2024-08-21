@@ -1,9 +1,10 @@
-export const EXPERIENCE_PER_LEVEL = 100;
-export const BASE_RAM = 3;
-export const MAX_HAND_SIZE = 9;
 export const STARTING_RAM = 3;
+export const BASE_RAM = 3;
+export const MAX_HAND_SIZE = 7;
+export const CARDS_DRAWN_PER_TURN = 1;
 export const MAX_RAM = 10;
-export const CARDS_DRAWN_PER_TURN = 2;
+export const EXPERIENCE_PER_LEVEL = 100;
+
 
 export const STATUS_EFFECT_DURATIONS = {
   CORRUPTION: 3, // Corruption is stackable, so this is the duration of each stack

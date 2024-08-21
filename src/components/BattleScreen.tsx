@@ -45,15 +45,15 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     return () => window.removeEventListener('resize', updateScaleFactor);
 }, []);
   
-  const processAnimations = async () => {
-    if (isAnimating || animationQueue.current.length === 0) return;
+    const processAnimations = async () => {
+      if (isAnimating || animationQueue.current.length === 0) return;
 
-    setIsAnimating(true);
-    const action = animationQueue.current.shift()!;
-    await animateAction(action);
-    setIsAnimating(false);
-    processAnimations();
-  };
+      setIsAnimating(true);
+      const action = animationQueue.current.shift()!;
+      await animateAction(action);
+      setIsAnimating(false);
+      processAnimations();
+    };
 
   useEffect(() => {
     setGameState(startPlayerTurn(gameState));
@@ -75,22 +75,32 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   };
 
   const animateCardDraw = async (card: Card) => {
-    const cardElement = document.createElement('div');
-    cardElement.classList.add('card-animation', 'draw');
-    cardElement.style.backgroundImage = `url('/assets/cards/${card.id}.png')`;
-    document.querySelector('.battle-screen')?.appendChild(cardElement);
+    return new Promise<void>((resolve) => {
+      const cardElement = document.createElement('div');
+      cardElement.classList.add('card-animation', 'draw');
+      
+      cardElement.style.backgroundImage = `url('/assets/cards/${card.name.toLowerCase().replace(/\s+/g, '')}.png')`;
+      
+      cardElement.style.position = 'fixed';
+      cardElement.style.width = `calc(6 * var(--battle-vh) * 1.2)`;
+      cardElement.style.height = `calc(3.82 * var(--battle-vh) * 1.2)`;
+      cardElement.style.left = '-100px';
+      cardElement.style.top = '50%';
+      cardElement.style.transform = 'translateY(-50%)';
+      
+      document.body.appendChild(cardElement);
 
-    await new Promise(resolve => setTimeout(resolve, 500)); // Duration of the animation
+      // Force a reflow
+      const _ = cardElement.offsetHeight;
 
-    cardElement.remove();
-    // Update the UI to show the new card in the player's hand
-    setGameState(prevState => ({
-      ...prevState,
-      player: {
-        ...prevState.player,
-        hand: [...prevState.player.hand, card]
-      }
-    }));
+      cardElement.style.left = '50%';
+      cardElement.style.transform = 'translate(-50%, -50%)';
+
+      cardElement.addEventListener('animationend', () => {
+        cardElement.remove();
+        resolve();
+      });
+    });
   };
 
    const animateCardBurn = async (card: Card) => {
@@ -161,31 +171,23 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     const battleResult = checkBattleEnd(updatedState);
 
     if (battleResult === 'ongoing') {
+      const prevHandSize = updatedState.player.hand.length;
       updatedState = startPlayerTurn(updatedState);
+      const newHandSize = updatedState.player.hand.length;
+      setGameState(updatedState);
+      const drawnCards = updatedState.player.hand.slice(prevHandSize);
 
-    updatedState = {
-      ...updatedState,
-      turn: updatedState.turn + 1
-    };
+      // Queue up animations for drawn cards
+      drawnCards.forEach(card => {
+        animationQueue.current.push({ type: 'DRAW_CARD', card });
+      });
 
-    updatedState = startPlayerTurn(updatedState);
-
-    if (updatedState.player.hand.length < 9 && updatedState.player.deck.length > 0) {
-      const drawnCard = updatedState.player.deck.pop()!;
-      updatedState = {
-        ...updatedState,
-        player: {
-          ...updatedState.player,
-          hand: [...updatedState.player.hand, drawnCard],
-        }
-      };
+      setGameState(updatedState);
+      processAnimations();
+    } else {
+      onBattleEnd(battleResult === 'player_win' ? 'win' : 'lose');
     }
-
-    setGameState(updatedState);
-  } else {
-    onBattleEnd(battleResult === 'player_win' ? 'win' : 'lose');
-  }
-};
+  };
 
   const handleDiscard = () => {
     if (gameState.player.hand.length > 0) {
@@ -259,18 +261,18 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
               <button className="end-turn-button" onClick={handleEndTurn}>End Turn</button>
             </div>
             <div className="ram-and-deck">
-              <div className="ram-info">
-                <span className="ram-label">RAM</span>
-                <span className="ram-text">{gameState.player.ram}</span>
-                <div className="ram-crystals">
-                  {Array.from({ length: 10 }, (_, i) => (
-                    <div
-                      key={i}
-                      className={`ram-crystal ${i < gameState.player.ram ? 'filled' : 'empty'}`}
-                    ></div>
-                  ))}
-                </div>
-              </div>
+      <div className="ram-info">
+        <span className="ram-label">RAM</span>
+        <span className="ram-text">{gameState.player.ram}</span>
+        <div className="ram-crystals">
+          {Array.from({ length: 10 }, (_, i) => (
+            <div
+              key={i}
+              className={`ram-crystal ${i < gameState.player.ram ? 'filled' : 'empty'}`}
+            ></div>
+          ))}
+        </div>
+      </div>
               <div className="deck-info">
                 <div className="deck-icon">D</div>
                 <span className="deck-count">{gameState.player.deck.length}</span>

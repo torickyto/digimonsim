@@ -1,6 +1,6 @@
 // battle.ts
 
-import { Digimon, StatusEffect, GameState, Card, BattleAction, TargetInfo } from '../shared/types';
+import { Digimon, StatusEffect, DigimonState, GameState, Card, BattleAction, TargetInfo } from '../shared/types';
 import { STARTING_RAM, BASE_RAM, MAX_HAND_SIZE, CARDS_DRAWN_PER_TURN, MAX_RAM } from './gameConstants';
 import { calculateDamage } from '../shared/damageCalculations';
 import { applyStatusEffects } from './statusEffects';
@@ -13,7 +13,7 @@ export const initializeBattle = (playerTeam: Digimon[], enemyTeam: Digimon[]): G
       hand: [],
       deck: playerTeam.flatMap(digimon => digimon.deck),
       discardPile: [],
-      ram: STARTING_RAM,
+      ram: calculateStartingRam(playerTeam),
     },
     enemy: {
       digimon: enemyTeam,
@@ -35,6 +35,16 @@ export const initializeBattle = (playerTeam: Digimon[], enemyTeam: Digimon[]): G
   initialState.player.deck = shuffleDeck(initialState.player.deck);
 
   return drawInitialHand(initialState);
+};
+
+const calculateStartingRam = (playerTeam: Digimon[]): number => {
+  let ram = STARTING_RAM;
+  playerTeam.forEach(digimon => {
+    if (digimon.passiveSkill && typeof digimon.passiveSkill.ramModifier === 'function') {
+      ram = digimon.passiveSkill.ramModifier(ram);
+    }
+  });
+  return Math.min(ram, MAX_RAM);
 };
 
 const shuffleDeck = (deck: Card[]): Card[] => {
@@ -82,8 +92,12 @@ const drawSingleCard = (gameState: GameState): GameState => {
 export const startPlayerTurn = (state: GameState): GameState => {
   let updatedState = { ...state };
 
-  // Reset RAM to base value (3), or the turn number if it's less than 10
-  updatedState.player.ram = Math.min(BASE_RAM, Math.min(updatedState.turn, MAX_RAM));
+  updatedState.player.digimon.forEach(digimon => {
+    if (digimon.passiveSkill && typeof digimon.passiveSkill.ramModifier === 'function') {
+      updatedState.player.ram = digimon.passiveSkill.ramModifier(updatedState.player.ram);
+    }
+  });
+  updatedState.player.ram = Math.min(updatedState.player.ram, MAX_RAM);
 
   // Apply RAM modifiers from Digimon abilities or items
   updatedState.player.digimon.forEach(digimon => {
@@ -114,9 +128,8 @@ export const startPlayerTurn = (state: GameState): GameState => {
 };
 
 const applyStartOfTurnEffects = (state: GameState): GameState => {
-  let updatedState = { ...state };
+  let updatedState: GameState = { ...state };
 
-  // Example: Decrease duration of status effects and remove expired ones
   updatedState.player.digimon = updatedState.player.digimon.map(digimon => ({
     ...digimon,
     statusEffects: digimon.statusEffects
@@ -125,9 +138,7 @@ const applyStartOfTurnEffects = (state: GameState): GameState => {
         duration: effect.duration > 0 ? effect.duration - 1 : effect.duration
       }))
       .filter((effect: StatusEffect) => effect.duration !== 0)
-  }));
-
-  // Add more start-of-turn logic as needed
+  })) as Digimon[];
 
   return updatedState;
 };
@@ -157,9 +168,12 @@ export const playCard = (gameState: GameState, cardIndex: number, targetInfo: Ta
 };
 
 export const endPlayerTurn = (gameState: GameState): GameState => {
-  const updatedState: GameState = {
+  let updatedState: GameState = {
     ...gameState,
     phase: 'enemy',
+    turn: gameState.turn + 1,
+    cardsPlayedThisTurn: 0,
+    cardsDiscardedThisTurn: 0,
   };
 
   updatedState.actionQueue.push({ type: 'END_PLAYER_TURN' });
@@ -168,11 +182,34 @@ export const endPlayerTurn = (gameState: GameState): GameState => {
 };
 
 export const executeEnemyTurn = (gameState: GameState): GameState => {
-  // Implement enemy AI and turn execution
-  const updatedState = { ...gameState };
+  let updatedState: GameState = { ...gameState };
 
   // Placeholder for enemy actions
   updatedState.actionQueue.push({ type: 'ENEMY_ACTION' });
+
+  // After enemy turn, prepare for the next player turn
+  updatedState = prepareNextPlayerTurn(updatedState);
+
+  return updatedState;
+};
+
+const prepareNextPlayerTurn = (gameState: GameState): GameState => {
+  let updatedState: GameState = { ...gameState };
+
+  // Reset RAM to the calculated value based on the team's current state
+  updatedState.player.ram = calculateStartingRam(updatedState.player.digimon as Digimon[]);
+
+  // Draw cards if there's room in the hand
+  const cardsToDraw = Math.min(CARDS_DRAWN_PER_TURN, MAX_HAND_SIZE - updatedState.player.hand.length);
+  for (let i = 0; i < cardsToDraw; i++) {
+    updatedState = drawSingleCard(updatedState);
+  }
+
+  // Apply any start-of-turn effects
+  updatedState = applyStartOfTurnEffects(updatedState);
+
+  // Set the phase to player's turn
+  updatedState.phase = 'player';
 
   return updatedState;
 };
@@ -187,9 +224,9 @@ const drawCards = (gameState: GameState, amount: number): GameState => {
   return updatedState;
 };
 
-export const applyDamage = (damage: number, target: Digimon, gameState: GameState, targetInfo: TargetInfo): GameState => {
+export const applyDamage = (damage: number, target: DigimonState, gameState: GameState, targetInfo: TargetInfo): GameState => {
   const updatedState = { ...gameState };
-  const isPlayerDigimon = updatedState.player.digimon.includes(target);
+  const isPlayerDigimon = updatedState.player.digimon.some(d => d.id === target.id);
   const digimonList = isPlayerDigimon ? updatedState.player.digimon : updatedState.enemy.digimon;
   const targetIndex = digimonList.findIndex(d => d.id === target.id);
 
@@ -198,15 +235,19 @@ export const applyDamage = (damage: number, target: Digimon, gameState: GameStat
   }
 
   const updatedHp = Math.max(0, digimonList[targetIndex].hp - damage);
-  digimonList[targetIndex] = {
+  const updatedDigimon = {
     ...digimonList[targetIndex],
     hp: updatedHp
   };
 
   if (isPlayerDigimon) {
-    updatedState.player.digimon = digimonList;
+    updatedState.player.digimon = updatedState.player.digimon.map((d, index) => 
+      index === targetIndex ? { ...d, ...updatedDigimon } as Digimon : d
+    );
   } else {
-    updatedState.enemy.digimon = digimonList;
+    updatedState.enemy.digimon = updatedState.enemy.digimon.map((d, index) => 
+      index === targetIndex ? updatedDigimon : d
+    );
   }
 
   updatedState.actionQueue.push({ 

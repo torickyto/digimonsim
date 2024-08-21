@@ -1,15 +1,15 @@
 /* BattleScreenAnimations.css */
 
 @keyframes drawCard {
-    from {
-      transform: translate(0, 0);
-      opacity: 0;
-    }
-    to {
-      transform: translate(100px, 0);
-      opacity: 1;
-    }
+  0% {
+    transform: translate(-150%, -50%) scale(0.5);
+    opacity: 0;
   }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
   
   @keyframes burnCard {
     0% {
@@ -43,21 +43,27 @@
     25% { transform: translateX(-10px) rotate(-5deg); }
     75% { transform: translateX(10px) rotate(5deg); }
   }
-  
-  .card-animation {
-    position: absolute;
-    transition: all 0.5s ease;
-    width: 100px;
-    height: 140px;
-    background-size: cover;
-  }
-  
+
   .card-animation.draw {
-    animation: drawCard 0.5s forwards;
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    width: calc(6 * var(--battle-vh) * 1.2);
+    height: calc(3.82 * var(--battle-vh) * 1.2);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    animation: drawCard 0.5s ease-out forwards;
+    z-index: 1000;
+    pointer-events: none;
+    border-radius: calc(0.6 * var(--battle-vh));
+    box-shadow: 0 0 calc(0.5 * var(--battle-vh)) rgba(0, 0, 0, 0.5);
   }
   
-  .card-animation.burn {
-    animation: burnCard 1s forwards;
+  @keyframes shuffle {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px) rotate(-5deg); }
+    75% { transform: translateX(10px) rotate(5deg); }
   }
   
   .discard-pile.shuffle {

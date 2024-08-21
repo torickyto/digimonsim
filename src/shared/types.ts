@@ -150,11 +150,11 @@ export interface DigimonState {
 
 export interface GameState {
   player: {
-    ram: number;
+    digimon: (Digimon | DigimonState)[];
     hand: Card[];
     deck: Card[];
     discardPile: Card[];
-    digimon: DigimonState[];
+    ram: number;
   };
   enemy: {
     digimon: DigimonState[];
@@ -190,8 +190,8 @@ export interface GameState {
 export interface PassiveSkill {
   name: string;
   description: string;
-  effect: (state: GameState, digimon: DigimonState) => GameState;
-  ramModifier?: (baseRam: number) => number;
+  effect: (state: GameState, digimon: Digimon) => GameState;
+  ramModifier?: (ram: number) => number;
 }
 
 export interface DigimonState {
