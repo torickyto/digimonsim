@@ -1,5 +1,6 @@
 export const EXPERIENCE_PER_LEVEL = 100;
-export const MAX_HAND_SIZE = 7;
+export const BASE_RAM = 3;
+export const MAX_HAND_SIZE = 9;
 export const STARTING_RAM = 3;
 export const MAX_RAM = 10;
 export const CARDS_DRAWN_PER_TURN = 2;

@@ -191,6 +191,7 @@ export interface PassiveSkill {
   name: string;
   description: string;
   effect: (state: GameState, digimon: DigimonState) => GameState;
+  ramModifier?: (baseRam: number) => number;
 }
 
 export interface DigimonState {

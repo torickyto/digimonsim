@@ -159,13 +159,33 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     let updatedState = endPlayerTurn(gameState);
     updatedState = executeEnemyTurn(updatedState);
     const battleResult = checkBattleEnd(updatedState);
+
     if (battleResult === 'ongoing') {
       updatedState = startPlayerTurn(updatedState);
-      setGameState(updatedState);
-    } else {
-      onBattleEnd(battleResult === 'player_win' ? 'win' : 'lose');
+
+    updatedState = {
+      ...updatedState,
+      turn: updatedState.turn + 1
+    };
+
+    updatedState = startPlayerTurn(updatedState);
+
+    if (updatedState.player.hand.length < 9 && updatedState.player.deck.length > 0) {
+      const drawnCard = updatedState.player.deck.pop()!;
+      updatedState = {
+        ...updatedState,
+        player: {
+          ...updatedState.player,
+          hand: [...updatedState.player.hand, drawnCard],
+        }
+      };
     }
-  };
+
+    setGameState(updatedState);
+  } else {
+    onBattleEnd(battleResult === 'player_win' ? 'win' : 'lose');
+  }
+};
 
   const handleDiscard = () => {
     if (gameState.player.hand.length > 0) {
@@ -243,7 +263,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
                 <span className="ram-label">RAM</span>
                 <span className="ram-text">{gameState.player.ram}</span>
                 <div className="ram-crystals">
-                  {Array.from({ length: Math.max(gameState.turn, 10) }, (_, i) => (
+                  {Array.from({ length: 10 }, (_, i) => (
                     <div
                       key={i}
                       className={`ram-crystal ${i < gameState.player.ram ? 'filled' : 'empty'}`}
@@ -260,6 +280,9 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
                 <span className="discard-count">{gameState.player.discardPile.length}</span>
               </div>
             </div>
+          </div>
+          <div className="turn-display">
+            TURN {gameState.turn}
           </div>
         </div>
         <div className="battle-area">

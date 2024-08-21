@@ -1,7 +1,7 @@
 // battle.ts
 
-import { Digimon, GameState, Card, BattleAction, TargetInfo } from '../shared/types';
-import { STARTING_RAM, MAX_HAND_SIZE, CARDS_DRAWN_PER_TURN, MAX_RAM } from './gameConstants';
+import { Digimon, StatusEffect, GameState, Card, BattleAction, TargetInfo } from '../shared/types';
+import { STARTING_RAM, BASE_RAM, MAX_HAND_SIZE, CARDS_DRAWN_PER_TURN, MAX_RAM } from './gameConstants';
 import { calculateDamage } from '../shared/damageCalculations';
 import { applyStatusEffects } from './statusEffects';
 import { resolveCardEffects } from './cardEffects';
@@ -79,24 +79,55 @@ const drawSingleCard = (gameState: GameState): GameState => {
   return { ...gameState };
 };
 
-export const startPlayerTurn = (gameState: GameState): GameState => {
-  let updatedState = { ...gameState };
-  updatedState.player.ram = Math.min(gameState.turn, MAX_RAM);
-  updatedState = drawCards(updatedState, CARDS_DRAWN_PER_TURN);
-  
-  const playerDigimon = updatedState.player.digimon[0];
-  const updatedDigimonState = applyStatusEffects(playerDigimon);
-  
-  updatedState.player.digimon[0] = {
-    ...playerDigimon,
-    ...updatedDigimonState
-  };
+export const startPlayerTurn = (state: GameState): GameState => {
+  let updatedState = { ...state };
 
-  updatedState.cardsPlayedThisTurn = 0;
-  updatedState.damageTakenThisTurn = 0;
-  updatedState.cardsDiscardedThisTurn = 0;
+  // Reset RAM to base value (3), or the turn number if it's less than 10
+  updatedState.player.ram = Math.min(BASE_RAM, Math.min(updatedState.turn, MAX_RAM));
 
-  updatedState.actionQueue.push({ type: 'START_PLAYER_TURN' });
+  // Apply RAM modifiers from Digimon abilities or items
+  updatedState.player.digimon.forEach(digimon => {
+    if (digimon.passiveSkill && typeof digimon.passiveSkill.ramModifier === 'function') {
+      updatedState.player.ram = digimon.passiveSkill.ramModifier(updatedState.player.ram);
+    }
+  });
+
+  updatedState.player.ram = Math.min(updatedState.player.ram, MAX_RAM);
+
+  // Draw one card if there's room in the hand and cards in the deck
+  if (updatedState.player.hand.length < MAX_HAND_SIZE && updatedState.player.deck.length > 0) {
+    const drawnCard = updatedState.player.deck.pop()!;
+    updatedState.player.hand.push(drawnCard);
+
+
+    // add the card draw to the action queue for animation
+    updatedState.actionQueue.push({ type: 'DRAW_CARD', card: drawnCard });
+  }
+
+  // Apply any start-of-turn effects
+  updatedState = applyStartOfTurnEffects(updatedState);
+
+  // Set the phase to player's turn
+  updatedState.phase = 'player';
+
+  return updatedState;
+};
+
+const applyStartOfTurnEffects = (state: GameState): GameState => {
+  let updatedState = { ...state };
+
+  // Example: Decrease duration of status effects and remove expired ones
+  updatedState.player.digimon = updatedState.player.digimon.map(digimon => ({
+    ...digimon,
+    statusEffects: digimon.statusEffects
+      .map((effect: StatusEffect) => ({
+        ...effect,
+        duration: effect.duration > 0 ? effect.duration - 1 : effect.duration
+      }))
+      .filter((effect: StatusEffect) => effect.duration !== 0)
+  }));
+
+  // Add more start-of-turn logic as needed
 
   return updatedState;
 };
