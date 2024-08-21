@@ -7,12 +7,13 @@ interface CompactCardProps {
   onClick: () => void;
   isSelected: boolean;
   isPlayable: boolean;
+  isTopCard: boolean;
 }
 
-const CompactCard: React.FC<CompactCardProps> = ({ card, onClick, isSelected, isPlayable }) => {
+const CompactCard: React.FC<CompactCardProps> = ({ card, onClick, isSelected, isPlayable, isTopCard }) => {
   return (
     <div 
-      className={`compact-card ${isSelected ? 'selected' : ''} ${isPlayable ? 'playable' : ''}`}
+      className={`compact-card ${isSelected ? 'selected' : ''} ${isPlayable ? 'playable' : ''} ${isTopCard ? 'top-card' : ''}`}
       onClick={onClick}
     >
       <img src={require(`../assets/cards/${card.name.toLowerCase().replace(/\s+/g, '')}.png`)} alt={card.name} className="card-image" />

@@ -13,17 +13,29 @@
   
   @keyframes burnCard {
     0% {
-      transform: translate(0, 0);
+      transform: translate(0, 0) rotate(0deg);
       opacity: 1;
     }
     50% {
-      transform: translate(50px, -50px) rotate(45deg);
+      transform: translate(50%, -50%) rotate(45deg) scale(0.75);
       opacity: 0.5;
     }
     100% {
-      transform: translate(100px, 0) rotate(90deg);
+      transform: translate(100%, -100%) rotate(90deg) scale(0.5);
       opacity: 0;
     }
+  }
+  
+  .card-animation.burn {
+    position: fixed;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    animation: burnCard 1s forwards;
+    z-index: 9999;
+    pointer-events: none;
+    border-radius: calc(0.6 * var(--battle-vh));
+    box-shadow: 0 0 calc(0.5 * var(--battle-vh)) rgba(255, 0, 0, 0.7);
   }
   
   @keyframes shuffle {

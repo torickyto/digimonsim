@@ -19,6 +19,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   const [spriteScale, setSpriteScale] = useState(1);
   const battleScreenRef = useRef<HTMLDivElement>(null);
   const animationQueue = useRef<BattleAction[]>([]);
+  const [isDiscardHovered, setIsDiscardHovered] = useState(false);
 
   useEffect(() => {
     processAnimations();
@@ -106,6 +107,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
       ...prevState,
       player: {
         ...prevState.player,
+        hand: prevState.player.hand.slice(1),
         discardPile: [...prevState.player.discardPile, card]
       }
     }));
@@ -167,10 +169,55 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
 
   const handleDiscard = () => {
     if (gameState.player.hand.length > 0) {
-      const updatedState = { ...gameState };
-      const discardedCard = updatedState.player.hand.pop()!;
-      updatedState.player.discardPile.push(discardedCard);
-      setGameState(updatedState);
+      const discardedCard = gameState.player.hand[0];
+      
+      // Create and append the card animation element
+      const cardElement = document.createElement('div');
+      cardElement.classList.add('card-animation', 'burn');
+      
+      // Position the card element
+      const handArea = document.querySelector('.hand-area');
+      if (handArea) {
+        const firstCard = handArea.firstElementChild as HTMLElement;
+        if (firstCard) {
+          const rect = firstCard.getBoundingClientRect();
+          cardElement.style.position = 'fixed';
+          cardElement.style.left = `${rect.left}px`;
+          cardElement.style.top = `${rect.top}px`;
+          cardElement.style.width = `${rect.width}px`;
+          cardElement.style.height = `${rect.height}px`;
+  
+          const cardImage = firstCard.querySelector('.card-image') as HTMLImageElement;
+          if (cardImage) {
+            cardElement.style.backgroundImage = `url(${cardImage.src})`;
+            cardElement.style.backgroundSize = 'cover';
+            cardElement.style.backgroundPosition = 'center';
+          }
+        }
+      }
+      
+      document.body.appendChild(cardElement);
+
+      setGameState(prevState => ({
+        ...prevState,
+        player: {
+          ...prevState.player,
+          hand: prevState.player.hand.slice(1),
+        }
+      }));
+      // Play the burn animation
+      setTimeout(() => {
+        cardElement.remove();
+        
+        // Update the game state after the animation
+        setGameState(prevState => ({
+          ...prevState,
+          player: {
+            ...prevState.player,
+            discardPile: [discardedCard, ...prevState.player.discardPile]
+          }
+        }));
+      }, 1000); // Duration of the animation
     }
   };
 
@@ -181,7 +228,14 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
         <div className="top-bar">
           <div className="left-controls">
             <div className="button-container">
-              <button className="discard-button" onClick={handleDiscard}>Discard</button>
+            <button 
+                className="discard-button"
+                onClick={handleDiscard}
+                onMouseEnter={() => setIsDiscardHovered(true)}
+                onMouseLeave={() => setIsDiscardHovered(false)}
+              >
+                Discard
+              </button>
               <button className="end-turn-button" onClick={handleEndTurn}>End Turn</button>
             </div>
             <div className="ram-and-deck">
@@ -238,14 +292,15 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
           </div>
         </div>
         <div className="hand-area">
-        {gameState.player.hand.map((card, index) => (
-          <CompactCard 
-            key={card.instanceId}
-            card={card} 
-            onClick={() => handleCardClick(card)}
-            isSelected={selectedCard?.instanceId === card.instanceId}
-            isPlayable={gameState.player.ram >= card.cost}
-          />
+      {gameState.player.hand.map((card, index) => (
+        <CompactCard 
+          key={card.instanceId}
+          card={card} 
+          onClick={() => handleCardClick(card)}
+          isSelected={selectedCard?.instanceId === card.instanceId}
+          isPlayable={gameState.player.ram >= card.cost}
+          isTopCard={index === 0 && isDiscardHovered}
+        />
   ))}
 </div>
         <div className="bottom-bar">

@@ -81,9 +81,10 @@
   font-weight: bold;
 }
 
-.discard-button:hover, .end-turn-button:hover {
-  background-color: rgba(255, 215, 0, 0.2);
+.discard-button:hover {
+  background-color: rgba(255, 0, 0, 1);
 }
+
 
 .ram-and-deck {
   display: flex;
