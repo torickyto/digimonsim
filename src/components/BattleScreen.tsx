@@ -4,6 +4,7 @@ import { initializeBattle, startPlayerTurn, playCard, endPlayerTurn, executeEnem
 import DigimonSprite from './DigimonSprite';
 import CompactCard from './CompactCard';
 import FullCardDisplay from './FullCardDisplay';
+import RamDisplay from './RamDisplay';
 import './BattleScreen.css';
 import './BattleScreenAnimations.css';
 import CardPileModal from './CardPileModal';
@@ -30,6 +31,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   const [shuffledDeckForDisplay, setShuffledDeckForDisplay] = useState<Card[]>([]);
   const [hoveredCard, setHoveredCard] = useState<Card | null>(null);
   const [hoverPosition, setHoverPosition] = useState({ x: 0, y: 0 });
+  const [highlightedRam, setHighlightedRam] = useState(0);
   const [parentDimensions, setParentDimensions] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
@@ -38,6 +40,31 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     setHandKey(prevKey => prevKey + 1); // Force re-render for initial hand
   }, []);
 
+  useEffect(() => {
+    // listener for the Escape key
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        deselectCard();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  const deselectCard = () => {
+    setSelectedCard(null);
+    setHighlightedRam(0);
+  };
+
+  const handleBackgroundClick = (event: React.MouseEvent) => {
+    if (event.target === event.currentTarget) {
+      deselectCard();
+    }
+  };
 
   useEffect(() => {
     const updateScaleFactor = () => {
@@ -146,7 +173,12 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
 
   const handleCardClick = (card: Card) => {
     if (gameState.player.ram >= card.cost) {
-      setSelectedCard(card);
+      if (selectedCard && selectedCard.instanceId === card.instanceId) {
+        deselectCard(); 
+      } else {
+        setSelectedCard(card);
+        setHighlightedRam(card.cost);
+      }
     }
   };
 
@@ -166,6 +198,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   };
 
   const handleEndTurn = () => {
+    deselectCard();
     let updatedState = endPlayerTurn(gameState);
     updatedState = executeEnemyTurn(updatedState);
     const battleResult = checkBattleEnd(updatedState);
@@ -245,6 +278,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
         }));
       }, 1000); // Duration of the animation
     }
+    deselectCard();
   };
 
   const shuffleArray = <T,>(array: T[]): T[] => {
@@ -276,16 +310,18 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
         x: rect.right - battleScreenRect.left, 
         y: rect.top - battleScreenRect.top 
       });
+      setHighlightedRam(card.cost);
     }
   };
 
   const handleCardHoverEnd = () => {
     setHoveredCard(null);
+    setHighlightedRam(selectedCard ? selectedCard.cost : 0);
   };
 
   return (
     <div className="battle-screen-container">
-      <div className="battle-screen" ref={battleScreenRef}>
+      <div className="battle-screen" ref={battleScreenRef} onClick={handleBackgroundClick}>
         <div className="battle-background"></div>
         <div className="top-bar">
           <div className="left-controls">
@@ -309,12 +345,11 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
         <span className="ram-label">RAM</span>
         <span className="ram-text">{gameState.player.ram}</span>
         <div className="ram-crystals">
-          {Array.from({ length: 10 }, (_, i) => (
-            <div
-              key={i}
-              className={`ram-crystal ${i < gameState.player.ram ? 'filled' : 'empty'}`}
-            ></div>
-          ))}
+        <RamDisplay
+              currentRam={gameState.player.ram}
+              maxRam={10}
+              highlightedRam={highlightedRam}
+            />
         </div>
       </div>
       <div className="deck-info" onClick={handleDeckClick}>
