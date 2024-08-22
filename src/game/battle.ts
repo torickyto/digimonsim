@@ -11,7 +11,9 @@ export const initializeBattle = (playerTeam: Digimon[], enemyTeam: Digimon[]): G
     player: {
       digimon: playerTeam,
       hand: [],
-      deck: playerTeam.flatMap(digimon => digimon.deck),
+      deck: playerTeam.flatMap((digimon, index) => 
+        digimon.deck.map(card => ({ ...card, ownerDigimonIndex: index }))
+      ),
       discardPile: [],
       ram: calculateStartingRam(playerTeam),
     },
@@ -81,7 +83,7 @@ const drawSingleCard = (gameState: GameState): GameState => {
       gameState.player.hand.push(drawnCard);
       gameState.actionQueue.push({ type: 'DRAW_CARD', card: drawnCard });
     } else {
-      
+
       gameState.player.discardPile.push(drawnCard);
       gameState.cardsDiscardedThisBattle++;
       gameState.actionQueue.push({ type: 'BURN_CARD', card: drawnCard });
@@ -139,18 +141,35 @@ export const playCard = (gameState: GameState, cardIndex: number, targetInfo: Ta
 
   const updatedHand = gameState.player.hand.filter((_, index) => index !== cardIndex);
 
-  let updatedState = resolveCardEffects(card, { ...gameState, player: { ...gameState.player, hand: updatedHand } }, targetInfo);
+  const ownerDigimon = gameState.player.digimon[card.ownerDigimonIndex];
+  
+
+  let updatedState = resolveCardEffects(card, { 
+    ...gameState, 
+    player: { 
+      ...gameState.player, 
+      hand: updatedHand 
+    } 
+  }, {
+    ...targetInfo,
+    sourceDigimonIndex: card.ownerDigimonIndex
+  });
 
   updatedState = {
     ...updatedState,
     player: {
       ...updatedState.player,
+      ram: updatedState.player.ram - card.cost,
       discardPile: [...updatedState.player.discardPile, card]
     },
     cardsPlayedThisTurn: updatedState.cardsPlayedThisTurn + 1
   };
 
-  updatedState.actionQueue.push({ type: 'PLAY_CARD', card, targetInfo });
+  updatedState.actionQueue.push({ 
+    type: 'PLAY_CARD', 
+    card, 
+    targetInfo: { ...targetInfo, sourceDigimonIndex: card.ownerDigimonIndex }
+  });
 
   return updatedState;
 };
@@ -226,28 +245,19 @@ export const drawCard = (state: GameState): { newState: GameState; drawnCard: Ca
 
 
 export const applyDamage = (damage: number, target: DigimonState, gameState: GameState, targetInfo: TargetInfo): GameState => {
-  const updatedState = { ...gameState };
-  const isPlayerDigimon = updatedState.player.digimon.some(d => d.id === target.id);
-  const digimonList = isPlayerDigimon ? updatedState.player.digimon : updatedState.enemy.digimon;
-  const targetIndex = digimonList.findIndex(d => d.id === target.id);
+  const updatedHp = Math.max(0, target.hp - damage);
+  const updatedTarget = { ...target, hp: updatedHp };
 
-  if (targetIndex === -1) {
-    throw new Error('Target Digimon not found');
-  }
+  let updatedState = { ...gameState };
 
-  const updatedHp = Math.max(0, digimonList[targetIndex].hp - damage);
-  const updatedDigimon = {
-    ...digimonList[targetIndex],
-    hp: updatedHp
-  };
-
-  if (isPlayerDigimon) {
-    updatedState.player.digimon = updatedState.player.digimon.map((d, index) => 
-      index === targetIndex ? { ...d, ...updatedDigimon } as Digimon : d
+  if (targetInfo.targetType === 'enemy') {
+    updatedState.enemy.digimon = updatedState.enemy.digimon.map((d, index) => 
+      index === targetInfo.targetDigimonIndex ? updatedTarget : d
     );
   } else {
-    updatedState.enemy.digimon = updatedState.enemy.digimon.map((d, index) => 
-      index === targetIndex ? updatedDigimon : d
+    // Handle damage to player Digimon if needed
+    updatedState.player.digimon = updatedState.player.digimon.map((d, index) => 
+      index === targetInfo.targetDigimonIndex ? { ...d, ...updatedTarget } as Digimon : d
     );
   }
 

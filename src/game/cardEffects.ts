@@ -41,6 +41,8 @@ function getTargets(gameState: GameState, targetInfo: TargetInfo): DigimonState[
 
 function resolveCardEffects(card: Card, gameState: GameState, targetInfo: TargetInfo): GameState {
   let updatedState = { ...gameState };
+  let enemiesHit = 0;
+  const sourceDigimon = updatedState.player.digimon[targetInfo.sourceDigimonIndex];
   const targets = getTargets(updatedState, targetInfo);
 
    card.effects.forEach(effect => {
@@ -65,15 +67,35 @@ function resolveCardEffects(card: Card, gameState: GameState, targetInfo: Target
 
     if (effect.damage && effect.damage.formula) {
       const damage = DamageCalculations[effect.damage.formula](updatedState.player.digimon[targetInfo.sourceDigimonIndex]);
+      const targets = getTargets(updatedState, { ...targetInfo, targetType: effect.damage.target });
       targets.forEach(target => {
         updatedState = applyDamage(damage, target, updatedState, targetInfo);
+        if (target.hp > 0) enemiesHit++;
       });
     }
 
     if (effect.shield && effect.shield.formula) {
-      const shieldAmount = DamageCalculations[effect.shield.formula](updatedState.player.digimon[targetInfo.sourceDigimonIndex]);
-      targets.forEach(target => {
+      let shieldAmount = DamageCalculations[effect.shield.formula](updatedState.player.digimon[targetInfo.sourceDigimonIndex]);
+      
+      if (effect.scaling && effect.scaling.factor === 'enemiesHit') {
+        const scalingValue = getScalingValue(effect.scaling.factor, updatedState, targetInfo.sourceDigimonIndex, enemiesHit);
+        const scaledEffect = effect.scaling.effect(scalingValue);
+        if (scaledEffect.shield && scaledEffect.shield.formula) {
+          shieldAmount *= scalingValue;
+        }
+      }
+
+      const shieldTargets = getTargets(updatedState, { ...targetInfo, targetType: effect.shield.target });
+      shieldTargets.forEach(target => {
         updatedState = applyShield(shieldAmount, target, updatedState);
+      });
+    }
+
+    if (effect.heal && effect.heal.formula) {
+      const healAmount = DamageCalculations[effect.heal.formula](updatedState.player.digimon[targetInfo.sourceDigimonIndex]);
+      const healTargets = getTargets(updatedState, { ...targetInfo, targetType: effect.heal.target });
+      healTargets.forEach(target => {
+        updatedState = applyHeal(healAmount, target, updatedState);
       });
     }
 
@@ -83,15 +105,8 @@ function resolveCardEffects(card: Card, gameState: GameState, targetInfo: Target
       }
     }
 
-    if (effect.heal && effect.heal.formula) {
-      const healAmount = DamageCalculations[effect.heal.formula](updatedState.player.digimon[targetInfo.sourceDigimonIndex]);
-      targets.forEach(target => {
-        updatedState = applyHeal(healAmount, target, updatedState);
-      });
-    }
-
     if (effect.scaling) {
-      updatedState = handleScaling(effect, updatedState, targetInfo);
+      updatedState = handleScaling(effect, updatedState, targetInfo, enemiesHit);
     }
 
     if (effect.applyStatus) {
@@ -127,7 +142,7 @@ function resolveCardEffects(card: Card, gameState: GameState, targetInfo: Target
     if (effect.removeAilments) updatedState = removeAilments(updatedState);
     if (effect.modifyCost) updatedState = modifyCost(effect.modifyCost, updatedState);
     if (effect.modifyStatMultiplier) updatedState = modifyStatMultiplier(effect.modifyStatMultiplier, updatedState);
-    if (effect.scaling) updatedState = applyScalingEffect(effect.scaling, updatedState, targetInfo);
+    if (effect.scaling) updatedState = applyScalingEffect(effect.scaling, updatedState, targetInfo, enemiesHit);
   });
 
   // Apply conditional effects
@@ -366,20 +381,20 @@ function modifyStatMultiplier(modifyStatEffect: CardEffect['modifyStatMultiplier
 }
 
 
-function applyScalingEffect(scalingEffect: CardEffect['scaling'], gameState: GameState, targetInfo: TargetInfo): GameState {
+function applyScalingEffect(scalingEffect: CardEffect['scaling'], gameState: GameState, targetInfo: TargetInfo, enemiesHit: number): GameState {
   if (!scalingEffect) return gameState;
 
   const { factor, effect } = scalingEffect;
-  const scalingValue = getScalingValue(factor, gameState, targetInfo.sourceDigimonIndex);
+  const scalingValue = getScalingValue(factor, gameState, targetInfo.sourceDigimonIndex, enemiesHit);
   const scaledEffect = effect(scalingValue);
 
   return resolveCardEffects({ effects: [scaledEffect] } as Card, gameState, targetInfo);
 }
 
-function getScalingValue(factor: ScalingFactor, gameState: GameState, sourceDigimonIndex: number): number {
+function getScalingValue(factor: ScalingFactor, gameState: GameState, sourceDigimonIndex: number, value: number): number {
   switch (factor) {
     case 'enemiesHit':
-      return gameState.enemy.digimon.length;
+      return value;
     case 'drawnCardsCost':
       return gameState.player.hand.reduce((total, card) => total + card.cost, 0);
     case 'cardsDiscardedThisTurn':
@@ -391,7 +406,7 @@ function getScalingValue(factor: ScalingFactor, gameState: GameState, sourceDigi
       case 'cardsDiscardedThisBattle':
         return gameState.cardsDiscardedThisBattle;
       default:
-        return 0;
+        return 1;
     }
 }
 
@@ -493,9 +508,9 @@ function calculateDamage(formula: string, attacker: DigimonState, gameState: Gam
   return attacker.attack;
 }
 
-function handleScaling(effect: CardEffect, gameState: GameState, targetInfo: TargetInfo): GameState {
+function handleScaling(effect: CardEffect, gameState: GameState, targetInfo: TargetInfo, enemiesHit: number): GameState {
   if (effect.scaling) {
-    const scalingValue = getScalingValue(effect.scaling.factor, gameState, targetInfo.sourceDigimonIndex);
+    const scalingValue = getScalingValue(effect.scaling.factor, gameState, targetInfo.sourceDigimonIndex, enemiesHit);
     const scaledEffect = effect.scaling.effect(scalingValue);
     return resolveCardEffects({ effects: [scaledEffect] } as Card, gameState, targetInfo);
   }

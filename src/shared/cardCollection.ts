@@ -55,7 +55,8 @@ export const CardCollection: Record<string, Card> = {
     [{
       description: "",
       shield: {
-        formula: 'BASIC'
+        target: 'self',
+        formula: 'LIGHT2'
       }
     }]
   ),
@@ -71,6 +72,7 @@ export const CardCollection: Record<string, Card> = {
     [{
       description: "",
       heal: {
+        target: 'self',
         formula: 'LIGHT_HEAL'
       }
     }]
@@ -195,19 +197,20 @@ export const CardCollection: Record<string, Card> = {
     'attack',
     2,
     'VACCINE',
-    '',
+    'Deal {damage} damage to an enemy and gain {shield} shield.',
     'enemy',
     [{
-      description: "",
+      description: "Deal damage to an enemy",
       damage: {
         formula: 'BASIC',
         target: 'enemy'
       }
     },
     {
-      description: "Gain {shield} shield",
+      description: "Gain shield",
       shield: {
-        formula: 'WEAK2'
+        formula: 'WEAK2',
+        target: 'self'
       }
     }]
   ),
@@ -248,15 +251,20 @@ BLUE_CYCLONE: createCard(
   {
     description: "Gain shield for each enemy hit.",
     shield: {
-      formula: 'WEAK'
+      formula: 'WEAK',
+      target: 'self'
     },
     scaling: {
       factor: 'enemiesHit',
-      effect: (value) => ({ shield: { formula: 'WEAK' } })
+      effect: (value) => ({ 
+        shield: { 
+          formula: 'WEAK',
+          target: 'self'
+        } 
+      })
     }
   }]
 ),
-
 BUBBLE: createCard(
   'BUBBLE',
   'Bubble',
@@ -268,7 +276,8 @@ BUBBLE: createCard(
   [{
     description: "Give an ally shield.",
     shield: {
-      formula: 'BASIC2'
+      formula: 'BASIC2',
+      target: 'single_ally'
     }
   }]
 ),
@@ -320,7 +329,8 @@ ROLLING_GUARD: createCard(
   [{
     description: "Gain shield.",
     shield: {
-      formula: 'BASIC2'
+      formula: 'BASIC2',
+      target: 'self'
     }
   }]
 ),
@@ -409,7 +419,8 @@ LIVING_SHIELD: createCard(
   [{
     description: "PLACEHOLDER",
     shield: {
-      formula: 'BASIC'
+      formula: 'BASIC',
+      target: 'self'
     }
   },
   {
@@ -669,6 +680,7 @@ DJ_SHOOTER: createCard(
   [{
     description: "PLACEHOLDER",
     shield: {
+      target: 'single_ally',
       formula: 'STRONG'
     }
   }]
@@ -685,6 +697,7 @@ BREAK_IT_DOWN: createCard(
   [{
     description: "PLACEHOLDER",
     shield: {
+      target: 'all',
       formula: 'STRONG'
     }
   }]

@@ -18,9 +18,11 @@ export interface CardEffect {
   };
   shield?: {
     formula: DamageFormulaKey;
+    target: TargetType;
   };
   heal?: {
     formula: DamageFormulaKey;
+    target: TargetType;
   };
   drawCards?: number;
   repeat?: number;

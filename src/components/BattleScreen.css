@@ -216,6 +216,68 @@
   z-index: 20; 
 }
 
+.enemy-digimon-container,
+.player-digimon-container {
+  position: relative;
+  cursor: pointer;
+}
+
+
+
+
+.shield-indicator {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 140, 255, 0.85);
+  color: white;
+  padding: 2px 5px;
+  border-radius: 10px;
+  font-size: 0.8em;
+}
+
+.enemy-health-bar,
+.player-health-bar {
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 15%;
+  height: 1.5vmin;
+  background-color: #333;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.health-fill {
+  height: 50%;
+  background-color: #ff2323;
+  border-radius: 2px;
+  transition: width 0.3s ease-in-out;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
+.shield-bar {
+  position: absolute;
+  bottom: 20%;
+  width: 15%;
+  height: 1.5vmin;
+  background-color: #333;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.enemy-hp-number,
+.player-hp-number {
+  position: absolute;
+  left: -35px;
+  color: white;
+  font-size: 1vmin;
+  white-space: nowrap;
+}
+
 .hand-area {
   position: absolute;
   top: 15%;
@@ -228,63 +290,107 @@
 
 .bottom-bar {
   position: absolute;
-  bottom: 2%;
-  left: 2%;
-  right: 2%;
+  bottom: calc(2 * var(--battle-vh));
+  left: calc(2 * var(--battle-vw));
+  right: calc(2 * var(--battle-vw));
   display: flex;
   justify-content: space-around;
-  align-items: center;
+  align-items: flex-end;
 }
 
 .digimon-info {
   display: flex;
   flex-direction: column;
-  align-items: flex-start; 
-  background-color: rgba(31, 30, 30, 0.7);
-  padding: 0.5vmin;
-  border-radius: 5px;
-  width: 30%;
+  align-items: stretch;
+  background-color: rgba(0, 0, 0, 0.8);
+  padding: calc(1 * var(--battle-vh));
+  border-radius: calc(0.5 * var(--battle-vh));
+  width: calc(30 * var(--battle-vw));
+  max-width: 30%;
   z-index: 10;
+  box-shadow: 0 0 calc(0.5 * var(--battle-vh)) rgba(0, 0, 0, 0.5);
+  border: calc(0.2 * var(--battle-vh)) solid rgba(255, 238, 6, 0.94);
 }
 
 .digimon-info span {
   color: white;
-  font-size: 0.9em;
   margin-top: 0.2em;
 }
 
-.hp-container {
+.hp-container, .shield-container {
   display: flex;
   align-items: center;
   width: 100%;
 }
 
-.hp-number {
+.shield-number {
   color: white;
-  margin-right: 0.5em;
-  font-size: 1em;
+  font-size: calc(1.8 * var(--battle-vh));
+  text-align: right;
 }
 
-.hp-bar {
-  width: 100%;
-  height: 1vmin;
-  background-color: #333;
-  border-radius: 0.2vmin;
+.hp-number {
+  color: white;
+  font-size: calc(2 * var(--battle-vh));
+  min-width: calc(1 * var(--battle-vh));
+  text-align: right;
+  margin-right: calc(0.5 * var(--battle-vh));
+}
+
+.hp-bar, .shield-bar {
+  flex-grow: 1;
+  height: calc(1 * var(--battle-vh));
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: calc(0.5 * var(--battle-vh));
   overflow: hidden;
-  margin-top: 0.2em;
+  position: relative;
+}
+
+.shield-bar {
+  margin-left: 3em;
+}
+
+.hp-fill, .shield-fill {
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  transition: width 0.3s ease-in-out;
 }
 
 .hp-fill {
-  height: 100%;
   background-color: #00ff00;
+  box-shadow: 0 0 calc(0.5 * var(--battle-vh)) #00ff00;
+}
+
+.shield-fill {
+  height: 100%;
+  background-color: #4ac8fa;
 }
 
 .digimon-name {
-  color: white;
-  font-size: 1.5vmin;
-  text-align: left;
-  width: 100%;
+  color: #ffd700;
+  font-size: calc(2 * var(--battle-vh));
+  font-weight: bold;
+  margin-bottom: calc(0.5 * var(--battle-vh));
+  text-shadow: 0 0 calc(0.3 * var(--battle-vh)) rgba(255, 215, 0, 0.5);
 }
+
+.shield-fill {
+  background-color: #4ac8fa;
+  box-shadow: 0 0 calc(0.5 * var(--battle-vh)) #4ac8fa;
+}
+
+
+.shield-icon {
+  font-size: calc(1.8 * var(--battle-vh));
+  margin-right: calc(0.5 * var(--battle-vh));
+  color: #4ac8fa;
+}
+
+.shield-container {
+}
+
 
 /* Responsive adjustments */
 @media (max-aspect-ratio: 16/9) {

@@ -36,8 +36,8 @@ export function createDigimon(template: DigimonTemplate, level: number = 1): Dig
   const digimon: Digimon = {
     ...digimonState,
     deck: [
-      { ...template.startingCard, instanceId: uuidv4() },
-      ...getStarterDeck(template.name)
+      { ...template.startingCard, instanceId: uuidv4(), ownerDigimonIndex: 0 },
+      ...getStarterDeck(template.name).map(card => ({ ...card, ownerDigimonIndex: 0 }))
     ]
   };
 
@@ -54,7 +54,7 @@ export const addCardToDigimon = (digimon: Digimon, cardId: string): Digimon => {
   
   return {
     ...digimon,
-    deck: [...digimon.deck, { ...newCard, instanceId: uuidv4() }]
+    deck: [...digimon.deck, { ...newCard, instanceId: uuidv4(), ownerDigimonIndex: 0 }]
   };
 };
 
