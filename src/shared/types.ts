@@ -2,7 +2,7 @@
 
 // Enums and basic types
 export type DigimonType = 'NULL' | 'DATA' | 'VACCINE' | 'VIRUS';
-export type CardEffectType = 'attack' | 'shield' | 'special';
+export type CardEffectType = 'attack' | 'shield' | 'special' | 'healing';
 export type TargetType = 'self' | 'single_ally' | 'enemy' | 'all_enemies' | 'random_enemy' | 'all_allies' | 'random_ally' | 'none'| 'all';
 export type StatusEffectType = 'corruption' | 'bugged' | 'taunt';
 export type ComboTrigger = 'attack' | 'shield' | 'special';

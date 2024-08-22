@@ -30,6 +30,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   const [shuffledDeckForDisplay, setShuffledDeckForDisplay] = useState<Card[]>([]);
   const [hoveredCard, setHoveredCard] = useState<Card | null>(null);
   const [hoverPosition, setHoverPosition] = useState({ x: 0, y: 0 });
+  const [parentDimensions, setParentDimensions] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
     const initialState = startPlayerTurn(gameState);
@@ -60,6 +61,21 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   
   useEffect(() => {
     setGameState(startPlayerTurn(gameState));
+  }, []);
+
+  useEffect(() => {
+    const updateDimensions = () => {
+      if (battleScreenRef.current) {
+        setParentDimensions({
+          width: battleScreenRef.current.offsetWidth,
+          height: battleScreenRef.current.offsetHeight
+        });
+      }
+    };
+
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    return () => window.removeEventListener('resize', updateDimensions);
   }, []);
 
   useEffect(() => {
@@ -253,8 +269,14 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
 
   const handleCardHover = (card: Card, event: React.MouseEvent) => {
     const rect = (event.target as HTMLElement).getBoundingClientRect();
-    setHoveredCard(card);
-    setHoverPosition({ x: rect.right + 10, y: rect.top });
+    const battleScreenRect = battleScreenRef.current?.getBoundingClientRect();
+    if (battleScreenRect) {
+      setHoveredCard(card);
+      setHoverPosition({ 
+        x: rect.right - battleScreenRect.left, 
+        y: rect.top - battleScreenRect.top 
+      });
+    }
   };
 
   const handleCardHoverEnd = () => {
@@ -355,10 +377,10 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     </div>
     {hoveredCard && (
           <FullCardDisplay 
-            card={hoveredCard} 
-            position={hoverPosition} 
-            attacker={gameState.player.digimon[hoveredCard.ownerDigimonIndex]}
-          />
+          card={hoveredCard} 
+          position={hoverPosition} 
+          attacker={gameState.player.digimon[hoveredCard.ownerDigimonIndex]}
+        />
         )}
         <div className="bottom-bar">
           {playerTeam.map((digimon, index) => (

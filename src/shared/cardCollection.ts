@@ -33,7 +33,7 @@ export const CardCollection: Record<string, Card> = {
     'attack',
     1,
     'NULL',
-    'Deal {damage} damage to the target.',
+    '',
     'enemy',
     [{
       description: "Deal {damage} damage",
@@ -50,10 +50,10 @@ export const CardCollection: Record<string, Card> = {
     'shield',
     1,
     'NULL',
-    'Gain {shield} shield.',
+    '',
     'self',
     [{
-      description: "Gain basic shield",
+      description: "Gain {shield} shield",
       shield: {
         formula: 'BASIC'
       }
@@ -83,10 +83,10 @@ export const CardCollection: Record<string, Card> = {
     'attack',
     1,
     'VIRUS',
-    'Deal {damage} damage and draw 1 card.',
+    '',
     'enemy',
     [{
-      description: "Deal {damage} damage",
+      description: "",
       damage: {
         formula: 'BASIC',
         target: 'enemy'

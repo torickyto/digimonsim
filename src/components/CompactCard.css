@@ -69,7 +69,7 @@
   color: #000;
   font-size: calc(1.2 * var(--battle-vh));
   font-weight: bold;
-  border-radius: 50%;
+  border-radius: 10%;
   width: calc(2.5 * var(--battle-vh));
   height: calc(2.5 * var(--battle-vh));
   display: flex;

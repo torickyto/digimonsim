@@ -1,28 +1,37 @@
 .full-card-display {
-  position: absolute;
-  width: 300px;
-  background-color: rgba(0, 0, 0, 0.9);
-  border: 2px solid #ffd700;
-  border-radius: 10px;
-  padding: 10px;
-  color: white;
-  z-index: 1000;
-  font-family: 'Arial', sans-serif;
-}
+    position: absolute;
+    width: calc(30 * var(--battle-vh));
+    background-color: rgba(0, 0, 0, 0.9);
+    border: calc(0.2 * var(--battle-vh)) solid #ffd700;
+    border-radius: calc(.75 * var(--battle-vh));
+    padding: calc(1 * var(--battle-vh));
+    color: white;
+    z-index: 1000;
+    font-family: "Ubuntu Mono", monospace;
+    transform-origin: top left;
+  }
+  
+  .card-name {
+    font-size: calc(2 * var(--battle-vh));
+    margin: 0;
+  }
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 5px;
-}
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0;
+  }
 
 .card-target {
-  background-color: #4CAF50;
   color: white;
-  padding: 2px 5px;
-  border-radius: 3px;
-  font-size: 0.8em;
+  font-size: calc(1.5 * var(--battle-vh));
+  padding: calc(0.2 * var(--battle-vh)) calc(0.5 * var(--battle-vh));
+  border-radius: calc(0.2 * var(--battle-vh));
+  text-transform: uppercase;
+  margin-bottom: calc(1 * var(--battle-vh));
+  font-weight: bold;
 }
 
 .card-type {
@@ -34,7 +43,38 @@
 .card-effects {
   margin-bottom: 10px;
 }
+.card-cost {
+    background-color: #ffd700;
+    color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    width: calc(2.5 * var(--battle-vh));
+    height: calc(2.5 * var(--battle-vh));
+    border-radius: 15%;
+    font-size: calc(1.4 * var(--battle-vh));
+  }
+  
+  .card-damage {
+    font-size: calc(2 * var(--battle-vh));
+    margin-bottom: 10px;
+  }
 
+  .damage-value {
+    color: #ff4500;
+    font-weight: bolder;
+  }
+
+  .shield-value {
+    color: #4ac8fa;
+  }
+
+  .heal-value {
+    color: #32cd32;
+  }
+
+  
 .effect-container {
   margin-bottom: 5px;
   padding: 5px;
@@ -74,6 +114,15 @@
   border-radius: 3px;
   font-size: 0.8em;
 }
+
+.value {
+  font-weight: bolder;
+}
+
+.card-effect-value {
+    font-size: calc(2 * var(--battle-vh));
+    margin-bottom: calc(1 * var(--battle-vh));
+  }
 
 .card-tags {
   display: flex;
