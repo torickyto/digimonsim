@@ -354,7 +354,11 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
       ))}
     </div>
     {hoveredCard && (
-          <FullCardDisplay card={hoveredCard} position={hoverPosition} />
+          <FullCardDisplay 
+            card={hoveredCard} 
+            position={hoverPosition} 
+            attacker={gameState.player.digimon[hoveredCard.ownerDigimonIndex]}
+          />
         )}
         <div className="bottom-bar">
           {playerTeam.map((digimon, index) => (

@@ -36,7 +36,7 @@ export const CardCollection: Record<string, Card> = {
     'Deal {damage} damage to the target.',
     'enemy',
     [{
-      description: "Deal basic damage",
+      description: "Deal {damage} damage",
       damage: {
         formula: 'BASIC',
         target: 'enemy'
@@ -86,7 +86,7 @@ export const CardCollection: Record<string, Card> = {
     'Deal {damage} damage and draw 1 card.',
     'enemy',
     [{
-      description: "Deal basic damage",
+      description: "Deal {damage} damage",
       damage: {
         formula: 'BASIC',
         target: 'enemy'
