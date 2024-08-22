@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { GameState, Card, Digimon, BattleAction } from '../shared/types';
-import { initializeBattle, startPlayerTurn, playCard, endPlayerTurn, executeEnemyTurn, checkBattleEnd } from '../game/battle';
+import { initializeBattle, startPlayerTurn, playCard, endPlayerTurn, executeEnemyTurn, checkBattleEnd} from '../game/battle';
 import DigimonSprite from './DigimonSprite';
 import CompactCard from './CompactCard';
 import './BattleScreen.css';
@@ -18,12 +18,17 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   const [isAnimating, setIsAnimating] = useState(false);
   const [spriteScale, setSpriteScale] = useState(1);
   const battleScreenRef = useRef<HTMLDivElement>(null);
-  const animationQueue = useRef<BattleAction[]>([]);
   const [isDiscardHovered, setIsDiscardHovered] = useState(false);
+  const previousHandRef = useRef<Card[]>([]);
+  const [newlyDrawnCards, setNewlyDrawnCards] = useState<string[]>([]);
+  const [handKey, setHandKey] = useState(0);
 
   useEffect(() => {
-    processAnimations();
-  }, [gameState]);
+    const initialState = startPlayerTurn(gameState);
+    setGameState(initialState);
+    setHandKey(prevKey => prevKey + 1); // Force re-render for initial hand
+  }, []);
+
 
   useEffect(() => {
     const updateScaleFactor = () => {
@@ -45,63 +50,34 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     return () => window.removeEventListener('resize', updateScaleFactor);
 }, []);
   
-    const processAnimations = async () => {
-      if (isAnimating || animationQueue.current.length === 0) return;
-
-      setIsAnimating(true);
-      const action = animationQueue.current.shift()!;
-      await animateAction(action);
-      setIsAnimating(false);
-      processAnimations();
-    };
-
   useEffect(() => {
     setGameState(startPlayerTurn(gameState));
   }, []);
 
-  const animateAction = async (action: BattleAction) => {
-    switch (action.type) {
-      case 'DRAW_CARD':
-        await animateCardDraw(action.card);
-        break;
-      case 'BURN_CARD':
-        await animateCardBurn(action.card);
-        break;
-      case 'SHUFFLE_DISCARD_TO_DECK':
-        await animateShuffleDiscardToDeck();
-        break;
-      // ... handle other action types
+  useEffect(() => {
+    console.log('Hand changed. Current hand:', gameState.player.hand);
+    console.log('Previous hand:', previousHandRef.current);
+  
+    const currentHand = gameState.player.hand;
+    const newCards = currentHand.filter(card => 
+      !previousHandRef.current.some(prevCard => prevCard.instanceId === card.instanceId)
+    );
+    
+    console.log('New cards:', newCards);
+  
+    if (newCards.length > 0) {
+      setNewlyDrawnCards(newCards.map(card => card.instanceId ?? '').filter(id => id !== ''));
+      setHandKey(prevKey => prevKey + 1); // Force re-render of hand area
     }
-  };
+    
+    const timer = setTimeout(() => {
+      setNewlyDrawnCards([]);
+    }, 600); // Slightly longer than the animation duration to ensure it completes
 
-  const animateCardDraw = async (card: Card) => {
-    return new Promise<void>((resolve) => {
-      const cardElement = document.createElement('div');
-      cardElement.classList.add('card-animation', 'draw');
-      
-      cardElement.style.backgroundImage = `url('/assets/cards/${card.name.toLowerCase().replace(/\s+/g, '')}.png')`;
-      
-      cardElement.style.position = 'fixed';
-      cardElement.style.width = `calc(6 * var(--battle-vh) * 1.2)`;
-      cardElement.style.height = `calc(3.82 * var(--battle-vh) * 1.2)`;
-      cardElement.style.left = '-100px';
-      cardElement.style.top = '50%';
-      cardElement.style.transform = 'translateY(-50%)';
-      
-      document.body.appendChild(cardElement);
+    previousHandRef.current = [...currentHand];
 
-      // Force a reflow
-      const _ = cardElement.offsetHeight;
-
-      cardElement.style.left = '50%';
-      cardElement.style.transform = 'translate(-50%, -50%)';
-
-      cardElement.addEventListener('animationend', () => {
-        cardElement.remove();
-        resolve();
-      });
-    });
-  };
+    return () => clearTimeout(timer);
+  }, [gameState.player.hand]);
 
    const animateCardBurn = async (card: Card) => {
     const cardElement = document.createElement('div');
@@ -169,26 +145,30 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     let updatedState = endPlayerTurn(gameState);
     updatedState = executeEnemyTurn(updatedState);
     const battleResult = checkBattleEnd(updatedState);
-
+  
     if (battleResult === 'ongoing') {
-      const prevHandSize = updatedState.player.hand.length;
       updatedState = startPlayerTurn(updatedState);
-      const newHandSize = updatedState.player.hand.length;
       setGameState(updatedState);
-      const drawnCards = updatedState.player.hand.slice(prevHandSize);
-
-      // Queue up animations for drawn cards
-      drawnCards.forEach(card => {
-        animationQueue.current.push({ type: 'DRAW_CARD', card });
-      });
-
-      setGameState(updatedState);
-      processAnimations();
+      
+      // Force re-render and set newly drawn card
+      const newCards = updatedState.player.hand.filter(card => 
+        !previousHandRef.current.some(prevCard => prevCard.instanceId === card.instanceId)
+      );
+      setNewlyDrawnCards(newCards.map(card => card.instanceId ?? '').filter(id => id !== ''));
+      setHandKey(prevKey => prevKey + 1);
+      
+      // Update the previous hand reference
+      previousHandRef.current = [...updatedState.player.hand];
+      
+      // Clear the newly drawn cards after animation
+      setTimeout(() => {
+        setNewlyDrawnCards([]);
+      }, 600);
     } else {
       onBattleEnd(battleResult === 'player_win' ? 'win' : 'lose');
     }
   };
-
+  
   const handleDiscard = () => {
     if (gameState.player.hand.length > 0) {
       const discardedCard = gameState.player.hand[0];
@@ -258,7 +238,11 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
               >
                 Discard
               </button>
-              <button className="end-turn-button" onClick={handleEndTurn}>End Turn</button>
+              <button 
+          className="end-turn-button" 
+          onClick={handleEndTurn} 
+          disabled={isAnimating}
+        >End Turn</button>
             </div>
             <div className="ram-and-deck">
       <div className="ram-info">
@@ -316,18 +300,19 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
             ))}
           </div>
         </div>
-        <div className="hand-area">
+        <div className="hand-area" key={handKey}>
       {gameState.player.hand.map((card, index) => (
         <CompactCard 
-          key={card.instanceId}
+          key={card.instanceId ?? index}
           card={card} 
           onClick={() => handleCardClick(card)}
           isSelected={selectedCard?.instanceId === card.instanceId}
           isPlayable={gameState.player.ram >= card.cost}
           isTopCard={index === 0 && isDiscardHovered}
+          isNewlyDrawn={card.instanceId ? newlyDrawnCards.includes(card.instanceId) : false}
         />
-  ))}
-</div>
+      ))}
+    </div>
         <div className="bottom-bar">
           {playerTeam.map((digimon, index) => (
             <div key={index} className="digimon-info">

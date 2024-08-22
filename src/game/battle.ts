@@ -92,41 +92,28 @@ const drawSingleCard = (gameState: GameState): GameState => {
 export const startPlayerTurn = (state: GameState): GameState => {
   let updatedState = { ...state };
 
-  updatedState.player.digimon.forEach(digimon => {
-    if (digimon.passiveSkill && typeof digimon.passiveSkill.ramModifier === 'function') {
-      updatedState.player.ram = digimon.passiveSkill.ramModifier(updatedState.player.ram);
-    }
-  });
-  updatedState.player.ram = Math.min(updatedState.player.ram, MAX_RAM);
-
   // Apply RAM modifiers from Digimon abilities or items
   updatedState.player.digimon.forEach(digimon => {
     if (digimon.passiveSkill && typeof digimon.passiveSkill.ramModifier === 'function') {
       updatedState.player.ram = digimon.passiveSkill.ramModifier(updatedState.player.ram);
     }
   });
-
   updatedState.player.ram = Math.min(updatedState.player.ram, MAX_RAM);
 
-  // Draw one card if there's room in the hand and cards in the deck
-  if (updatedState.player.hand.length < MAX_HAND_SIZE && updatedState.player.deck.length > 0) {
+  // Draw one card if it's not the first turn and there's room in the hand
+  if (updatedState.turn > 1 && updatedState.player.hand.length < MAX_HAND_SIZE && updatedState.player.deck.length > 0) {
     const drawnCard = updatedState.player.deck.pop()!;
     updatedState.player.hand.push(drawnCard);
-
-
-    // add the card draw to the action queue for animation
     updatedState.actionQueue.push({ type: 'DRAW_CARD', card: drawnCard });
   }
 
   // Apply any start-of-turn effects
   updatedState = applyStartOfTurnEffects(updatedState);
-
-  // Set the phase to player's turn
   updatedState.phase = 'player';
 
   return updatedState;
 };
-
+    
 const applyStartOfTurnEffects = (state: GameState): GameState => {
   let updatedState: GameState = { ...state };
 
@@ -199,12 +186,6 @@ const prepareNextPlayerTurn = (gameState: GameState): GameState => {
   // Reset RAM to the calculated value based on the team's current state
   updatedState.player.ram = calculateStartingRam(updatedState.player.digimon as Digimon[]);
 
-  // Draw cards if there's room in the hand
-  const cardsToDraw = Math.min(CARDS_DRAWN_PER_TURN, MAX_HAND_SIZE - updatedState.player.hand.length);
-  for (let i = 0; i < cardsToDraw; i++) {
-    updatedState = drawSingleCard(updatedState);
-  }
-
   // Apply any start-of-turn effects
   updatedState = applyStartOfTurnEffects(updatedState);
 
@@ -214,15 +195,39 @@ const prepareNextPlayerTurn = (gameState: GameState): GameState => {
   return updatedState;
 };
 
-const drawCards = (gameState: GameState, amount: number): GameState => {
-  let updatedState = { ...gameState };
-
-  for (let i = 0; i < amount; i++) {
-    updatedState = drawSingleCard(updatedState);
+export const drawCard = (state: GameState): { newState: GameState; drawnCard: Card | null } => {
+  if (state.player.deck.length === 0) {
+    // If the deck is empty, shuffle the discard pile into the deck
+    const newDeck = [...state.player.discardPile].sort(() => Math.random() - 0.5);
+    return {
+      newState: {
+        ...state,
+        player: {
+          ...state.player,
+          deck: newDeck,
+          discardPile: []
+        }
+      },
+      drawnCard: null
+    };
   }
 
-  return updatedState;
+  const [drawnCard, ...remainingDeck] = state.player.deck;
+  return {
+    newState: {
+      ...state,
+      player: {
+        ...state.player,
+        hand: [...state.player.hand, drawnCard],
+        deck: remainingDeck
+      }
+    },
+    drawnCard
+  };
 };
+
+
+
 
 export const applyDamage = (damage: number, target: DigimonState, gameState: GameState, targetInfo: TargetInfo): GameState => {
   const updatedState = { ...gameState };
