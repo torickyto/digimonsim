@@ -44,6 +44,25 @@ function resolveCardEffects(card: Card, gameState: GameState, targetInfo: Target
   const targets = getTargets(updatedState, targetInfo);
 
    card.effects.forEach(effect => {
+
+    if (effect.once && updatedState.temporaryEffects.onceEffectsUsed?.includes(card.id)) {
+      return; // Skip this effect if it's a 'once' effect and has already been used
+    }
+
+    if (effect.duration) {
+      updatedState = applyDurationEffect(effect, updatedState, targets);
+    }
+
+    if (effect.once) {
+      updatedState = {
+        ...updatedState,
+        temporaryEffects: {
+          ...updatedState.temporaryEffects,
+          onceEffectsUsed: [...(updatedState.temporaryEffects.onceEffectsUsed || []), card.id]
+        }
+      };
+    }
+
     if (effect.damage && effect.damage.formula) {
       const damage = DamageCalculations[effect.damage.formula](updatedState.player.digimon[targetInfo.sourceDigimonIndex]);
       targets.forEach(target => {
@@ -77,7 +96,9 @@ function resolveCardEffects(card: Card, gameState: GameState, targetInfo: Target
 
     if (effect.applyStatus) {
       targets.forEach(target => {
-        updatedState = applyStatusEffect(effect.applyStatus, target, updatedState);
+        if (effect.applyStatus) { 
+          updatedState = applyStatusEffect(effect.applyStatus, target, updatedState);
+        }
       });
     }
 
@@ -132,6 +153,27 @@ function resolveCardEffects(card: Card, gameState: GameState, targetInfo: Target
   return updatedState;
 }
 
+function applyDurationEffect(effect: CardEffect, gameState: GameState, targets: DigimonState[]): GameState {
+  let updatedState = { ...gameState };
+
+  targets.forEach(target => {
+    const newEffect: StatusEffect = {
+      type: effect.description as StatusEffectType, // description can be used as the effect type
+      duration: effect.duration || 1,
+      value: 1, // Default value, adjust as needed
+    };
+
+    const updatedTarget = {
+      ...target,
+      statusEffects: [...target.statusEffects, newEffect]
+    };
+
+    updatedState = updateDigimonInState(updatedState, updatedTarget);
+  });
+
+  return updatedState;
+}
+
 function applyDamage(damage: number, target: DigimonState, gameState: GameState, targetInfo: TargetInfo): GameState {
   const updatedTarget = { ...target, hp: Math.max(0, target.hp - damage) };
   return updateDigimonInState(gameState, updatedTarget);
@@ -147,14 +189,16 @@ function applyHeal(amount: number, target: DigimonState, gameState: GameState): 
   return updateDigimonInState(gameState, updatedTarget);
 }
 
-function applyStatusEffect(statusEffect: StatusEffect | CardEffect['applyStatus'], target: DigimonState, gameState: GameState): GameState {
+function applyStatusEffect(statusEffect: StatusEffect | NonNullable<CardEffect['applyStatus']>, target: DigimonState, gameState: GameState): GameState {
   if (!statusEffect) return gameState;
 
   const effect: StatusEffect = {
-    type: statusEffect.type,
+    type: 'type' in statusEffect && statusEffect.type ? statusEffect.type :
+          'description' in statusEffect && statusEffect.description ? statusEffect.description as StatusEffectType :
+          'UNKNOWN' as StatusEffectType,
     duration: statusEffect.duration,
-    value: statusEffect.value ?? 1, // Default to 1 if value is not provided
-    isResistable: 'isResistable' in statusEffect ? statusEffect.isResistable : true // Default to true if isResistable is not provided
+    value: 'value' in statusEffect && statusEffect.value !== undefined ? statusEffect.value : 1,
+    isResistable: 'isResistable' in statusEffect ? statusEffect.isResistable : true
   };
   
   if (!effect.isResistable || Math.random() > target.corruptionResistance) {
@@ -165,7 +209,6 @@ function applyStatusEffect(statusEffect: StatusEffect | CardEffect['applyStatus'
   
   return gameState;
 }
-
 function drawCards(amount: number, gameState: GameState): GameState {
   const drawnCards = gameState.player.deck.slice(0, amount);
   const newDeck = gameState.player.deck.slice(amount);
@@ -416,7 +459,9 @@ function checkCombo(card: Card, gameState: GameState): CardEffect | null {
 
 function applyScaling(card: Card, gameState: GameState): CardEffect {
   // Implement scaling logic
-  return {};
+  return {
+    description: "Applied scaling effect",
+  };
 }
 
 function checkConditional(card: Card, gameState: GameState): CardEffect | null {
@@ -471,7 +516,8 @@ function endOfBattleCleanup(gameState: GameState): GameState {
       ...gameState.temporaryEffects,
       burstCards: [],
       costModifications: [],
-      statMultipliers: []
+      statMultipliers: [],
+      onceEffectsUsed: []
     }
   };
 }

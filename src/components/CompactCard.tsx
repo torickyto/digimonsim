@@ -9,6 +9,8 @@ interface CompactCardProps {
   isPlayable: boolean;
   isTopCard: boolean;
   isNewlyDrawn: boolean;
+  onMouseEnter: (card: Card, event: React.MouseEvent) => void;
+  onMouseLeave: () => void;
 }
 
 const CompactCard: React.FC<CompactCardProps> = ({ 
@@ -17,7 +19,9 @@ const CompactCard: React.FC<CompactCardProps> = ({
   isSelected, 
   isPlayable, 
   isTopCard,
-  isNewlyDrawn 
+  isNewlyDrawn,
+  onMouseEnter,
+  onMouseLeave
 }) => {
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -33,6 +37,8 @@ const CompactCard: React.FC<CompactCardProps> = ({
     <div 
       className={`compact-card ${isSelected ? 'selected' : ''} ${isPlayable ? 'playable' : ''} ${isTopCard ? 'top-card' : ''} ${isAnimating ? 'draw-animation' : ''}`}
       onClick={onClick}
+      onMouseEnter={(e) => onMouseEnter(card, e)}
+      onMouseLeave={onMouseLeave}
     >
       <img src={require(`../assets/cards/${card.name.toLowerCase().replace(/\s+/g, '')}.png`)} alt={card.name} className="card-image" />
       <div className="card-info">

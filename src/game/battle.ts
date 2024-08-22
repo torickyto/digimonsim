@@ -28,6 +28,7 @@ export const initializeBattle = (playerTeam: Digimon[], enemyTeam: Digimon[]): G
       costModifications: [],
       statMultipliers: [],
       burstCards: [],
+      onceEffectsUsed: []
     },
     actionQueue: [],
   };

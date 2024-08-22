@@ -36,6 +36,7 @@ export const CardCollection: Record<string, Card> = {
     'Deal {damage} damage to the target.',
     'enemy',
     [{
+      description: "Deal basic damage",
       damage: {
         formula: 'BASIC',
         target: 'enemy'
@@ -52,6 +53,7 @@ export const CardCollection: Record<string, Card> = {
     'Gain {shield} shield.',
     'self',
     [{
+      description: "Gain basic shield",
       shield: {
         formula: 'BASIC'
       }
@@ -67,6 +69,7 @@ export const CardCollection: Record<string, Card> = {
     'Heal self for {heal} HP.',
     'self',
     [{
+      description: "Light heal",
       heal: {
         formula: 'LIGHT_HEAL'
       }
@@ -83,12 +86,14 @@ export const CardCollection: Record<string, Card> = {
     'Deal {damage} damage and draw 1 card.',
     'enemy',
     [{
+      description: "Deal basic damage",
       damage: {
         formula: 'BASIC',
         target: 'enemy'
       }
     },
     {
+      description: "Draw a card",
       drawCards: 1
     }]
   ),
@@ -102,6 +107,7 @@ export const CardCollection: Record<string, Card> = {
     'Select a card to discard and gain 2 RAM.',
     'none',
     [{
+      description: "Discard and gain RAM",
       discardCards: 1,
       gainRam: 2
     }],
@@ -117,10 +123,12 @@ export const CardCollection: Record<string, Card> = {
     'Draw a card, discard it if it\'s not an attack card.',
     'none',
     [{
+      description: "Draw and potentially discard",
       drawCards: 1,
       conditional: {
         condition: (state) => state.player.hand[state.player.hand.length - 1].type !== 'attack',
         effect: {
+          description: "Discard drawn card",
           discardCards: 1
         }
       },
@@ -138,6 +146,7 @@ export const CardCollection: Record<string, Card> = {
     'Deal {damage} damage to an enemy.',
     'enemy',
     [{
+      description: "Deal strong damage",
       damage: {
         formula: 'STRONG',
         target: 'enemy'
@@ -154,6 +163,7 @@ export const CardCollection: Record<string, Card> = {
     'Deal {damage} damage to a random enemy.',
     'random_enemy',
     [{
+      description: "Deal heavy damage to random enemy",
       damage: {
         formula: 'HEAVY',
         target: 'random_enemy'
@@ -170,6 +180,7 @@ export const CardCollection: Record<string, Card> = {
     'Deal {damage} damage to all enemies.',
     'all_enemies',
     [{
+      description: "Deal strong damage to all enemies",
       damage: {
         formula: 'STRONG2',
         target: 'all_enemies'
@@ -187,12 +198,14 @@ export const CardCollection: Record<string, Card> = {
     'Deal {damage} damage to the enemy and gain {shield} shield.',
     'enemy',
     [{
+      description: "Deal basic damage to an enemy.",
       damage: {
         formula: 'BASIC',
         target: 'enemy'
       }
     },
     {
+      description: "Give an ally weak shield",
       shield: {
         formula: 'WEAK2'
       }
@@ -208,6 +221,7 @@ SKULL_CRACKER: createCard(
   'Can only target enemies with shield. Deal {damage} damage.',
   'enemy',
   [{
+    description: "Deal heavy damage to a shielded enemy.",
     damage: {
       formula: 'HEAVY',
       target: 'enemy'
@@ -225,12 +239,14 @@ BLUE_CYCLONE: createCard(
   'Deal {damage} damage to all enemies. Each enemy hit gives the user {shield} shield.',
   'all_enemies',
   [{
+    description: "Deal basic damage to all enemies.",
     damage: {
       formula: 'BASIC',
       target: 'all_enemies'
     }
   },
   {
+    description: "Gain shield for each enemy hit.",
     shield: {
       formula: 'WEAK'
     },
@@ -250,6 +266,7 @@ BUBBLE: createCard(
   'Give an ally {shield} shield.',
   'single_ally',
   [{
+    description: "Give an ally shield.",
     shield: {
       formula: 'BASIC2'
     }
@@ -265,6 +282,7 @@ GLIDE: createCard(
   'Draw a card, that card costs 1 less.',
   'none',
   [{
+    description: "Draw a card.",
     drawCards: 1,
     modifyCost: {
       target: 'specific',
@@ -283,6 +301,7 @@ BOOM_BUBBLE: createCard(
   'Deal {damage} damage to an enemy.',
   'enemy',
   [{
+    description: "Deal damaage.",
     damage: {
       formula: 'BASIC2',
       target: 'enemy'
@@ -299,6 +318,7 @@ ROLLING_GUARD: createCard(
   'Gain {shield} shield.',
   'self',
   [{
+    description: "Gain shield.",
     shield: {
       formula: 'BASIC2'
     }
@@ -311,15 +331,17 @@ SUPER_SHOCKER: createCard(
   'attack',
   3,
   'VACCINE',
-  'Deal {damage} damage to an enemy. Can stun.',
+  'Deal {damage} damage to an enemy. Can cause bugged.',
   'enemy',
   [{
+    description: "Deal damage to an enemy.",
     damage: {
       formula: 'BASIC',
       target: 'enemy'
     }
   },
   {
+    description: "Make an enemy bugged for one turn",
     applyStatus: {
       type: 'bugged',
       duration: 1,
@@ -341,12 +363,14 @@ DYNAMO_ROCKET: createCard(
       formula: 'BASIC2',
       target: 'enemy'
     },
+    description: "Deal damage to an enemy.",
     conditional: {
       condition: (state, targetInfo) => {
         const target = state.enemy.digimon[targetInfo.targetDigimonIndex!];
         return target.statusEffects.some(effect => effect.type === 'bugged');
       },
       effect: {
+        description: "Deal extra damage if the enemy is stunned.",
         damage: {
           formula: 'HEAVY2',
           target: 'enemy'
@@ -366,6 +390,7 @@ GOBLIN_STRIKE: createCard(
   'Deal {damage} damage to an enemy.',
   'enemy',
   [{
+    description: "PLACEHOLDER",
     damage: {
       formula: 'STRONG',
       target: 'enemy'
@@ -382,11 +407,13 @@ LIVING_SHIELD: createCard(
   'Gain {shield} shield and taunt one target.',
   'self',
   [{
+    description: "PLACEHOLDER",
     shield: {
       formula: 'BASIC'
     }
   },
   {
+    description: "PLACEHOLDER",
     applyStatus: {
       type: 'taunt',
       duration: 2,
@@ -404,6 +431,7 @@ GOBURI_RUSH: createCard(
   '[BURST] Deal {damage} damage to an enemy 3 times.',
   'enemy',
   [{
+    description: "PLACEHOLDER",
     damage: {
       formula: 'BASIC',
       target: 'enemy'
@@ -411,6 +439,7 @@ GOBURI_RUSH: createCard(
     burst: true
   },
   {
+    description: "PLACEHOLDER",
     damage: {
       formula: 'BASIC',
       target: 'enemy'
@@ -418,6 +447,7 @@ GOBURI_RUSH: createCard(
     burst: true
   },
   {
+    description: "PLACEHOLDER",
     damage: {
       formula: 'BASIC',
       target: 'enemy'
@@ -435,12 +465,14 @@ TOUCH_OF_EVIL: createCard(
   'Deal {damage} damage and apply CORRUPTION.',
   'enemy',
   [{
+    description: "PLACEHOLDER",
     damage: {
       formula: 'STRONG',
       target: 'enemy'
     }
   },
   {
+    description: "PLACEHOLDER",
     applyStatus: {
       type: 'corruption',
       duration: 3,
@@ -458,6 +490,7 @@ HELL_CONTRACT: createCard(
   'Apply 3 stacks of corruption on an ally or enemy and double their attack for 1 turn.',
   'single_ally',
   [{
+    description: "PLACEHOLDER",
     applyStatus: {
       type: 'corruption',
       duration: 3,
@@ -465,6 +498,7 @@ HELL_CONTRACT: createCard(
     }
   },
   {
+    description: "PLACEHOLDER",
     modifyStatMultiplier: {
       stat: 'attack',
       multiplier: 2,
@@ -482,9 +516,11 @@ DEADLY_NAIL: createCard(
   'Discard a random card and deal {damage} damage to the target.',
   'enemy',
   [{
+    description: "PLACEHOLDER",
     discardCards: 1
   },
   {
+    description: "PLACEHOLDER",
     damage: {
       formula: 'HEAVY',
       target: 'enemy'
@@ -501,6 +537,7 @@ MAGICAL_GAME: createCard(
   'Select a card to discard then gain its RAM.',
   'none',
   [{
+    description: "PLACEHOLDER",
     discardCards: 1,
     gainRam: 'discardedCardCost'
   }],
@@ -516,9 +553,11 @@ THUNDER_BOMB: createCard(
   'Draw up to 3 cards then deal their combined cost * 10 to all enemies.',
   'all_enemies',
   [{
+    description: "PLACEHOLDER",
     drawCards: 3
   },
   {
+    description: "PLACEHOLDER",
     damage: {
       formula: 'CUSTOM',
       target: 'all_enemies'
@@ -545,9 +584,11 @@ VISIONS_OF_TERROR: createCard(
   'Discard your hand, then draw 3 cards.',
   'none',
   [{
+    description: "PLACEHOLDER",
     discardCards: 'all'
   },
   {
+    description: "PLACEHOLDER",
     drawCards: 3
   }]
 ),
@@ -558,15 +599,17 @@ BLOODTHIRST: createCard(
   'attack',
   1,
   'VIRUS',
-  'Deal {damage} damage to an ally and gain 4 ram.',
+  'Deal {damage} damage to an ally and gain 4 RAM.',
   'single_ally',
   [{
+    description: "PLACEHOLDER",
     damage: {
       formula: 'BASIC',
       target: 'single_ally'
     }
   },
   {
+    description: "PLACEHOLDER",
     gainRam: 4
   }]
 ),
@@ -580,6 +623,7 @@ RAVAGE: createCard(
   'Deal {damage} damage to an enemy. HIGH CRIT RATE',
   'enemy',
   [{
+    description: "PLACEHOLDER",
     damage: {
       formula: 'HEAVY',
       target: 'enemy'
@@ -601,6 +645,7 @@ DARK_MIND: createCard(
   'GAIN 3 STACKS OF CORRUPTION. GAIN 10 RAM. CANNOT OVERLOAD.',
   'self',
   [{
+    description: "PLACEHOLDER",
     applyStatus: {
       type: 'corruption',
       duration: 3,
@@ -608,6 +653,7 @@ DARK_MIND: createCard(
     }
   },
   {
+    description: "PLACEHOLDER",
     gainRam: 10
   }]
 ),
@@ -621,6 +667,7 @@ DJ_SHOOTER: createCard(
   'Give an ally {shield} shield.',
   'single_ally',
   [{
+    description: "PLACEHOLDER",
     shield: {
       formula: 'STRONG'
     }
@@ -636,6 +683,7 @@ BREAK_IT_DOWN: createCard(
   'Give all allies and enemies {shield} shield.',
   'all',
   [{
+    description: "PLACEHOLDER",
     shield: {
       formula: 'STRONG'
     }
@@ -651,6 +699,7 @@ MEGATON_HYDRO_LASER: createCard(
   'Deal damage equal to user\'s shield * 10 to an enemy.',
   'enemy',
   [{
+    description: "PLACEHOLDER",
     damage: {
       formula: 'CUSTOM',
       target: 'enemy'
@@ -677,6 +726,7 @@ JUMBO_CRATER: createCard(
   'Deal damage equal to your current shield * 3 to all enemies.',
   'all_enemies',
   [{
+    description: "PLACEHOLDER",
     damage: {
       formula: 'CUSTOM',
       target: 'all_enemies'
@@ -703,6 +753,7 @@ HEART_CRASH: createCard(
   'Discard up to 6 cards, then draw up to 6 cards. Gain 1 RAM for each card discarded.',
   'none',
   [{
+    description: "PLACEHOLDER",
     discardCards: 6,
     drawCards: 6,
     gainRam: 'discardedCardCount' as const
@@ -718,6 +769,7 @@ CORONA_DESTROYER: createCard(
   'Deal {damage} damage * number of cards discarded this battle to random enemies.',
   'random_enemy',
   [{
+    description: "PLACEHOLDER",
     damage: {
       formula: 'LIGHT',
       target: 'random_enemy'
@@ -744,6 +796,7 @@ BEREJENA: createCard(
   'Discard 2 random cards, gain their RAM cost. Can overload.',
   'none',
   [{
+    description: "PLACEHOLDER",
     discardCards: 2,
     gainRam: 'discardedCardCost'
   }]
@@ -758,12 +811,14 @@ DEATH_CLAW: createCard(
   'Deal {damage} damage to an enemy and inflict a non-resistable stack of CORRUPTION.',
   'enemy',
   [{
+    description: "PLACEHOLDER",
     damage: {
       formula: 'HEAVY',
       target: 'enemy'
     }
   },
   {
+    description: "PLACEHOLDER",
     applyStatus: {
       type: 'corruption',
       duration: 3,
@@ -782,6 +837,7 @@ HEAT_VIPER: createCard(
   'Deal {damage} damage to random targets 6 times. Apply a stack of CORRUPTION per hit.',
   'random_enemy',
   [{
+    description: "PLACEHOLDER",
     damage: {
       formula: 'BASIC',
       target: 'random_enemy'
@@ -793,8 +849,8 @@ HEAT_VIPER: createCard(
     },
     repeat: 6
   }]
-)
-}
+)}
+
 
 export const getCardById = (id: string): Card | undefined => {
   const baseCard = CardCollection[id];

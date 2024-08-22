@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card } from '../shared/types';
 import CompactCard from './CompactCard';
+import FullCardDisplay from './FullCardDisplay';
 import './CardPileModal.css';
 
 interface CardPileModalProps {
@@ -11,7 +12,21 @@ interface CardPileModalProps {
 }
 
 const CardPileModal: React.FC<CardPileModalProps> = ({ isOpen, onClose, cards, title }) => {
-  if (!isOpen) return null;
+    const [hoveredCard, setHoveredCard] = useState<Card | null>(null);
+    const [hoverPosition, setHoverPosition] = useState({ x: 0, y: 0 });
+  
+    if (!isOpen) return null;
+
+
+
+  const handleCardHover = (card: Card, event: React.MouseEvent) => {
+    setHoveredCard(card);
+    setHoverPosition({ x: event.clientX + 20, y: event.clientY - 10 });
+  };
+
+  const handleCardHoverEnd = () => {
+    setHoveredCard(null);
+  };
 
   return (
     <div className="card-pile-modal-overlay" onClick={onClose}>
@@ -21,7 +36,7 @@ const CardPileModal: React.FC<CardPileModalProps> = ({ isOpen, onClose, cards, t
           <button className="close-button" onClick={onClose}>&times;</button>
         </div>
         <div className="card-pile-grid">
-          {cards.map((card, index) => (
+        {cards.map((card, index) => (
             <CompactCard
               key={`${card.instanceId}-${index}`}
               card={card}
@@ -30,6 +45,8 @@ const CardPileModal: React.FC<CardPileModalProps> = ({ isOpen, onClose, cards, t
               isPlayable={false}
               isTopCard={false}
               isNewlyDrawn={false}
+              onMouseEnter={handleCardHover}
+              onMouseLeave={handleCardHoverEnd}
             />
           ))}
         </div>

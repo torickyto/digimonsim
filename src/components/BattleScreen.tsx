@@ -3,6 +3,7 @@ import { GameState, Card, Digimon, BattleAction } from '../shared/types';
 import { initializeBattle, startPlayerTurn, playCard, endPlayerTurn, executeEnemyTurn, checkBattleEnd} from '../game/battle';
 import DigimonSprite from './DigimonSprite';
 import CompactCard from './CompactCard';
+import FullCardDisplay from './FullCardDisplay';
 import './BattleScreen.css';
 import './BattleScreenAnimations.css';
 import CardPileModal from './CardPileModal';
@@ -27,6 +28,8 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   const [isDeckModalOpen, setIsDeckModalOpen] = useState(false);
   const [isDiscardModalOpen, setIsDiscardModalOpen] = useState(false);
   const [shuffledDeckForDisplay, setShuffledDeckForDisplay] = useState<Card[]>([]);
+  const [hoveredCard, setHoveredCard] = useState<Card | null>(null);
+  const [hoverPosition, setHoverPosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     const initialState = startPlayerTurn(gameState);
@@ -248,6 +251,16 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     setIsDiscardModalOpen(true);
   };
 
+  const handleCardHover = (card: Card, event: React.MouseEvent) => {
+    const rect = (event.target as HTMLElement).getBoundingClientRect();
+    setHoveredCard(card);
+    setHoverPosition({ x: rect.right + 10, y: rect.top });
+  };
+
+  const handleCardHoverEnd = () => {
+    setHoveredCard(null);
+  };
+
   return (
     <div className="battle-screen-container">
       <div className="battle-screen" ref={battleScreenRef}>
@@ -327,17 +340,22 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
         </div>
         <div className="hand-area" key={handKey}>
       {gameState.player.hand.map((card, index) => (
-        <CompactCard 
-          key={card.instanceId ?? index}
-          card={card} 
-          onClick={() => handleCardClick(card)}
-          isSelected={selectedCard?.instanceId === card.instanceId}
-          isPlayable={gameState.player.ram >= card.cost}
-          isTopCard={index === 0 && isDiscardHovered}
-          isNewlyDrawn={card.instanceId ? newlyDrawnCards.includes(card.instanceId) : false}
-        />
+            <CompactCard 
+              key={card.instanceId ?? index}
+              card={card} 
+              onClick={() => handleCardClick(card)}
+              isSelected={selectedCard?.instanceId === card.instanceId}
+              isPlayable={gameState.player.ram >= card.cost}
+              isTopCard={index === 0 && isDiscardHovered}
+              isNewlyDrawn={card.instanceId ? newlyDrawnCards.includes(card.instanceId) : false}
+              onMouseEnter={handleCardHover}
+              onMouseLeave={handleCardHoverEnd}
+            />
       ))}
     </div>
+    {hoveredCard && (
+          <FullCardDisplay card={hoveredCard} position={hoverPosition} />
+        )}
         <div className="bottom-bar">
           {playerTeam.map((digimon, index) => (
             <div key={index} className="digimon-info">

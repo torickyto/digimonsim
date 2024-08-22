@@ -1,0 +1,89 @@
+.full-card-display {
+  position: absolute;
+  width: 300px;
+  background-color: rgba(0, 0, 0, 0.9);
+  border: 2px solid #ffd700;
+  border-radius: 10px;
+  padding: 10px;
+  color: white;
+  z-index: 1000;
+  font-family: 'Arial', sans-serif;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.card-target {
+  background-color: #4CAF50;
+  color: white;
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-size: 0.8em;
+}
+
+.card-type {
+  font-style: italic;
+  color: #bbb;
+  margin-bottom: 10px;
+}
+
+.card-effects {
+  margin-bottom: 10px;
+}
+
+.effect-container {
+  margin-bottom: 5px;
+  padding: 5px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+}
+
+.effect-once {
+  display: inline-block;
+  background-color: #ff4500;
+  color: white;
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-size: 0.8em;
+  margin-bottom: 3px;
+}
+
+.effect-description {
+  margin: 0;
+  font-size: 0.9em;
+}
+
+.effect-duration {
+  display: flex;
+  align-items: center;
+  margin-top: 3px;
+}
+
+.duration-icon {
+  margin-right: 3px;
+}
+
+.duration-value {
+  background-color: #4CAF50;
+  color: white;
+  padding: 1px 3px;
+  border-radius: 3px;
+  font-size: 0.8em;
+}
+
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.card-tag {
+  background-color: rgba(255, 215, 0, 0.3);
+  padding: 2px 5px;
+  border-radius: 5px;
+  font-size: 0.8em;
+}

@@ -39,6 +39,9 @@ export interface CardEffect {
     isResistable?: boolean;
     source?: number;
   };
+  once?: boolean;
+  duration?: number;
+  description: string;
   createCards?: {
     cardId: string;
     amount: number;
@@ -182,6 +185,7 @@ export interface GameState {
       turnsRemaining: number;
     }>;
     burstCards: Card[];
+    onceEffectsUsed: string[]; 
   };
 }
 
