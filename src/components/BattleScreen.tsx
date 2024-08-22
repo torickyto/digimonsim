@@ -5,6 +5,8 @@ import DigimonSprite from './DigimonSprite';
 import CompactCard from './CompactCard';
 import './BattleScreen.css';
 import './BattleScreenAnimations.css';
+import CardPileModal from './CardPileModal';
+
 
 interface BattleScreenProps {
   playerTeam: Digimon[];
@@ -22,6 +24,9 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   const previousHandRef = useRef<Card[]>([]);
   const [newlyDrawnCards, setNewlyDrawnCards] = useState<string[]>([]);
   const [handKey, setHandKey] = useState(0);
+  const [isDeckModalOpen, setIsDeckModalOpen] = useState(false);
+  const [isDiscardModalOpen, setIsDiscardModalOpen] = useState(false);
+  const [shuffledDeckForDisplay, setShuffledDeckForDisplay] = useState<Card[]>([]);
 
   useEffect(() => {
     const initialState = startPlayerTurn(gameState);
@@ -223,6 +228,26 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     }
   };
 
+  const shuffleArray = <T,>(array: T[]): T[] => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
+  const handleDeckClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShuffledDeckForDisplay(shuffleArray([...gameState.player.deck]));
+    setIsDeckModalOpen(true);
+  };
+
+  const handleDiscardClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsDiscardModalOpen(true);
+  };
+
   return (
     <div className="battle-screen-container">
       <div className="battle-screen" ref={battleScreenRef}>
@@ -257,14 +282,14 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
           ))}
         </div>
       </div>
-              <div className="deck-info">
-                <div className="deck-icon">D</div>
-                <span className="deck-count">{gameState.player.deck.length}</span>
-              </div>
-              <div className="discard-info">
-                <div className="discard-icon">X</div>
-                <span className="discard-count">{gameState.player.discardPile.length}</span>
-              </div>
+      <div className="deck-info" onClick={handleDeckClick}>
+            <div className="deck-icon">D</div>
+            <span className="deck-count">{gameState.player.deck.length}</span>
+          </div>
+          <div className="discard-info" onClick={handleDiscardClick}>
+            <div className="discard-icon">X</div>
+            <span className="discard-count">{gameState.player.discardPile.length}</span>
+          </div>
             </div>
           </div>
           <div className="turn-display">
@@ -326,6 +351,18 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
             </div>
           ))}
         </div>
+        <CardPileModal
+          isOpen={isDeckModalOpen}
+          onClose={() => setIsDeckModalOpen(false)}
+          cards={shuffledDeckForDisplay}
+          title="Draw Pile"
+        />
+      <CardPileModal
+        isOpen={isDiscardModalOpen}
+        onClose={() => setIsDiscardModalOpen(false)}
+        cards={gameState.player.discardPile}
+        title="Discard Pile"
+      />
       </div>
     </div>
   );
