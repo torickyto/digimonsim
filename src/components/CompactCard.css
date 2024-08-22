@@ -5,8 +5,8 @@
   border-radius: calc(0.6 * var(--battle-vh));
   cursor: pointer;
   position: relative;
-  padding: calc(0.2 * var(--battle-vh));
-  margin-bottom: calc(0.5 * var(--battle-vh));
+  padding: calc(0.05 * var(--battle-vh));
+  margin-bottom: calc(0.1 * var(--battle-vh));
   border: calc(0.2 * var(--battle-vh)) solid transparent;
   transition: transform 0.2s ease-in-out, border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, left 0.2s ease-in-out;
 }
@@ -16,14 +16,14 @@
 }
 
 .compact-card.playable {
-  border-color: rgb(229, 255, 0);
+  border-color: #ffd700;
   box-shadow: 0 0 calc(0.5 * var(--battle-vh)) rgba(229, 255, 0, 0.5);
 }
 
 .compact-card.selected {
-  box-shadow: 0 0 calc(1 * var(--battle-vh)) rgb(0, 255, 234);
+  box-shadow: 0 0 calc(1 * var(--battle-vh)) #5efdf7;
   transform: translateY(calc(-0.3 * var(--battle-vh)));
-  border: calc(0.4 * var(--battle-vh)) solid rgb(0, 255, 234);
+  border: calc(0.4 * var(--battle-vh)) solid #5efdf7;
   animation: selectCard 0.2s ease-in-out forwards;
 }
 

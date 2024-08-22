@@ -33,6 +33,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   const [hoverPosition, setHoverPosition] = useState({ x: 0, y: 0 });
   const [highlightedRam, setHighlightedRam] = useState(0);
   const [parentDimensions, setParentDimensions] = useState({ width: 0, height: 0 });
+  const [isShuffling, setIsShuffling] = useState(false);
 
   useEffect(() => {
     const initialState = startPlayerTurn(gameState);
@@ -150,25 +151,19 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     }));
   };
 
-  const animateShuffleDiscardToDeck = async () => {
-    const discardPile = document.querySelector('.discard-pile');
-    const deck = document.querySelector('.deck');
-
-    if (discardPile && deck) {
-      discardPile.classList.add('shuffle');
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Duration of the shuffle animation
-      discardPile.classList.remove('shuffle');
-    }
-
-    // Update the game state to reflect the shuffle
-    setGameState(prevState => ({
-      ...prevState,
-      player: {
-        ...prevState.player,
-        deck: [...prevState.player.deck, ...prevState.player.discardPile],
-        discardPile: []
-      }
-    }));
+  const shuffleDiscardIntoDeck = () => {
+    setIsShuffling(true);
+    setTimeout(() => {
+      setGameState(prevState => ({
+        ...prevState,
+        player: {
+          ...prevState.player,
+          deck: [...prevState.player.deck, ...prevState.player.discardPile].sort(() => Math.random() - 0.5),
+          discardPile: []
+        }
+      }));
+      setIsShuffling(false);
+    }, 1000); // Duration of the shuffle animation
   };
 
   const handleCardClick = (card: Card) => {
@@ -352,15 +347,15 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
             />
         </div>
       </div>
-      <div className="deck-info" onClick={handleDeckClick}>
+      <div className={`deck-info ${isShuffling ? 'shuffling' : ''}`} onClick={handleDeckClick}>
             <div className="deck-icon">D</div>
             <span className="deck-count">{gameState.player.deck.length}</span>
           </div>
-          <div className="discard-info" onClick={handleDiscardClick}>
+          <div className={`discard-info ${isShuffling ? 'shuffling' : ''}`} onClick={handleDiscardClick}>
             <div className="discard-icon">X</div>
             <span className="discard-count">{gameState.player.discardPile.length}</span>
           </div>
-            </div>
+        </div>
           </div>
           <div className="turn-display">
             TURN {gameState.turn}

@@ -81,6 +81,7 @@ const drawSingleCard = (gameState: GameState): GameState => {
       gameState.player.hand.push(drawnCard);
       gameState.actionQueue.push({ type: 'DRAW_CARD', card: drawnCard });
     } else {
+      
       gameState.player.discardPile.push(drawnCard);
       gameState.cardsDiscardedThisBattle++;
       gameState.actionQueue.push({ type: 'BURN_CARD', card: drawnCard });
@@ -102,10 +103,9 @@ export const startPlayerTurn = (state: GameState): GameState => {
   updatedState.player.ram = Math.min(updatedState.player.ram, MAX_RAM);
 
   // Draw one card if it's not the first turn and there's room in the hand
-  if (updatedState.turn > 1 && updatedState.player.hand.length < MAX_HAND_SIZE && updatedState.player.deck.length > 0) {
-    const drawnCard = updatedState.player.deck.pop()!;
-    updatedState.player.hand.push(drawnCard);
-    updatedState.actionQueue.push({ type: 'DRAW_CARD', card: drawnCard });
+  if (updatedState.turn > 1 && updatedState.player.hand.length < MAX_HAND_SIZE) {
+    const { newState, drawnCard } = drawCard(updatedState);
+    updatedState = newState;
   }
 
   // Apply any start-of-turn effects
@@ -197,34 +197,29 @@ const prepareNextPlayerTurn = (gameState: GameState): GameState => {
 };
 
 export const drawCard = (state: GameState): { newState: GameState; drawnCard: Card | null } => {
-  if (state.player.deck.length === 0) {
-    // If the deck is empty, shuffle the discard pile into the deck
-    const newDeck = [...state.player.discardPile].sort(() => Math.random() - 0.5);
-    return {
-      newState: {
-        ...state,
-        player: {
-          ...state.player,
-          deck: newDeck,
-          discardPile: []
-        }
-      },
-      drawnCard: null
-    };
+  let newState = { ...state };
+  let drawnCard: Card | null = null;
+
+  if (newState.player.deck.length === 0 && newState.player.discardPile.length > 0) {
+    // Shuffle discard pile into deck
+    newState.player.deck = [...newState.player.discardPile].sort(() => Math.random() - 0.5);
+    newState.player.discardPile = [];
+    newState.actionQueue.push({ type: 'SHUFFLE_DISCARD_TO_DECK' });
   }
 
-  const [drawnCard, ...remainingDeck] = state.player.deck;
-  return {
-    newState: {
-      ...state,
-      player: {
-        ...state.player,
-        hand: [...state.player.hand, drawnCard],
-        deck: remainingDeck
-      }
-    },
-    drawnCard
-  };
+  if (newState.player.deck.length > 0) {
+    drawnCard = newState.player.deck.pop()!;
+    if (newState.player.hand.length < MAX_HAND_SIZE) {
+      newState.player.hand.push(drawnCard);
+      newState.actionQueue.push({ type: 'DRAW_CARD', card: drawnCard });
+    } else {
+      newState.player.discardPile.push(drawnCard);
+      newState.cardsDiscardedThisBattle++;
+      newState.actionQueue.push({ type: 'BURN_CARD', card: drawnCard });
+    }
+  }
+
+  return { newState, drawnCard };
 };
 
 

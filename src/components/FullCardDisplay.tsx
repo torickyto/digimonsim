@@ -105,7 +105,7 @@ const FullCardDisplay: React.FC<FullCardDisplayProps> = ({ card, position, attac
           <div className="card-description">{card.description}</div>
           <div className="card-effects">
             {card.effects.map((effect, index) => {
-              if (effect.damage || effect.shield || effect.heal) return null; // Skip main effects as they're shown above
+             // if (effect.damage || effect.shield || effect.heal) return null; // update this to only skip the first/main effect
               return (
                 <div key={index} className="effect-container">
                   {effect.once && <div className="effect-once">Once</div>}
@@ -114,7 +114,7 @@ const FullCardDisplay: React.FC<FullCardDisplayProps> = ({ card, position, attac
                       {replaceValuesInDescription(effect.description, effect)}
                     </p>
                   )}
-                  {!effect.description && <p className="effect-description">Effect description not available</p>}
+                  
                   {effect.duration && (
                     <div className="effect-duration">
                       <span className="duration-icon">⏳</span>

@@ -36,7 +36,7 @@ export const CardCollection: Record<string, Card> = {
     '',
     'enemy',
     [{
-      description: "Deal {damage} damage",
+      description: "",
       damage: {
         formula: 'BASIC',
         target: 'enemy'
@@ -53,7 +53,7 @@ export const CardCollection: Record<string, Card> = {
     '',
     'self',
     [{
-      description: "Gain {shield} shield",
+      description: "",
       shield: {
         formula: 'BASIC'
       }
@@ -66,10 +66,10 @@ export const CardCollection: Record<string, Card> = {
     'special',
     0,
     'NULL',
-    'Heal self for {heal} HP.',
+    '',
     'self',
     [{
-      description: "Light heal",
+      description: "",
       heal: {
         formula: 'LIGHT_HEAL'
       }
@@ -104,10 +104,10 @@ export const CardCollection: Record<string, Card> = {
     'special',
     0,
     'VIRUS',
-    'Select a card to discard and gain 2 RAM.',
+    'Select a card to discard.',
     'none',
     [{
-      description: "Discard and gain RAM",
+      description: "Gain 2 RAM",
       discardCards: 1,
       gainRam: 2
     }],
@@ -120,16 +120,16 @@ export const CardCollection: Record<string, Card> = {
     'special',
     1,
     'VIRUS',
-    'Draw a card, discard it if it\'s not an attack card.',
+    '',
     'none',
     [{
-      description: "Draw and potentially discard",
+      description: "Draw a card",
       drawCards: 1,
       conditional: {
         condition: (state) => state.player.hand[state.player.hand.length - 1].type !== 'attack',
         effect: {
-          description: "Discard drawn card",
-          discardCards: 1
+          description: "Discard it if it\'s not an attack card.",
+          discardCards: 1 //fix this to make it discard to drawn card
         }
       },
       recompile: true
@@ -143,10 +143,10 @@ export const CardCollection: Record<string, Card> = {
     'attack',
     2,
     'DATA',
-    'Deal {damage} damage to an enemy.',
+    '',
     'enemy',
     [{
-      description: "Deal strong damage",
+      description: "Deal {damage} damage",
       damage: {
         formula: 'STRONG',
         target: 'enemy'
@@ -160,10 +160,10 @@ export const CardCollection: Record<string, Card> = {
     'attack',
     3,
     'DATA',
-    'Deal {damage} damage to a random enemy.',
+    '',
     'random_enemy',
     [{
-      description: "Deal heavy damage to random enemy",
+      description: "Deal {damage} damage",
       damage: {
         formula: 'HEAVY',
         target: 'random_enemy'
@@ -177,10 +177,10 @@ export const CardCollection: Record<string, Card> = {
     'attack',
     5,
     'DATA',
-    'Deal {damage} damage to all enemies.',
+    '',
     'all_enemies',
     [{
-      description: "Deal strong damage to all enemies",
+      description: "Deal {damage} damage",
       damage: {
         formula: 'STRONG2',
         target: 'all_enemies'
@@ -195,17 +195,17 @@ export const CardCollection: Record<string, Card> = {
     'attack',
     2,
     'VACCINE',
-    'Deal {damage} damage to the enemy and gain {shield} shield.',
+    '',
     'enemy',
     [{
-      description: "Deal basic damage to an enemy.",
+      description: "",
       damage: {
         formula: 'BASIC',
         target: 'enemy'
       }
     },
     {
-      description: "Give an ally weak shield",
+      description: "Gain {shield} shield",
       shield: {
         formula: 'WEAK2'
       }
@@ -218,7 +218,7 @@ SKULL_CRACKER: createCard(
   'attack',
   1,
   'VACCINE',
-  'Can only target enemies with shield. Deal {damage} damage.',
+  'Can only target enemies with shield.',
   'enemy',
   [{
     description: "Deal heavy damage to a shielded enemy.",
