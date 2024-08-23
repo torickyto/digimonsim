@@ -141,9 +141,6 @@ export const playCard = (gameState: GameState, cardIndex: number, targetInfo: Ta
 
   const updatedHand = gameState.player.hand.filter((_, index) => index !== cardIndex);
 
-  const ownerDigimon = gameState.player.digimon[card.ownerDigimonIndex];
-  
-
   let updatedState = resolveCardEffects(card, { 
     ...gameState, 
     player: { 
@@ -165,15 +162,25 @@ export const playCard = (gameState: GameState, cardIndex: number, targetInfo: Ta
     cardsPlayedThisTurn: updatedState.cardsPlayedThisTurn + 1
   };
 
+  // Add animation-related actions to the queue
   updatedState.actionQueue.push({ 
     type: 'PLAY_CARD', 
     card, 
     targetInfo: { ...targetInfo, sourceDigimonIndex: card.ownerDigimonIndex }
   });
 
+  // Add attack animation if it's an attack card
+  if (card.type === 'attack' && targetInfo.targetDigimonIndex !== undefined) {
+    updatedState.actionQueue.push({
+      type: 'ANIMATE_ATTACK',
+      sourceIndex: card.ownerDigimonIndex,
+      targetIndex: targetInfo.targetDigimonIndex,
+      isEnemy: targetInfo.targetType === 'enemy'
+    });
+  }
+
   return updatedState;
 };
-
 export const endPlayerTurn = (gameState: GameState): GameState => {
   let updatedState: GameState = {
     ...gameState,
@@ -191,15 +198,30 @@ export const endPlayerTurn = (gameState: GameState): GameState => {
 export const executeEnemyTurn = (gameState: GameState): GameState => {
   let updatedState: GameState = { ...gameState };
 
-  // Placeholder for enemy actions
-  updatedState.actionQueue.push({ type: 'ENEMY_ACTION' });
+  // Simulate enemy attack
+  const attackingEnemyIndex = Math.floor(Math.random() * updatedState.enemy.digimon.length);
+  const targetPlayerIndex = Math.floor(Math.random() * updatedState.player.digimon.length);
+
+  // Add these to the action queue
+  updatedState.actionQueue.push({ 
+    type: 'ENEMY_ACTION',
+    attackingEnemyIndex,
+    targetPlayerIndex
+  });
+
+  // Add animation actions
+  updatedState.actionQueue.push({
+    type: 'ANIMATE_ATTACK',
+    sourceIndex: attackingEnemyIndex,
+    targetIndex: targetPlayerIndex,
+    isEnemy: true
+  });
 
   // After enemy turn, prepare for the next player turn
   updatedState = prepareNextPlayerTurn(updatedState);
 
   return updatedState;
 };
-
 const prepareNextPlayerTurn = (gameState: GameState): GameState => {
   let updatedState: GameState = { ...gameState };
 

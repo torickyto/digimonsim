@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { GameState, Card, Digimon, BattleAction } from '../shared/types';
 import { initializeBattle, startPlayerTurn, playCard, endPlayerTurn, executeEnemyTurn, checkBattleEnd} from '../game/battle';
 import DigimonSprite from './DigimonSprite';
@@ -35,12 +35,67 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   const [parentDimensions, setParentDimensions] = useState({ width: 0, height: 0 });
   const [isShuffling, setIsShuffling] = useState(false);
   const [targetingDigimon, setTargetingDigimon] = useState(false);
+  const [attackingDigimon, setAttackingDigimon] = useState<number | null>(null);
+  const [hitDigimon, setHitDigimon] = useState<{ isEnemy: boolean, index: number } | null>(null);
 
   useEffect(() => {
     const initialState = startPlayerTurn(gameState);
     setGameState(initialState);
     setHandKey(prevKey => prevKey + 1); // Force re-render for initial hand
   }, []);
+
+  const processActionQueue = useCallback(() => {
+    console.log('Processing action queue:', gameState.actionQueue);
+    gameState.actionQueue.forEach(action => {
+      switch (action.type) {
+        case 'ANIMATE_ATTACK':
+          console.log('ANIMATE_ATTACK action:', action);
+          if (action.isEnemy) {
+            console.log(`Enemy attacking: ${action.sourceIndex}, Player hit: ${action.targetIndex}`);
+            setAttackingDigimon(null);
+            setHitDigimon({ isEnemy: false, index: action.targetIndex });
+          } else {
+            console.log(`Player attacking: ${action.sourceIndex}, Enemy hit: ${action.targetIndex}`);
+            setAttackingDigimon(action.sourceIndex);
+            setHitDigimon({ isEnemy: true, index: action.targetIndex });
+          }
+          setTimeout(() => {
+            console.log('Resetting attack/hit states');
+            setAttackingDigimon(null);
+            setHitDigimon(null);
+          }, 600);
+          break;
+        case 'ENEMY_ACTION':
+          console.log('ENEMY_ACTION:', action);
+          setAttackingDigimon(action.attackingEnemyIndex);
+          setHitDigimon({ isEnemy: false, index: action.targetPlayerIndex });
+          setTimeout(() => {
+            console.log('Resetting enemy attack/hit states');
+            setAttackingDigimon(null);
+            setHitDigimon(null);
+          }, 600);
+          break;
+        // Handle other action types...
+      }
+    });
+  
+    setGameState(prevState => {
+      console.log('Clearing action queue');
+      return { ...prevState, actionQueue: [] };
+    });
+  }, [gameState.actionQueue, setGameState]);
+
+  useEffect(() => {
+    console.log('Action queue changed, processing...');
+    processActionQueue();
+  }, [gameState.actionQueue, processActionQueue]);
+
+  useEffect(() => {
+    console.log('attackingDigimon:', attackingDigimon);
+    console.log('hitDigimon:', hitDigimon);
+  }, [attackingDigimon, hitDigimon]);
+
+  
 
   useEffect(() => {
     // listener for the Escape key
@@ -191,23 +246,6 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     }
   };
 
-  const handleCardPlay = (targetIndex: number) => {
-    if (selectedCard) {
-      const cardIndex = gameState.player.hand.findIndex(card => card.instanceId === selectedCard.instanceId);
-      if (cardIndex !== -1) {
-        const updatedState = playCard(gameState, cardIndex, {
-          targetType: selectedCard.target,
-          sourceDigimonIndex: selectedCard.ownerDigimonIndex, // Use the card's owner Digimon index
-          targetDigimonIndex: targetIndex,
-        });
-        setGameState(updatedState);
-        setSelectedCard(null);
-        setTargetingDigimon(false);
-        setHighlightedRam(0);
-      }
-    }
-  };
-
   const handleEndTurn = () => {
     deselectCard();
     let updatedState = endPlayerTurn(gameState);
@@ -318,20 +356,31 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
       if (cardIndex !== -1) {
         let targetInfo = {
           targetType: selectedCard.target,
-          sourceDigimonIndex: 0,
+          sourceDigimonIndex: selectedCard.ownerDigimonIndex,
           targetDigimonIndex: index,
         };
-
+  
         // If the card targets self or ally, but an enemy was clicked, target the player's Digimon
         if ((selectedCard.target === 'self' || selectedCard.target === 'single_ally') && isEnemy) {
-          targetInfo.targetDigimonIndex = 0; // Assuming the player's active Digimon is always at index 0
+          targetInfo.targetDigimonIndex = 0; // for now have the target be at index 0
         }
-
+  
+        // Set attacking and hit states immediately
+        setAttackingDigimon(targetInfo.sourceDigimonIndex);
+        setHitDigimon({ isEnemy, index: targetInfo.targetDigimonIndex });
+  
+        // Play the card and update the game state
         const updatedState = playCard(gameState, cardIndex, targetInfo);
         setGameState(updatedState);
-        setSelectedCard(null);
-        setTargetingDigimon(false);
-        setHighlightedRam(0);
+  
+        // Reset states after a short delay
+        setTimeout(() => {
+          setAttackingDigimon(null);
+          setHitDigimon(null);
+          setSelectedCard(null);
+          setTargetingDigimon(false);
+          setHighlightedRam(0);
+        }, 600); 
       }
     }
   };
@@ -417,13 +466,15 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
                 <DigimonSprite 
                   name={digimon.name} 
                   scale={spriteScale * 1.75}
+                  isAttacking={attackingDigimon === index && hitDigimon?.isEnemy === false}
+                  isOnHit={hitDigimon?.isEnemy && hitDigimon.index === index}
                   style={{
                     position: 'absolute',
                     left: '50%',
                     bottom: '0',
                     transform: 'translateX(-50%)',
-                  }}
-                />
+  }}
+/>
                 <div className="enemy-health-bar">
                   <span className="enemy-hp-number">{digimon.hp}/{digimon.maxHp}</span>
                   <div className="health-fill" style={{ width: `${(digimon.hp / digimon.maxHp) * 100}%` }}></div>
@@ -449,13 +500,15 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
                 <DigimonSprite 
                   name={digimon.name} 
                   scale={spriteScale * 1.6}
+                  isAttacking={attackingDigimon === index && hitDigimon?.isEnemy === true}
+                  isOnHit={hitDigimon?.isEnemy === false && hitDigimon.index === index}
                   style={{
                     position: 'absolute',
                     left: `${16.67 + index * 33.33}%`,
                     bottom: '0',
                     transform: 'translateX(-50%)',
-                  }}
-                />
+  }}
+/>
               </div>
             ))}
           </div>

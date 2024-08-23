@@ -21,23 +21,32 @@ const DigimonSprite: React.FC<DigimonSpriteProps> = ({
   const [animationClass, setAnimationClass] = useState<'breathing' | 'attacking' | 'onHit'>('breathing');
 
   useEffect(() => {
+    console.log(`DigimonSprite ${name}: isAttacking=${isAttacking}, isOnHit=${isOnHit}`);
+
     if (isAttacking) {
+      console.log(`DigimonSprite ${name}: Setting animation to 'attacking'`);
       setAnimationClass('attacking');
       const timer = setTimeout(() => {
+        console.log(`DigimonSprite ${name}: Attack animation complete, returning to 'breathing'`);
         setAnimationClass('breathing');
         onAttackComplete?.();
-      }, 400); 
+      }, 600); 
       return () => clearTimeout(timer);
     } else if (isOnHit) {
+      console.log(`DigimonSprite ${name}: Setting animation to 'onHit'`);
       setAnimationClass('onHit');
       const timer = setTimeout(() => {
+        console.log(`DigimonSprite ${name}: OnHit animation complete, returning to 'breathing'`);
         setAnimationClass('breathing');
-      }, 200); 
+      }, 600); 
       return () => clearTimeout(timer);
     } else {
+      console.log(`DigimonSprite ${name}: Setting animation to 'breathing'`);
       setAnimationClass('breathing');
     }
-  }, [isAttacking, isOnHit, onAttackComplete]);
+  }, [isAttacking, isOnHit, onAttackComplete, name]);
+
+  console.log(`DigimonSprite ${name}: Rendering with animationClass=${animationClass}`);
 
   return (
     <div 
@@ -50,5 +59,6 @@ const DigimonSprite: React.FC<DigimonSpriteProps> = ({
     ></div>
   );
 };
+
 
 export default DigimonSprite;

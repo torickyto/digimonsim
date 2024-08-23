@@ -15,7 +15,7 @@
   }
 
   
-  .top-bar, .bottom-bar {
+  .top-bar, .bottom-bar1 {
     display: flex;
     justify-content: space-between;
     padding: 10px;

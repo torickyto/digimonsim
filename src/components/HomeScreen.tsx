@@ -37,7 +37,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
         <DigimonSprite name={playerTeam[0].name} />
       </div>
 
-      <div className="bottom-bar">
+      <div className="bottom-bar1">
         <button className="party-button" onClick={toggleParty}>Party</button>
         <button className="battle-button" onClick={onStartBattle}>Battle</button>
         <button className="test-arena-button" onClick={toggleTestArena}>DEV TEST BATTLE</button>

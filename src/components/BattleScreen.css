@@ -252,7 +252,7 @@
 
 .health-fill {
   height: 50%;
-  background-color: #ff2323;
+  background-color: #ff5dcc;
   border-radius: 2px;
   transition: width 0.3s ease-in-out;
   position: absolute;
@@ -334,14 +334,14 @@
   font-size: calc(2 * var(--battle-vh));
   min-width: calc(1 * var(--battle-vh));
   text-align: right;
-  margin-right: calc(0.5 * var(--battle-vh));
+  margin-right: calc(2 * var(--battle-vh));
 }
 
 .hp-bar, .shield-bar {
   flex-grow: 1;
   height: calc(1 * var(--battle-vh));
   background-color: rgba(255, 255, 255, 0.2);
-  border-radius: calc(0.5 * var(--battle-vh));
+  border-radius: calc(0.2 * var(--battle-vh));
   overflow: hidden;
   position: relative;
 }
@@ -359,10 +359,12 @@
 }
 
 .hp-fill {
-  background-color: #00ff00;
-  box-shadow: 0 0 calc(0.5 * var(--battle-vh)) #00ff00;
+  background-color: #ffd700;
+  box-shadow: 0 0 calc(0.5 * var(--battle-vh)) #dabb0d;
 }
-
+/*ffd700
+4ac8fa
+*/
 .shield-fill {
   height: 100%;
   background-color: #4ac8fa;
@@ -377,7 +379,7 @@
 }
 
 .shield-fill {
-  background-color: #4ac8fa;
+  background-color: #5efdf7;
   box-shadow: 0 0 calc(0.5 * var(--battle-vh)) #4ac8fa;
 }
 
