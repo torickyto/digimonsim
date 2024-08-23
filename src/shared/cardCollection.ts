@@ -806,10 +806,10 @@ BEREJENA: createCard(
   'special',
   3,
   'VIRUS',
-  'Discard 2 random cards, gain their RAM cost. Can overload.',
+  'Discard 2 random cards, gain their RAM cost.',
   'none',
   [{
-    description: "PLACEHOLDER",
+    description: "Can overload RAM.",
     discardCards: 2,
     gainRam: 'discardedCardCost'
   }]

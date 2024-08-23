@@ -1,9 +1,9 @@
-import { DigimonState } from './types';
+import { DigimonState, DamageFormulaKey } from './types';
 import { DAMAGE_MULTIPLIERS } from '../game/gameConstants';
 
 export type DamageFormula = (attacker: DigimonState) => number;
 
-export const DamageCalculations: Record<string, DamageFormula> = {
+export const DamageCalculations: Record<DamageFormulaKey, DamageFormula> = {
 
     LIGHT: (attacker: DigimonState) => Math.round(attacker.attack * 0.2),
 
@@ -57,11 +57,7 @@ export function calculateCustomDamage(attacker: DigimonState, customValue: numbe
   return customValue;
 }
 
-export function calculateDamage(formulaKey: string, attacker: DigimonState, customValue?: number): number {
-  if (formulaKey === 'CUSTOM' && customValue !== undefined) {
-    return calculateCustomDamage(attacker, customValue);
-  }
-
+export function calculateDamage(formulaKey: DamageFormulaKey, attacker: DigimonState, defender: DigimonState): number {
   const formula = DamageCalculations[formulaKey];
   if (!formula) {
     console.error(`No damage formula found for key: ${formulaKey}`);

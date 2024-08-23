@@ -8,10 +8,15 @@ import {
   StatusEffect,
   StatusEffectType,
   ScalingFactor,
-  StatType
+  StatType,
+  DamageFormulaKey
 } from '../shared/types';
 import { CORRUPTION_DAMAGE_PER_STACK } from '../game/gameConstants';
 import { DamageCalculations } from '../shared/damageCalculations';
+
+function isDamageEffect(effect: CardEffect): effect is CardEffect & { damage: NonNullable<CardEffect['damage']> } {
+  return effect.damage !== undefined && effect.damage.formula !== undefined && effect.damage.target !== undefined;
+}
 
 function getTargets(gameState: GameState, targetInfo: TargetInfo): DigimonState[] {
   const { targetType, sourceDigimonIndex, targetDigimonIndex } = targetInfo;
@@ -45,10 +50,9 @@ function resolveCardEffects(card: Card, gameState: GameState, targetInfo: Target
   const sourceDigimon = updatedState.player.digimon[targetInfo.sourceDigimonIndex];
   const targets = getTargets(updatedState, targetInfo);
 
-   card.effects.forEach(effect => {
-
+  card.effects.forEach(effect => {
     if (effect.once && updatedState.temporaryEffects.onceEffectsUsed?.includes(card.id)) {
-      return; // Skip this effect if it's a 'once' effect and has already been used
+      return;
     }
 
     if (effect.duration) {
@@ -56,23 +60,25 @@ function resolveCardEffects(card: Card, gameState: GameState, targetInfo: Target
     }
 
     if (effect.once) {
-      updatedState = {
-        ...updatedState,
-        temporaryEffects: {
-          ...updatedState.temporaryEffects,
-          onceEffectsUsed: [...(updatedState.temporaryEffects.onceEffectsUsed || []), card.id]
-        }
-      };
+      updatedState.temporaryEffects.onceEffectsUsed = [
+        ...(updatedState.temporaryEffects.onceEffectsUsed || []),
+        card.id
+      ];
     }
-
-    if (effect.damage && effect.damage.formula) {
+    if (isDamageEffect(effect)) {
       const damage = DamageCalculations[effect.damage.formula](updatedState.player.digimon[targetInfo.sourceDigimonIndex]);
-      const targets = getTargets(updatedState, { ...targetInfo, targetType: effect.damage.target });
-      targets.forEach(target => {
-        updatedState = applyDamage(damage, target, updatedState, targetInfo);
-        if (target.hp > 0) enemiesHit++;
+      const damageTargets = getTargets(updatedState, { ...targetInfo, targetType: effect.damage.target });
+      damageTargets.forEach(target => {
+        updatedState = applyDamage(damage, target, updatedState, {
+          ...targetInfo,
+          targetType: effect.damage.target,
+          targetDigimonIndex: updatedState.enemy.digimon.findIndex(d => d.id === target.id)
+        });
+        if (target.hp > 0 && effect.damage.target === 'enemy') enemiesHit++;
       });
     }
+
+    
 
     if (effect.shield && effect.shield.formula) {
       let shieldAmount = DamageCalculations[effect.shield.formula](updatedState.player.digimon[targetInfo.sourceDigimonIndex]);

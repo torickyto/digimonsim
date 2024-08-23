@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
 import DigimonSprite from './DigimonSprite';
 import DigimonStatScreen from './DigimonStatScreen';
-import CardDex from './CardDex'; 
+import CardDex from './CardDex';
 import { Digimon, DigimonEgg } from '../shared/types';
-import { CardCollection as AllCards } from '../shared/cardCollection';  // Import all cards
+import { CardCollection as AllCards } from '../shared/cardCollection';
 import './HomeScreen.css';
 import DeckEditor from './DeckEditor';
+import DevTestBattleScreen from './DevTestBattleScreen';
 
 interface HomeScreenProps {
   playerTeam: Digimon[];
   eggs: DigimonEgg[];
   onStartBattle: () => void;
-  onUpdatePlayerTeam: (updatedTeam: Digimon[]) => void; 
+  onUpdatePlayerTeam: (updatedTeam: Digimon[]) => void;
 }
 
 const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle, onUpdatePlayerTeam }) => {
@@ -34,17 +35,17 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
   };
 
   const handleSaveDeck = (updatedDigimon: Digimon) => {
-    // Update the player's team with the new deck
     const updatedTeam = playerTeam.map(d => 
       d.id === updatedDigimon.id ? updatedDigimon : d
     );
-    
-    // Call the function to update the player team in the parent component
     onUpdatePlayerTeam(updatedTeam);
-    
     console.log('Updated team:', updatedTeam);
     setShowDeckEditor(false);
   };
+
+  if (showTestArena) {
+    return <DevTestBattleScreen onExit={() => setShowTestArena(false)} />;
+  }
 
   return (
     <div className="home-screen">
@@ -102,7 +103,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
         </div>
       )}
 
-{showDeckEditor && selectedDigimon && (
+      {showDeckEditor && selectedDigimon && (
         <DeckEditor 
           digimon={selectedDigimon} 
           onSave={handleSaveDeck} 

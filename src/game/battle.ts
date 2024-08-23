@@ -1,6 +1,4 @@
-// battle.ts
-
-import { Digimon, StatusEffect, DigimonState, GameState, Card, BattleAction, TargetInfo } from '../shared/types';
+import { Digimon, StatusEffect, DigimonState, GameState, Card, BattleAction, TargetInfo, DamageFormulaKey } from '../shared/types';
 import { STARTING_RAM, BASE_RAM, MAX_HAND_SIZE, CARDS_DRAWN_PER_TURN, MAX_RAM } from './gameConstants';
 import { DigimonTemplates } from '../data/DigimonTemplate';
 import { createDigimon } from '../shared/digimonManager';
@@ -9,13 +7,6 @@ import { applyStatusEffects } from './statusEffects';
 import { resolveCardEffects } from './cardEffects';
 
 export const initializeBattle = (playerTeam: Digimon[], enemyTeam: Digimon[]): GameState => {
-
-  if (!enemyTeam) { //TESTING ENEMY
-    const goblimonTemplate = DigimonTemplates['goblimon'];
-    const enemyGoblimon = createDigimon(goblimonTemplate);
-    enemyTeam = [enemyGoblimon];
-  }
-
   const initialState: GameState = {
     player: {
       digimon: playerTeam,
@@ -207,30 +198,36 @@ export const endPlayerTurn = (gameState: GameState): GameState => {
 export const executeEnemyTurn = (gameState: GameState): GameState => {
   let updatedState: GameState = { ...gameState };
 
-  // Simulate enemy attack
-  const attackingEnemyIndex = Math.floor(Math.random() * updatedState.enemy.digimon.length);
-  const targetPlayerIndex = Math.floor(Math.random() * updatedState.player.digimon.length);
+  updatedState.enemy.digimon.forEach((enemyDigimon, enemyIndex) => {
+    if (enemyDigimon.hp <= 0) return; // Skip defeated enemies
 
-  // Add these to the action queue
-  updatedState.actionQueue.push({ 
-    type: 'ENEMY_ACTION',
-    attackingEnemyIndex,
-    targetPlayerIndex
+    const targetPlayerIndex = Math.floor(Math.random() * updatedState.player.digimon.length);
+    const targetPlayerDigimon = updatedState.player.digimon[targetPlayerIndex];
+
+    updatedState.actionQueue.push({ 
+      type: 'ENEMY_ACTION',
+      attackingEnemyIndex: enemyIndex,
+      targetPlayerIndex
+    });
+
+    updatedState.actionQueue.push({
+      type: 'ANIMATE_ATTACK',
+      sourceIndex: enemyIndex,
+      targetIndex: targetPlayerIndex,
+      isEnemy: true
+    });
+
+    const damage = calculateDamage('BASIC' as DamageFormulaKey, enemyDigimon, targetPlayerDigimon);
+    updatedState = applyDamage(damage, targetPlayerDigimon, updatedState, {
+      targetType: 'single_ally',
+      sourceDigimonIndex: enemyIndex,
+      targetDigimonIndex: targetPlayerIndex
+    });
   });
 
-  // Add animation actions
-  updatedState.actionQueue.push({
-    type: 'ANIMATE_ATTACK',
-    sourceIndex: attackingEnemyIndex,
-    targetIndex: targetPlayerIndex,
-    isEnemy: true
-  });
-
-  // After enemy turn, prepare for the next player turn
-  updatedState = prepareNextPlayerTurn(updatedState);
-
-  return updatedState;
+  return prepareNextPlayerTurn(updatedState);
 };
+
 const prepareNextPlayerTurn = (gameState: GameState): GameState => {
   let updatedState: GameState = { ...gameState };
 
@@ -275,7 +272,7 @@ export const drawCard = (state: GameState): { newState: GameState; drawnCard: Ca
 
 
 
-export const applyDamage = (damage: number, target: DigimonState, gameState: GameState, targetInfo: TargetInfo): GameState => {
+export const applyDamage = (damage: number, target: Digimon | DigimonState, gameState: GameState, targetInfo: TargetInfo): GameState => {
   const updatedHp = Math.max(0, target.hp - damage);
   const updatedTarget = { ...target, hp: updatedHp };
 
@@ -286,7 +283,6 @@ export const applyDamage = (damage: number, target: DigimonState, gameState: Gam
       index === targetInfo.targetDigimonIndex ? updatedTarget : d
     );
   } else {
-    // Handle damage to player Digimon if needed
     updatedState.player.digimon = updatedState.player.digimon.map((d, index) => 
       index === targetInfo.targetDigimonIndex ? { ...d, ...updatedTarget } as Digimon : d
     );

@@ -20,6 +20,10 @@
     background-image: url('../assets/images/goblimon-sprite.png');
   }  
 
+  .devimon {
+    background-image: url('../assets/images/devimon-sprite.png');
+  }
+
   .wizardmon {
     background-image: url('../assets/images/wizardmon-sprite.png');
   }    
@@ -27,6 +31,10 @@
   .beelzemon {
     background-image: url('../assets/images/beelzemon-sprite.png');
   }    
+
+  .lucemon {
+    background-image: url('../assets/images/lucemon-sprite.png');
+  }
 
 
 
@@ -69,12 +77,12 @@
   }
 
   /* Medium sprite */
-.goblimon, .wizardmon {
+.goblimon, .wizardmon, .lucemon {
   width: 112px;
   height: 112px;
 }
 
-.goblimon.breathing, .wizardmon.breathing {
+.goblimon.breathing, .wizardmon.breathing, .lucemon.breathing {
   animation: breathe-medium 1.5s steps(1, end) infinite;
 }
 
@@ -84,14 +92,14 @@
   50% { background-position: -226px 0; }
 }
 
-.goblimon.attacking, .wizardmon.attacking {
+.goblimon.attacking, .wizardmon.attacking, .lucemon.attacking {
   background-size: 335px 256px; /* spritesheet size */
-    background-position: -167.5px -112;
+    background-position: -167.5px -112px;
     width: 167.5px; 
     height: 144px;
 }
 
-.goblimon.onHit, .wizardmon.onHit {
+.goblimon.onHit, .wizardmon.onHit, .lucemon.onHit {
   background-size: 335px 256px; /* spritesheet size */
     background-position: 0px -112px;
     width: 167.5px; 
@@ -100,23 +108,33 @@
 
 
 /* Large sprite */
-.beelzemon {
-  width: 161px;
-  height: 177px;
+.beelzemon, .devimon {
+  width: 160px;
+  height: 176px;
 }
 
-.beelzemon.breathing {
+.beelzemon.breathing, .devimon.breathing {
   animation: breathe-large 1.5s steps(1, end) infinite;
 }
 
 @keyframes breathe-large {
   0% { background-position: 0 0; }
-  25%, 75% { background-position: -161px 0; }
-  50% { background-position: -322px 0; }
+  25%, 75% { background-position: -160px 0; }
+  50% { background-position: -320px 0; }
 }
 
-.beelzemon.attacking {
-  animation: attack-large 0.4s steps(1, end) 1;
+.beelzemon.attacking, .devimon.attacking {
+  background-size: 480px 368px; 
+    background-position: -240px -176px;
+    width: 240px; 
+    height: 192px;
+}
+
+.beelzemon.onHit, .devimon.onHit {
+  background-size: 480px 368px; 
+    background-position: 0px -176px;
+    width: 240px; 
+    height: 192px;
 }
 
 @keyframes attack-large {

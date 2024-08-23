@@ -59,6 +59,21 @@ export const DigimonTemplates: Record<string, DigimonTemplate> = {
     startingCard: CardCollection.CORONA_DESTROYER,
     passiveSkill: nullPassiveSkill
   },
+  devimon: {
+    name: 'devimon',
+    displayName: 'Devimon',
+    type: 'VIRUS' as DigimonType,
+    baseHp: 70,
+    baseAttack: 24,
+    baseHealing: 12,
+    baseEvadeChance: 0.12,
+    baseCritChance: 0.08,
+    baseAccuracy: 0.93,
+    baseCorruptionResistance: 0.3,
+    baseBuggedResistance: 0.4,
+    startingCard: CardCollection.DEADLY_NAIL,
+    passiveSkill: nullPassiveSkill
+  },
   wizardmon: {
     name: 'wizardmon',
     displayName: 'Wizardmon',
@@ -153,7 +168,7 @@ export const DigimonTemplates: Record<string, DigimonTemplate> = {
     name: 'lucemon',
     displayName: 'Lucemon',
     type: 'VACCINE' as DigimonType,
-    baseHp: 70,
+    baseHp: 666,
     baseAttack: 23,
     baseHealing: 15,
     baseEvadeChance: 0.14,

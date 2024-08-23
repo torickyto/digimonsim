@@ -14,9 +14,10 @@ interface BattleScreenProps {
   playerTeam: Digimon[];
   enemyTeam: Digimon[];
   onBattleEnd: (result: 'win' | 'lose') => void;
+  backgroundImage?: string; 
 }
 
-const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBattleEnd }) => {
+const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBattleEnd, backgroundImage })=> {
   const [gameState, setGameState] = useState<GameState>(() => initializeBattle(playerTeam, enemyTeam));
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -45,6 +46,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   const [showOpeningAttacks, setShowOpeningAttacks] = useState(false);
   const [initialAnimationComplete, setInitialAnimationComplete] = useState(false);
   const [openingAttacksComplete, setOpeningAttacksComplete] = useState(false);
+  
   
 
 
@@ -485,7 +487,10 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
           </div>
         )}
         <div className={`battle-content ${showBattleField ? 'show' : ''}`}>
-          <div className="battle-background"></div>
+        <div 
+            className="battle-background" 
+            style={backgroundImage ? { backgroundImage: `url(${backgroundImage})` } : {}}
+          ></div>
           {openingAttacksComplete && (<>
         <div className="top-bar">
           <div className="left-controls">
@@ -532,38 +537,38 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
         </div>
         <div className="battle-area">
         <div className="enemy-digimon">
-  {gameState.enemy.digimon.map((digimon, index) => (
-    <div key={index} className="enemy-digimon-container" onClick={() => handleEnemyClick(index)}>
-      <DigimonSprite 
-        name={digimon.name} 
-        scale={spriteScale * 1.75}
-        isAttacking={attackingDigimon === index && hitDigimon?.isEnemy === false}
-        isOnHit={hitDigimon?.isEnemy && hitDigimon.index === index}
-        style={{
-          position: 'absolute',
-          left: '50%',
-          bottom: '0',
-          transform: 'translateX(-50%)',
-        }}
-      />
-                <div className="enemy-health-bar">
-        <div className="health-fill" style={{ width: `${(digimon.hp / digimon.maxHp) * 100}%` }}></div>
-        <span className="enemy-hp-number">{`${digimon.hp}/${digimon.maxHp}`}</span>
-      </div>
-      <div className="enemy-info-tooltip">
-        {digimon.displayName} - Type: {digimon.type}
-      </div>
-      {digimon.shield > 0 && (
-        <div className="shield-bar">
-          <div 
-            className="shield-fill" 
-            style={{ width: `${(digimon.shield / digimon.maxHp) * 100}%` }}
-          ></div>
+          {gameState.enemy.digimon.map((digimon, index) => (
+            <div key={index} className="enemy-digimon-container" onClick={() => handleEnemyClick(index)}>
+              <DigimonSprite 
+                name={digimon.name} 
+                scale={spriteScale * 1.75}
+                isAttacking={attackingDigimon === index && hitDigimon?.isEnemy === false}
+                isOnHit={hitDigimon?.isEnemy && hitDigimon.index === index}
+                style={{
+                  position: 'absolute',
+                  left: `${25 + index * 25}%`,
+                  bottom: '0',
+                  transform: 'translateX(-50%)',
+                }}
+              />
+              <div className="enemy-health-bar">
+                <div className="health-fill" style={{ width: `${(digimon.hp / digimon.maxHp) * 100}%` }}></div>
+                <span className="enemy-hp-number">{`${digimon.hp}/${digimon.maxHp}`}</span>
+              </div>
+              <div className="enemy-info-tooltip">
+                {digimon.displayName} - Type: {digimon.type}
+              </div>
+              {digimon.shield > 0 && (
+                <div className="shield-bar">
+                  <div 
+                    className="shield-fill" 
+                    style={{ width: `${(digimon.shield / digimon.maxHp) * 100}%` }}
+                  ></div>
+                </div>
+              )}
+            </div>
+          ))}
         </div>
-      )}
-    </div>
-  ))}
-</div>
           <div className="player-digimon">
             {gameState.player.digimon.map((digimon, index) => (
               <div key={index} className="player-digimon-container" onClick={() => handlePlayerDigimonClick(index)}>

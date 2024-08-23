@@ -277,15 +277,15 @@
   width: calc(20 * var(--battle-vh));
   height: calc(1.5 * var(--battle-vh));
   background-color: rgba(0, 0, 0, 0.6);
-  border-radius: calc(.5 * var(--battle-vh));
+  border-radius: calc(.3 * var(--battle-vh));
   overflow: hidden;
-  box-shadow: 0 0 calc(0.1 * var(--battle-vh)) rgba(255, 0, 157, 0.3);
+  box-shadow: 0 0 calc(0.25 * var(--battle-vh)) #32313b;
 }
 
 
 .health-fill {
   height: 100%;
-  background-color: #ff5dcc;
+  background-color: #ab58a8;
   transition: width 0.3s ease-in-out;
   position: absolute;
   top: 0;
