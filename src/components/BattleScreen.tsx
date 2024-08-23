@@ -37,6 +37,61 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   const [targetingDigimon, setTargetingDigimon] = useState(false);
   const [attackingDigimon, setAttackingDigimon] = useState<number | null>(null);
   const [hitDigimon, setHitDigimon] = useState<{ isEnemy: boolean, index: number } | null>(null);
+  const [battleStarting, setBattleStarting] = useState(true);
+  const [showWarning, setShowWarning] = useState(true);
+  const [showSpiralWipe, setShowSpiralWipe] = useState(false);
+  const [showBattleField, setShowBattleField] = useState(false);
+  const [showGlitchTransition, setShowGlitchTransition] = useState(true);
+  const [showOpeningAttacks, setShowOpeningAttacks] = useState(false);
+  const [initialAnimationComplete, setInitialAnimationComplete] = useState(false);
+  const [openingAttacksComplete, setOpeningAttacksComplete] = useState(false);
+  
+
+
+  useEffect(() => {
+    if (battleStarting) {
+      setTimeout(() => setShowWarning(false), 1200);
+      setTimeout(() => setShowGlitchTransition(true), 1200);
+      setTimeout(() => {
+        setShowGlitchTransition(false);
+        setShowBattleField(true);
+      }, 1010);
+      setTimeout(() => {
+        setBattleStarting(false);
+        setShowOpeningAttacks(true);
+      }, 1100);
+    }
+  }, [battleStarting]);
+
+  useEffect(() => {
+    if (showOpeningAttacks) {
+      const totalDigimon = playerTeam.length + enemyTeam.length;
+      let attacksCompleted = 0;
+
+      const triggerAttacks = () => {
+        setAttackingDigimon(0);
+        setTimeout(() => {
+          setAttackingDigimon(null);
+          attacksCompleted++;
+          if (attacksCompleted < totalDigimon) {
+            setTimeout(triggerAttacks, 1);
+          } else {
+            setOpeningAttacksComplete(true);
+          }
+        }, 10);
+      };
+
+      triggerAttacks();
+    }
+  }, [showOpeningAttacks, playerTeam.length, enemyTeam.length]);
+
+  useEffect(() => {
+    if (openingAttacksComplete) {
+      const initialState = startPlayerTurn(gameState);
+      setGameState(initialState);
+      setHandKey(prevKey => prevKey + 1); // Force re-render for initial hand
+    }
+  }, [openingAttacksComplete]);
 
   useEffect(() => {
     const initialState = startPlayerTurn(gameState);
@@ -75,7 +130,6 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
             setHitDigimon(null);
           }, 600);
           break;
-        // Handle other action types...
       }
     });
   
@@ -414,8 +468,25 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
 
   return (
     <div className="battle-screen-container">
-      <div className="battle-screen" ref={battleScreenRef} onClick={handleBackgroundClick}>
-        <div className="battle-background"></div>
+      <div className={`battle-screen ${battleStarting ? 'battle-starting' : ''}`} ref={battleScreenRef} onClick={handleBackgroundClick}>
+        {battleStarting && (
+          <div className="battle-start-overlay">
+            {showWarning && <div className="warning-sign">WARNING!</div>}
+            {showGlitchTransition && (
+              <div className={`glitch-transition ${showBattleField ? 'fade-out' : ''}`}>
+                <div className="glitch-line" style={{top: '25%'}}></div>
+                <div className="glitch-line" style={{top: '50%'}}></div>
+                <div className="glitch-line" style={{top: '75%'}}></div>
+                <div className="glitch-text" style={{top: '40%', left: '10%'}}>INITIALIZING BATTLE</div>
+                <div className="glitch-text" style={{top: '60%', left: '60%'}}>LOADING DIGIMON DATA</div>
+                <div className="digital-noise"></div>
+              </div>
+            )}
+          </div>
+        )}
+        <div className={`battle-content ${showBattleField ? 'show' : ''}`}>
+          <div className="battle-background"></div>
+          {openingAttacksComplete && (<>
         <div className="top-bar">
           <div className="left-controls">
             <div className="button-container">
@@ -574,6 +645,9 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
         cards={gameState.player.discardPile}
         title="Discard Pile"
       />
+       </>
+          )}
+          </div>
       </div>
     </div>
   );

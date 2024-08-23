@@ -122,10 +122,10 @@ export const CardCollection: Record<string, Card> = {
     'special',
     1,
     'VIRUS',
-    'RECOMPILE',
+    '',
     'none',
     [{
-      description: "Draw a card",
+      description: "Draw a card, if the card is not an attack card then discard it.",
       drawCards: 1,
       conditional: {
         condition: (state) => state.player.hand[state.player.hand.length - 1].type !== 'attack',
@@ -165,7 +165,7 @@ export const CardCollection: Record<string, Card> = {
     '',
     'random_enemy',
     [{
-      description: "Deal {damage} damage",
+      description: "",
       damage: {
         formula: 'HEAVY',
         target: 'random_enemy'
@@ -177,12 +177,12 @@ export const CardCollection: Record<string, Card> = {
     'BABY_BURNER',
     'Baby Burner',
     'attack',
-    5,
+    4,
     'DATA',
     '',
     'all_enemies',
     [{
-      description: "Deal {damage} damage",
+      description: "",
       damage: {
         formula: 'STRONG2',
         target: 'all_enemies'
@@ -221,10 +221,10 @@ SKULL_CRACKER: createCard(
   'attack',
   1,
   'VACCINE',
-  'Can only target enemies with shield.',
+  '',
   'enemy',
   [{
-    description: "Deal heavy damage to a shielded enemy.",
+    description: "Can only target enemies with a shield.",
     damage: {
       formula: 'HEAVY',
       target: 'enemy'
@@ -239,17 +239,17 @@ BLUE_CYCLONE: createCard(
   'attack',
   4,
   'VACCINE',
-  'Deal {damage} damage to all enemies. Each enemy hit gives the user {shield} shield.',
+  '',
   'all_enemies',
   [{
-    description: "Deal basic damage to all enemies.",
+    description: "",
     damage: {
       formula: 'BASIC',
       target: 'all_enemies'
     }
   },
   {
-    description: "Gain shield for each enemy hit.",
+    description: "Gain {shield} for each enemy hit.",
     shield: {
       formula: 'WEAK',
       target: 'self'

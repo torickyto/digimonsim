@@ -21,13 +21,10 @@ const DigimonSprite: React.FC<DigimonSpriteProps> = ({
   const [animationClass, setAnimationClass] = useState<'breathing' | 'attacking' | 'onHit'>('breathing');
 
   useEffect(() => {
-    console.log(`DigimonSprite ${name}: isAttacking=${isAttacking}, isOnHit=${isOnHit}`);
 
     if (isAttacking) {
-      console.log(`DigimonSprite ${name}: Setting animation to 'attacking'`);
       setAnimationClass('attacking');
       const timer = setTimeout(() => {
-        console.log(`DigimonSprite ${name}: Attack animation complete, returning to 'breathing'`);
         setAnimationClass('breathing');
         onAttackComplete?.();
       }, 600); 

@@ -10,6 +10,32 @@ interface FullCardDisplayProps {
 }
 
 const FullCardDisplay: React.FC<FullCardDisplayProps> = ({ card, position, attacker }) => {
+
+    const renderExtraInfo = () => {
+        const extraInfo = [];
+        
+        if (card.effects.some(effect => effect.once)) {
+          extraInfo.push({
+            title: 'Burst',
+            description: 'This card can only be used once per battle.'
+          });
+        }
+        
+        if (card.effects.some(effect => effect.recompile)) {
+          extraInfo.push({
+            title: 'Recompile',
+            description: 'This card is returned to your hand after being played.'
+          });
+        }
+
+        return extraInfo.map((info, index) => (
+            <div key={index} className="extra-info-box">
+              <h4>{info.title}</h4>
+              <p>{info.description}</p>
+            </div>
+          ));
+        };
+
     const calculateValue = (formula: string) => {
       if (formula in DamageCalculations) {
         return DamageCalculations[formula as keyof typeof DamageCalculations](attacker);
@@ -143,6 +169,9 @@ const FullCardDisplay: React.FC<FullCardDisplayProps> = ({ card, position, attac
               </span>
             ))}
           </div>
+          <div className="extra-info-container">
+        {renderExtraInfo()}
+      </div>
         </div>
       );
     };
