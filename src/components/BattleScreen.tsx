@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { GameState, Card, Digimon, BattleAction } from '../shared/types';
+import { GameState, Card, Digimon, BattleAction, TargetType, TargetInfo } from '../shared/types';
 import { initializeBattle, startPlayerTurn, playCard, endPlayerTurn, executeEnemyTurn, checkBattleEnd} from '../game/battle';
 import DigimonSprite from './DigimonSprite';
 import CompactCard from './CompactCard';
@@ -17,8 +17,9 @@ interface BattleScreenProps {
   backgroundImage?: string; 
 }
 
-const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBattleEnd, backgroundImage })=> {
+const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBattleEnd, backgroundImage }) => {
   const [gameState, setGameState] = useState<GameState>(() => initializeBattle(playerTeam, enemyTeam));
+  
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const [spriteScale, setSpriteScale] = useState(1);
@@ -98,7 +99,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   useEffect(() => {
     const initialState = startPlayerTurn(gameState);
     setGameState(initialState);
-    setHandKey(prevKey => prevKey + 1); // Force re-render for initial hand
+    setHandKey(prevKey => prevKey + 1);
   }, []);
 
   const processActionQueue = useCallback(() => {
@@ -410,16 +411,11 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     if (targetingDigimon && selectedCard) {
       const cardIndex = gameState.player.hand.findIndex(card => card.instanceId === selectedCard.instanceId);
       if (cardIndex !== -1) {
-        let targetInfo = {
-          targetType: selectedCard.target,
+        let targetInfo: TargetInfo = {
+          targetType: isEnemy ? 'enemy' : 'single_ally' as TargetType,
           sourceDigimonIndex: selectedCard.ownerDigimonIndex,
           targetDigimonIndex: index,
         };
-  
-        // If the card targets self or ally, but an enemy was clicked, target the player's Digimon
-        if ((selectedCard.target === 'self' || selectedCard.target === 'single_ally') && isEnemy) {
-          targetInfo.targetDigimonIndex = 0; // for now have the target be at index 0
-        }
   
         // Set attacking and hit states immediately
         setAttackingDigimon(targetInfo.sourceDigimonIndex);
@@ -536,54 +532,48 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
           </div>
         </div>
         <div className="battle-area">
-        <div className="enemy-digimon">
-          {gameState.enemy.digimon.map((digimon, index) => (
-            <div key={index} className="enemy-digimon-container" onClick={() => handleEnemyClick(index)}>
+  <div className="enemy-digimon">
+    {gameState.enemy.digimon.map((digimon, index) => (
+      <div key={`enemy-${index}`} className="enemy-digimon-container" onClick={() => handleEnemyClick(index)}>
+        <DigimonSprite 
+          name={digimon.name} 
+          scale={spriteScale * 1.75}
+          isAttacking={attackingDigimon === index && hitDigimon?.isEnemy === true}
+          isOnHit={hitDigimon?.isEnemy && hitDigimon.index === index}
+        />
+        <div className="enemy-health-bar">
+          <div className="health-fill" style={{ width: `${(digimon.hp / digimon.maxHp) * 100}%` }}></div>
+          <span className="enemy-hp-number">{`${digimon.hp}/${digimon.maxHp}`}</span>
+        </div>
+        {digimon.shield > 0 && (
+          <div className="enemy-shield-bar">
+            <div 
+              className="shield-fill" 
+              style={{ width: `${(digimon.shield / digimon.maxHp) * 100}%` }}
+            ></div>
+          </div>
+        )}
+        <div className="enemy-info-tooltip">
+          {digimon.displayName} - Type: {digimon.type}
+        </div>
+      </div>
+    ))}
+  </div>
+        <div className="player-digimon">
+          {gameState.player.digimon.map((digimon, index) => (
+            <div key={`player-${index}`} className="player-digimon-container" onClick={() => handlePlayerDigimonClick(index)}>
               <DigimonSprite 
                 name={digimon.name} 
-                scale={spriteScale * 1.75}
+                scale={spriteScale * 1.6}
                 isAttacking={attackingDigimon === index && hitDigimon?.isEnemy === false}
-                isOnHit={hitDigimon?.isEnemy && hitDigimon.index === index}
+                isOnHit={hitDigimon?.isEnemy === false && hitDigimon.index === index}
                 style={{
                   position: 'absolute',
-                  left: `${25 + index * 25}%`,
+                  left: `${16.67 + index * 33.33}%`,
                   bottom: '0',
                   transform: 'translateX(-50%)',
                 }}
               />
-              <div className="enemy-health-bar">
-                <div className="health-fill" style={{ width: `${(digimon.hp / digimon.maxHp) * 100}%` }}></div>
-                <span className="enemy-hp-number">{`${digimon.hp}/${digimon.maxHp}`}</span>
-              </div>
-              <div className="enemy-info-tooltip">
-                {digimon.displayName} - Type: {digimon.type}
-              </div>
-              {digimon.shield > 0 && (
-                <div className="shield-bar">
-                  <div 
-                    className="shield-fill" 
-                    style={{ width: `${(digimon.shield / digimon.maxHp) * 100}%` }}
-                  ></div>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-          <div className="player-digimon">
-            {gameState.player.digimon.map((digimon, index) => (
-              <div key={index} className="player-digimon-container" onClick={() => handlePlayerDigimonClick(index)}>
-                <DigimonSprite 
-                  name={digimon.name} 
-                  scale={spriteScale * 1.6}
-                  isAttacking={attackingDigimon === index && hitDigimon?.isEnemy === true}
-                  isOnHit={hitDigimon?.isEnemy === false && hitDigimon.index === index}
-                  style={{
-                    position: 'absolute',
-                    left: `${16.67 + index * 33.33}%`,
-                    bottom: '0',
-                    transform: 'translateX(-50%)',
-  }}
-/>
               </div>
             ))}
           </div>
@@ -655,7 +645,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
           </div>
       </div>
     </div>
-  );
+  )
 };
 
 export default BattleScreen;

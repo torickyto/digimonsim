@@ -21,7 +21,6 @@ const DigimonSprite: React.FC<DigimonSpriteProps> = ({
   const [animationClass, setAnimationClass] = useState<'breathing' | 'attacking' | 'onHit'>('breathing');
 
   useEffect(() => {
-
     if (isAttacking) {
       setAnimationClass('attacking');
       const timer = setTimeout(() => {

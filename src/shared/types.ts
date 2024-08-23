@@ -111,9 +111,8 @@ export type BattleAction =
 export interface TargetInfo {
   targetType: TargetType;
   sourceDigimonIndex: number;
-  targetDigimonIndex?: number;
+  targetDigimonIndex: number;
 }
-
 export interface Card {
   id: string;
   name: string;

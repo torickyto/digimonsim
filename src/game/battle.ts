@@ -2,14 +2,15 @@ import { Digimon, StatusEffect, DigimonState, GameState, Card, BattleAction, Tar
 import { STARTING_RAM, BASE_RAM, MAX_HAND_SIZE, CARDS_DRAWN_PER_TURN, MAX_RAM } from './gameConstants';
 import { DigimonTemplates } from '../data/DigimonTemplate';
 import { createDigimon } from '../shared/digimonManager';
-import { calculateDamage } from '../shared/damageCalculations';
+import { calculateDamage, DamageCalculations } from '../shared/damageCalculations';
 import { applyStatusEffects } from './statusEffects';
 import { resolveCardEffects } from './cardEffects';
+
 
 export const initializeBattle = (playerTeam: Digimon[], enemyTeam: Digimon[]): GameState => {
   const initialState: GameState = {
     player: {
-      digimon: playerTeam,
+      digimon: playerTeam.map(digimon => ({ ...digimon })), // Create a new object for each Digimon
       hand: [],
       deck: playerTeam.flatMap((digimon, index) => 
         digimon.deck.map(card => ({ ...card, ownerDigimonIndex: index }))
@@ -18,7 +19,7 @@ export const initializeBattle = (playerTeam: Digimon[], enemyTeam: Digimon[]): G
       ram: calculateStartingRam(playerTeam),
     },
     enemy: {
-      digimon: enemyTeam,
+      digimon: enemyTeam.map(digimon => ({ ...digimon })),
     },
     turn: 1,
     phase: 'player',
@@ -147,17 +148,32 @@ export const playCard = (gameState: GameState, cardIndex: number, targetInfo: Ta
       ...gameState.player, 
       hand: updatedHand 
     } 
-  }, {
-    ...targetInfo,
-    sourceDigimonIndex: card.ownerDigimonIndex
-  });
+  }, targetInfo);
+
+  let damage = 0;
+  if (card.type === 'attack') {
+    const damageEffect = card.effects.find(effect => effect.damage);
+    if (damageEffect && damageEffect.damage && damageEffect.damage.formula) {
+      const sourceDigimon = gameState.player.digimon[targetInfo.sourceDigimonIndex];
+      damage = DamageCalculations[damageEffect.damage.formula](sourceDigimon);
+    }
+  }
 
   updatedState = {
     ...updatedState,
     player: {
       ...updatedState.player,
+      digimon: [...gameState.player.digimon], // Preserve the player's Digimon
       ram: updatedState.player.ram - card.cost,
       discardPile: [...updatedState.player.discardPile, card]
+    },
+    enemy: {
+      ...updatedState.enemy,
+      digimon: updatedState.enemy.digimon.map((digimon, index) => 
+        index === targetInfo.targetDigimonIndex && targetInfo.targetType === 'enemy'
+          ? { ...digimon, hp: Math.max(0, digimon.hp - damage) }
+          : digimon
+      )
     },
     cardsPlayedThisTurn: updatedState.cardsPlayedThisTurn + 1
   };
@@ -168,7 +184,6 @@ export const playCard = (gameState: GameState, cardIndex: number, targetInfo: Ta
     card, 
     targetInfo: { ...targetInfo, sourceDigimonIndex: card.ownerDigimonIndex }
   });
-
   // Add attack animation if it's an attack card
   if (card.type === 'attack' && targetInfo.targetDigimonIndex !== undefined) {
     updatedState.actionQueue.push({
@@ -181,6 +196,7 @@ export const playCard = (gameState: GameState, cardIndex: number, targetInfo: Ta
 
   return updatedState;
 };
+
 export const endPlayerTurn = (gameState: GameState): GameState => {
   let updatedState: GameState = {
     ...gameState,
@@ -227,6 +243,7 @@ export const executeEnemyTurn = (gameState: GameState): GameState => {
 
   return prepareNextPlayerTurn(updatedState);
 };
+
 
 const prepareNextPlayerTurn = (gameState: GameState): GameState => {
   let updatedState: GameState = { ...gameState };
