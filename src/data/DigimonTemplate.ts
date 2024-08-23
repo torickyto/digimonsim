@@ -29,6 +29,21 @@ export const DigimonTemplates: Record<string, DigimonTemplate> = {
     startingCard: CardCollection.BADA_BOOM,
     passiveSkill: nullPassiveSkill
   },
+  goblimon: {
+    name: 'goblimon',
+    displayName: 'Goblimon',
+    type: 'VIRUS' as DigimonType,
+    baseHp: 120,
+    baseAttack: 6,
+    baseHealing: 3,
+    baseEvadeChance: 0.05,
+    baseCritChance: 0.05,
+    baseAccuracy: 1,
+    baseCorruptionResistance: 0.2,
+    baseBuggedResistance: 0.2,
+    startingCard: CardCollection.GOBLIN_STRIKE,
+    passiveSkill: nullPassiveSkill
+  },
   beelzemon: {
     name: 'beelzemon',
     displayName: 'Beelzemon',

@@ -5,8 +5,8 @@ import './FullCardDisplay.css';
 
 interface FullCardDisplayProps {
   card: Card;
-  position: { x: number; y: number };
   attacker: DigimonState;
+  position?: { x: number; y: number };
 }
 
 const FullCardDisplay: React.FC<FullCardDisplayProps> = ({ card, position, attacker }) => {
@@ -87,10 +87,16 @@ const FullCardDisplay: React.FC<FullCardDisplayProps> = ({ card, position, attac
             return null;
         }
       };
+
+      const style = position ? {
+        position: 'fixed' as 'fixed',
+        left: `${position.x}px`,
+        top: `${position.y}px`,
+      } : {};
     
     
       return (
-        <div className="full-card-display" style={{ left: `${position.x}px`, top: `${position.y}px` }}>
+        <div className="full-card-display" style={style}>
           <div className="card-image-container">
             <img src={require(`../assets/cards/${card.name.toLowerCase().replace(/\s+/g, '')}.png`)} alt={card.name} className="card-image" />
           </div>

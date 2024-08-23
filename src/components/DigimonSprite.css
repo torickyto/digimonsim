@@ -16,6 +16,10 @@
     background-image: url('../assets/images/impmon-sprite.png');
   }   
 
+  .goblimon {
+    background-image: url('../assets/images/goblimon-sprite.png');
+  }  
+
   .wizardmon {
     background-image: url('../assets/images/wizardmon-sprite.png');
   }    
@@ -65,12 +69,12 @@
   }
 
   /* Medium sprite */
-.wizardmon {
-  width: 113px;
+.goblimon, .wizardmon {
+  width: 112px;
   height: 112px;
 }
 
-.wizardmon.breathing {
+.goblimon.breathing, .wizardmon.breathing {
   animation: breathe-medium 1.5s steps(1, end) infinite;
 }
 
@@ -80,15 +84,20 @@
   50% { background-position: -226px 0; }
 }
 
-.wizardmon.attacking {
-  animation: attack-medium 0.4s steps(1, end) 1;
+.goblimon.attacking, .wizardmon.attacking {
+  background-size: 335px 256px; /* spritesheet size */
+    background-position: -167.5px -112;
+    width: 167.5px; 
+    height: 144px;
 }
 
-@keyframes attack-medium {
-  0% { background-position: 0 -112px; }
-  50% { background-position: -113px -112px; }
-  100% { background-position: 0 0; }
+.goblimon.onHit, .wizardmon.onHit {
+  background-size: 335px 256px; /* spritesheet size */
+    background-position: 0px -112px;
+    width: 167.5px; 
+    height: 144px;
 }
+
 
 /* Large sprite */
 .beelzemon {

@@ -18,10 +18,14 @@ const App: React.FC = () => {
   };
 
   const handleStartBattle = () => {
-    // Create a random enemy team (for example purposes, we'll use Agumon)
-    const enemyAgumon = createUniqueDigimon('agumon');
-    setEnemyTeam([enemyAgumon]);
+
+    const testEnemy = createUniqueDigimon('goblimon');
+    setEnemyTeam([testEnemy]);
     setGameState('battle');
+  };
+
+  const handleUpdatePlayerTeam = (updatedTeam: Digimon[]) => {
+    setPlayerTeam(updatedTeam);
   };
 
   const handleBattleEnd = (result: 'win' | 'lose') => {
@@ -43,12 +47,13 @@ const App: React.FC = () => {
       return <StartScreen onStartGame={handleStartGame} />;
     case 'home':
       return (
-        <HomeScreen 
-          playerTeam={playerTeam} 
+        <HomeScreen
+          playerTeam={playerTeam}
           eggs={eggs}
           onStartBattle={handleStartBattle}
+          onUpdatePlayerTeam={handleUpdatePlayerTeam}
         />
-      );
+      )
     case 'battle':
       return (
         <BattleScreen 

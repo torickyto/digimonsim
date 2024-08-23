@@ -2,11 +2,20 @@
 
 import { Digimon, StatusEffect, DigimonState, GameState, Card, BattleAction, TargetInfo } from '../shared/types';
 import { STARTING_RAM, BASE_RAM, MAX_HAND_SIZE, CARDS_DRAWN_PER_TURN, MAX_RAM } from './gameConstants';
+import { DigimonTemplates } from '../data/DigimonTemplate';
+import { createDigimon } from '../shared/digimonManager';
 import { calculateDamage } from '../shared/damageCalculations';
 import { applyStatusEffects } from './statusEffects';
 import { resolveCardEffects } from './cardEffects';
 
 export const initializeBattle = (playerTeam: Digimon[], enemyTeam: Digimon[]): GameState => {
+
+  if (!enemyTeam) { //TESTING ENEMY
+    const goblimonTemplate = DigimonTemplates['goblimon'];
+    const enemyGoblimon = createDigimon(goblimonTemplate);
+    enemyTeam = [enemyGoblimon];
+  }
+
   const initialState: GameState = {
     player: {
       digimon: playerTeam,

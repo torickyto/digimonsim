@@ -5,25 +5,46 @@ import CardDex from './CardDex';
 import { Digimon, DigimonEgg } from '../shared/types';
 import { CardCollection as AllCards } from '../shared/cardCollection';  // Import all cards
 import './HomeScreen.css';
+import DeckEditor from './DeckEditor';
 
 interface HomeScreenProps {
   playerTeam: Digimon[];
   eggs: DigimonEgg[];
   onStartBattle: () => void;
+  onUpdatePlayerTeam: (updatedTeam: Digimon[]) => void; 
 }
 
-const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle }) => {
+const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle, onUpdatePlayerTeam }) => {
   const [showStats, setShowStats] = useState(false);
   const [showParty, setShowParty] = useState(false);
   const [showEggs, setShowEggs] = useState(false);
   const [showCardCollection, setShowCardCollection] = useState(false);
   const [showTestArena, setShowTestArena] = useState(false);
+  const [showDeckEditor, setShowDeckEditor] = useState(false);
+  const [selectedDigimon, setSelectedDigimon] = useState<Digimon | null>(null);
 
   const toggleStats = () => setShowStats(!showStats);
   const toggleParty = () => setShowParty(!showParty);
   const toggleEggs = () => setShowEggs(!showEggs);
   const toggleCardCollection = () => setShowCardCollection(!showCardCollection);
   const toggleTestArena = () => setShowTestArena(!showTestArena);
+  const handleOpenDeckEditor = (digimon: Digimon) => {
+    setSelectedDigimon(digimon);
+    setShowDeckEditor(true);
+  };
+
+  const handleSaveDeck = (updatedDigimon: Digimon) => {
+    // Update the player's team with the new deck
+    const updatedTeam = playerTeam.map(d => 
+      d.id === updatedDigimon.id ? updatedDigimon : d
+    );
+    
+    // Call the function to update the player team in the parent component
+    onUpdatePlayerTeam(updatedTeam);
+    
+    console.log('Updated team:', updatedTeam);
+    setShowDeckEditor(false);
+  };
 
   return (
     <div className="home-screen">
@@ -34,7 +55,13 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
       </div>
       
       <div className="digimon-display">
-        <DigimonSprite name={playerTeam[0].name} />
+        {playerTeam.map((digimon, index) => (
+          <div key={index} className="digimon-card" onClick={() => handleOpenDeckEditor(digimon)}>
+            <DigimonSprite name={digimon.name} />
+            <p>{digimon.displayName}</p>
+            <button>Edit Deck</button>
+          </div>
+        ))}
       </div>
 
       <div className="bottom-bar1">
@@ -74,6 +101,15 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
           <button onClick={toggleEggs}>Close</button>
         </div>
       )}
+
+{showDeckEditor && selectedDigimon && (
+        <DeckEditor 
+          digimon={selectedDigimon} 
+          onSave={handleSaveDeck} 
+          onClose={() => setShowDeckEditor(false)} 
+        />
+      )}
+
       {showCardCollection && (
         <div className="modal card-collection-modal">
           <CardDex cards={Object.values(AllCards)} />

@@ -122,7 +122,7 @@ export const CardCollection: Record<string, Card> = {
     'special',
     1,
     'VIRUS',
-    '',
+    'RECOMPILE',
     'none',
     [{
       description: "Draw a card",
@@ -148,7 +148,7 @@ export const CardCollection: Record<string, Card> = {
     '',
     'enemy',
     [{
-      description: "Deal {damage} damage",
+      description: "",
       damage: {
         formula: 'STRONG',
         target: 'enemy'
@@ -197,10 +197,10 @@ export const CardCollection: Record<string, Card> = {
     'attack',
     2,
     'VACCINE',
-    'Deal {damage} damage to an enemy and gain {shield} shield.',
+    '',
     'enemy',
     [{
-      description: "Deal damage to an enemy",
+      description: "",
       damage: {
         formula: 'BASIC',
         target: 'enemy'
