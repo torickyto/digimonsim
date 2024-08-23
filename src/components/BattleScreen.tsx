@@ -50,12 +50,12 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
 
   useEffect(() => {
     if (battleStarting) {
-      setTimeout(() => setShowWarning(false), 1200);
-      setTimeout(() => setShowGlitchTransition(true), 1200);
+      setTimeout(() => setShowWarning(false), 1000);
+      setTimeout(() => setShowGlitchTransition(true), 1000);
       setTimeout(() => {
         setShowGlitchTransition(false);
         setShowBattleField(true);
-      }, 1010);
+      }, 1000);
       setTimeout(() => {
         setBattleStarting(false);
         setShowOpeningAttacks(true);
@@ -74,7 +74,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
           setAttackingDigimon(null);
           attacksCompleted++;
           if (attacksCompleted < totalDigimon) {
-            setTimeout(triggerAttacks, 1);
+            setTimeout(triggerAttacks, 200);
           } else {
             setOpeningAttacksComplete(true);
           }
