@@ -106,7 +106,7 @@ export type BattleAction =
   | { type: 'END_PLAYER_TURN' }
   | { type: 'ENEMY_ACTION'; attackingEnemyIndex: number; targetPlayerIndex: number }
   | { type: 'ANIMATE_ATTACK'; sourceIndex: number; targetIndex: number; isEnemy: boolean }
-  | { type: 'APPLY_DAMAGE'; target: TargetInfo; damage: number; newHp: number };
+  | { type: 'APPLY_DAMAGE'; target: TargetInfo; damage: number; newHp: number; newShield: number };
 
 export interface TargetInfo {
   targetType: TargetType;

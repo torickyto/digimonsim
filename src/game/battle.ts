@@ -142,20 +142,49 @@ export const playCard = (gameState: GameState, cardIndex: number, targetInfo: Ta
 
   const updatedHand = gameState.player.hand.filter((_, index) => index !== cardIndex);
 
-  let updatedState = resolveCardEffects(card, { 
+  let updatedState = { 
     ...gameState, 
     player: { 
       ...gameState.player, 
       hand: updatedHand 
     } 
-  }, targetInfo);
+  };
 
+  // Calculate damage and shield separately
   let damage = 0;
-  if (card.type === 'attack') {
-    const damageEffect = card.effects.find(effect => effect.damage);
-    if (damageEffect && damageEffect.damage && damageEffect.damage.formula) {
-      const sourceDigimon = gameState.player.digimon[targetInfo.sourceDigimonIndex];
-      damage = DamageCalculations[damageEffect.damage.formula](sourceDigimon);
+  let shield = 0;
+  const sourceDigimon = updatedState.player.digimon[targetInfo.sourceDigimonIndex];
+
+  card.effects.forEach(effect => {
+    if (effect.damage && effect.damage.formula) {
+      damage += DamageCalculations[effect.damage.formula](sourceDigimon);
+    }
+    if (effect.shield && effect.shield.formula) {
+      shield += DamageCalculations[effect.shield.formula](sourceDigimon);
+    }
+  });
+
+  // Apply shield to the correct target based on the card's effect
+  if (shield > 0) {
+    const shieldEffect = card.effects.find(effect => effect.shield);
+    if (shieldEffect && shieldEffect.shield) {
+      const shieldTargetType = shieldEffect.shield.target;
+      if (shieldTargetType === 'self' || shieldTargetType === 'single_ally') {
+        // Apply shield to player's Digimon
+        updatedState.player.digimon = updatedState.player.digimon.map((digimon, index) => 
+          index === targetInfo.sourceDigimonIndex 
+            ? { ...digimon, shield: digimon.shield + shield }
+            : digimon
+        );
+      } else if (shieldTargetType === 'enemy' && targetInfo.targetType === 'enemy') {
+        // Apply shield to enemy Digimon (this case should be rare)
+        updatedState.enemy.digimon = updatedState.enemy.digimon.map((digimon, index) => 
+          index === targetInfo.targetDigimonIndex 
+            ? { ...digimon, shield: digimon.shield + shield }
+            : digimon
+        );
+      }
+      // Add more cases here if needed for other target types
     }
   }
 
@@ -163,20 +192,16 @@ export const playCard = (gameState: GameState, cardIndex: number, targetInfo: Ta
     ...updatedState,
     player: {
       ...updatedState.player,
-      digimon: [...gameState.player.digimon], // Preserve the player's Digimon
       ram: updatedState.player.ram - card.cost,
       discardPile: [...updatedState.player.discardPile, card]
     },
-    enemy: {
-      ...updatedState.enemy,
-      digimon: updatedState.enemy.digimon.map((digimon, index) => 
-        index === targetInfo.targetDigimonIndex && targetInfo.targetType === 'enemy'
-          ? { ...digimon, hp: Math.max(0, digimon.hp - damage) }
-          : digimon
-      )
-    },
     cardsPlayedThisTurn: updatedState.cardsPlayedThisTurn + 1
   };
+
+  // Apply damage if it's an attack card
+  if (damage > 0 && targetInfo.targetType === 'enemy') {
+    updatedState = applyDamage(damage, updatedState.enemy.digimon[targetInfo.targetDigimonIndex], updatedState, targetInfo);
+  }
 
   // Add animation-related actions to the queue
   updatedState.actionQueue.push({ 
@@ -184,7 +209,7 @@ export const playCard = (gameState: GameState, cardIndex: number, targetInfo: Ta
     card, 
     targetInfo: { ...targetInfo, sourceDigimonIndex: card.ownerDigimonIndex }
   });
-  // Add attack animation if it's an attack card
+
   if (card.type === 'attack' && targetInfo.targetDigimonIndex !== undefined) {
     updatedState.actionQueue.push({
       type: 'ANIMATE_ATTACK',
@@ -290,8 +315,21 @@ export const drawCard = (state: GameState): { newState: GameState; drawnCard: Ca
 
 
 export const applyDamage = (damage: number, target: Digimon | DigimonState, gameState: GameState, targetInfo: TargetInfo): GameState => {
-  const updatedHp = Math.max(0, target.hp - damage);
-  const updatedTarget = { ...target, hp: updatedHp };
+  let remainingDamage = damage;
+  let updatedShield = target.shield;
+  
+  if (updatedShield > 0) {
+    if (updatedShield >= remainingDamage) {
+      updatedShield -= remainingDamage;
+      remainingDamage = 0;
+    } else {
+      remainingDamage -= updatedShield;
+      updatedShield = 0;
+    }
+  }
+  
+  const updatedHp = Math.max(0, target.hp - remainingDamage);
+  const updatedTarget = { ...target, hp: updatedHp, shield: updatedShield };
 
   let updatedState = { ...gameState };
 
@@ -309,7 +347,8 @@ export const applyDamage = (damage: number, target: Digimon | DigimonState, game
     type: 'APPLY_DAMAGE', 
     target: targetInfo, 
     damage, 
-    newHp: updatedHp 
+    newHp: updatedHp,
+    newShield: updatedShield
   });
 
   return updatedState;

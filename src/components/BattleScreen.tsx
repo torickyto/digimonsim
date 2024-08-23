@@ -532,33 +532,34 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
           </div>
         </div>
         <div className="battle-area">
-  <div className="enemy-digimon">
-    {gameState.enemy.digimon.map((digimon, index) => (
-      <div key={`enemy-${index}`} className="enemy-digimon-container" onClick={() => handleEnemyClick(index)}>
-        <DigimonSprite 
-          name={digimon.name} 
-          scale={spriteScale * 1.75}
-          isAttacking={attackingDigimon === index && hitDigimon?.isEnemy === true}
-          isOnHit={hitDigimon?.isEnemy && hitDigimon.index === index}
-        />
-        <div className="enemy-health-bar">
-          <div className="health-fill" style={{ width: `${(digimon.hp / digimon.maxHp) * 100}%` }}></div>
-          <span className="enemy-hp-number">{`${digimon.hp}/${digimon.maxHp}`}</span>
-        </div>
-        {digimon.shield > 0 && (
-          <div className="enemy-shield-bar">
-            <div 
-              className="shield-fill" 
-              style={{ width: `${(digimon.shield / digimon.maxHp) * 100}%` }}
-            ></div>
-          </div>
-        )}
-        <div className="enemy-info-tooltip">
-          {digimon.displayName} - Type: {digimon.type}
-        </div>
+        <div className="enemy-digimon">
+  {gameState.enemy.digimon.map((digimon, index) => (
+    <div key={`enemy-${index}`} className="enemy-digimon-container" onClick={() => handleEnemyClick(index)}>
+      <DigimonSprite 
+        name={digimon.name} 
+        scale={spriteScale * 1.75}
+        isAttacking={attackingDigimon === index && hitDigimon?.isEnemy === true}
+        isOnHit={hitDigimon?.isEnemy && hitDigimon.index === index}
+      />
+      <div className="enemy-health-bar">
+        <div className="health-fill" style={{ width: `${(digimon.hp / digimon.maxHp) * 100}%` }}></div>
+        <span className="enemy-hp-number">{`${digimon.hp}/${digimon.maxHp}`}</span>
       </div>
-    ))}
-  </div>
+      {digimon.shield > 0 && (
+        <div className="enemy-shield-bar">
+          <div 
+            className="shield-fill" 
+            style={{ width: `${(digimon.shield / digimon.maxHp) * 100}%` }}
+          ></div>
+          <span className="enemy-shield-number">{digimon.shield}</span>
+        </div>
+      )}
+      <div className="enemy-info-tooltip">
+        {digimon.displayName} - Type: {digimon.type}
+      </div>
+    </div>
+  ))}
+</div>
         <div className="player-digimon">
           {gameState.player.digimon.map((digimon, index) => (
             <div key={`player-${index}`} className="player-digimon-container" onClick={() => handlePlayerDigimonClick(index)}>
@@ -601,33 +602,33 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
         />
         )}
        <div className="bottom-bar">
-          {gameState.player.digimon.map((digimon, index) => (
-            <div key={index} className="digimon-info">
-              <span className="digimon-name">{digimon.displayName}</span>
-              
-              <div className="hp-container">
-                <span className="hp-number">{digimon.hp}/{digimon.maxHp}</span>
-                <div className="hp-bar">
-                  <div 
-                    className="hp-fill" 
-                    style={{ width: `${(digimon.hp / digimon.maxHp) * 100}%` }}
-                  ></div>
-                </div>
-              </div>
-              
-              <div className="shield-container">
-                <span className="shield-icon">🛡️</span>
-                <span className="shield-number">{digimon.shield || 0}</span>
-                <div className="shield-bar">
-                  <div 
-                    className="shield-fill" 
-                    style={{ width: `${((digimon.shield || 0) / digimon.maxHp) * 100}%` }}
-                  ></div>
-                </div>
-              </div>
-            </div>
-          ))}
+  {gameState.player.digimon.map((digimon, index) => (
+    <div key={index} className="digimon-info">
+      <span className="digimon-name">{digimon.displayName}</span>
+      
+      <div className="hp-container">
+        <span className="hp-number">{digimon.hp}/{digimon.maxHp}</span>
+        <div className="hp-bar">
+          <div 
+            className="hp-fill" 
+            style={{ width: `${(digimon.hp / digimon.maxHp) * 100}%` }}
+          ></div>
         </div>
+      </div>
+      
+      <div className="shield-container">
+        <span className="shield-icon">🛡️</span>
+        <span className="shield-number">{digimon.shield || 0}</span>
+        <div className="shield-bar">
+          <div 
+            className="shield-fill" 
+            style={{ width: `${((digimon.shield || 0) / digimon.maxHp) * 100}%` }}
+          ></div>
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
         <CardPileModal
           isOpen={isDeckModalOpen}
           onClose={() => setIsDeckModalOpen(false)}

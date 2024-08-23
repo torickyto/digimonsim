@@ -65,6 +65,15 @@ function resolveCardEffects(card: Card, gameState: GameState, targetInfo: Target
         card.id
       ];
     }
+
+    if (effect.shield && effect.shield.formula) {
+      const shieldAmount = DamageCalculations[effect.shield.formula](updatedState.player.digimon[targetInfo.sourceDigimonIndex]);
+      const shieldTargets = getTargets(updatedState, { ...targetInfo, targetType: effect.shield.target });
+      shieldTargets.forEach(target => {
+        updatedState = applyShield(shieldAmount, target, updatedState);
+      });
+    }
+    
     if (isDamageEffect(effect)) {
       const damage = DamageCalculations[effect.damage.formula](updatedState.player.digimon[targetInfo.sourceDigimonIndex]);
       const damageTargets = getTargets(updatedState, { ...targetInfo, targetType: effect.damage.target });
@@ -204,6 +213,8 @@ function applyShield(amount: number, target: DigimonState, gameState: GameState)
   const updatedTarget = { ...target, shield: target.shield + amount };
   return updateDigimonInState(gameState, updatedTarget);
 }
+
+
 
 function applyHeal(amount: number, target: DigimonState, gameState: GameState): GameState {
   const updatedTarget = { ...target, hp: Math.min(target.maxHp, target.hp + amount) };
