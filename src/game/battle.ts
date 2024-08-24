@@ -152,6 +152,15 @@ export const playCard = (gameState: GameState, cardIndex: number, targetInfo: Ta
     } 
   };
 
+  if (card.type === 'attack') {
+    updatedState.actionQueue.push({
+      type: 'ANIMATE_ATTACK',
+      sourceIndex: targetInfo.sourceDigimonIndex,
+      targetIndex: targetInfo.targetDigimonIndex,
+      isEnemy: false // This is a player attack
+    });
+  }
+
   // Calculate damage and shield separately
   let damage = 0;
   let shield = 0;
