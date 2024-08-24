@@ -1,4 +1,4 @@
-import { Digimon, StatusEffect, DigimonState, GameState, Card, BattleAction, TargetInfo, DamageFormulaKey } from '../shared/types';
+import { Digimon, StatusEffect, DigimonState, GameState, Card, BattleAction, TargetInfo, DamageFormulaKey, EnemyAction } from '../shared/types';
 import { STARTING_RAM, BASE_RAM, MAX_HAND_SIZE, CARDS_DRAWN_PER_TURN, MAX_RAM } from './gameConstants';
 import { DigimonTemplates } from '../data/DigimonTemplate';
 import { createDigimon } from '../shared/digimonManager';
@@ -239,37 +239,30 @@ export const endPlayerTurn = (gameState: GameState): GameState => {
 export const executeEnemyTurn = (gameState: GameState): GameState => {
   let updatedState: GameState = { ...gameState };
 
-  updatedState.enemy.digimon.forEach((enemyDigimon, enemyIndex) => {
-    if (enemyDigimon.hp <= 0) return; // Skip defeated enemies
+  const enemyActions: EnemyAction[] = updatedState.enemy.digimon
+    .map((enemyDigimon, enemyIndex) => {
+      if (enemyDigimon.hp <= 0) return null;
 
-    const targetPlayerIndex = Math.floor(Math.random() * updatedState.player.digimon.length);
-    const targetPlayerDigimon = updatedState.player.digimon[targetPlayerIndex];
+      const targetPlayerIndex = Math.floor(Math.random() * updatedState.player.digimon.length);
+      const targetPlayerDigimon = updatedState.player.digimon[targetPlayerIndex];
 
-    updatedState.actionQueue.push({ 
-      type: 'ENEMY_ACTION',
-      attackingEnemyIndex: enemyIndex,
-      targetPlayerIndex
-    });
+      const damage = calculateDamage('BASIC' as DamageFormulaKey, enemyDigimon, targetPlayerDigimon);
 
-    updatedState.actionQueue.push({
-      type: 'ANIMATE_ATTACK',
-      sourceIndex: enemyIndex,
-      targetIndex: targetPlayerIndex,
-      isEnemy: true
-    });
+      return {
+        type: 'ENEMY_ACTION' as const,
+        attackingEnemyIndex: enemyIndex,
+        targetPlayerIndex,
+        damage
+      };
+    })
+    .filter((action): action is EnemyAction => action !== null);
 
-    const damage = calculateDamage('BASIC' as DamageFormulaKey, enemyDigimon, targetPlayerDigimon);
-    updatedState = applyDamage(damage, targetPlayerDigimon, updatedState, {
-      targetType: 'single_ally',
-      sourceDigimonIndex: enemyIndex,
-      targetDigimonIndex: targetPlayerIndex
-    });
-  });
+  updatedState.actionQueue = [...enemyActions, { type: 'END_ENEMY_TURN' }];
 
-  return prepareNextPlayerTurn(updatedState);
+  console.log('Enemy turn executed, action queue:', updatedState.actionQueue);
+
+  return updatedState;
 };
-
-
 const prepareNextPlayerTurn = (gameState: GameState): GameState => {
   let updatedState: GameState = { ...gameState };
 
@@ -315,6 +308,7 @@ export const drawCard = (state: GameState): { newState: GameState; drawnCard: Ca
 
 
 export const applyDamage = (damage: number, target: Digimon | DigimonState, gameState: GameState, targetInfo: TargetInfo): GameState => {
+  console.log('Applying damage:', damage, 'to target:', target);
   let remainingDamage = damage;
   let updatedShield = target.shield;
   
@@ -329,6 +323,7 @@ export const applyDamage = (damage: number, target: Digimon | DigimonState, game
   }
   
   const updatedHp = Math.max(0, target.hp - remainingDamage);
+  console.log('Updated HP:', updatedHp, 'Remaining damage:', remainingDamage, 'Updated Shield:', updatedShield);
   const updatedTarget = { ...target, hp: updatedHp, shield: updatedShield };
 
   let updatedState = { ...gameState };
@@ -339,7 +334,7 @@ export const applyDamage = (damage: number, target: Digimon | DigimonState, game
     );
   } else {
     updatedState.player.digimon = updatedState.player.digimon.map((d, index) => 
-      index === targetInfo.targetDigimonIndex ? { ...d, ...updatedTarget } as Digimon : d
+      index === targetInfo.targetDigimonIndex ? { ...d, ...updatedTarget } : d
     );
   }
 
@@ -354,11 +349,11 @@ export const applyDamage = (damage: number, target: Digimon | DigimonState, game
   return updatedState;
 };
 
-export const checkBattleEnd = (gameState: GameState): 'ongoing' | 'player_win' | 'enemy_win' => {
+export const checkBattleEnd = (gameState: GameState): 'ongoing' | 'win' | 'lose' => {
   if (gameState.player.digimon.every(d => d.hp <= 0)) {
-    return 'enemy_win';
+    return 'lose';
   } else if (gameState.enemy.digimon.every(d => d.hp <= 0)) {
-    return 'player_win';
+    return 'win';
   }
   return 'ongoing';
 };

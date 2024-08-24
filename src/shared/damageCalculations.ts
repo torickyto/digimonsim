@@ -63,5 +63,7 @@ export function calculateDamage(formulaKey: DamageFormulaKey, attacker: DigimonS
     console.error(`No damage formula found for key: ${formulaKey}`);
     return 0;
   }
-  return formula(attacker);
+  const damage = formula(attacker);
+  console.log('Calculated damage:', damage, 'using formula:', formulaKey);
+  return damage;
 }

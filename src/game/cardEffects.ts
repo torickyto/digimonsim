@@ -73,7 +73,7 @@ function resolveCardEffects(card: Card, gameState: GameState, targetInfo: Target
         updatedState = applyShield(shieldAmount, target, updatedState);
       });
     }
-    
+
     if (isDamageEffect(effect)) {
       const damage = DamageCalculations[effect.damage.formula](updatedState.player.digimon[targetInfo.sourceDigimonIndex]);
       const damageTargets = getTargets(updatedState, { ...targetInfo, targetType: effect.damage.target });

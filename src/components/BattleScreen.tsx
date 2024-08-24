@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { GameState, Card, Digimon, BattleAction, TargetType, TargetInfo } from '../shared/types';
-import { initializeBattle, startPlayerTurn, playCard, endPlayerTurn, executeEnemyTurn, checkBattleEnd} from '../game/battle';
+import { initializeBattle, startPlayerTurn, playCard, endPlayerTurn, executeEnemyTurn, checkBattleEnd, applyDamage} from '../game/battle';
 import DigimonSprite from './DigimonSprite';
 import CompactCard from './CompactCard';
 import FullCardDisplay from './FullCardDisplay';
@@ -47,6 +47,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   const [showOpeningAttacks, setShowOpeningAttacks] = useState(false);
   const [initialAnimationComplete, setInitialAnimationComplete] = useState(false);
   const [openingAttacksComplete, setOpeningAttacksComplete] = useState(false);
+  const [isEnemyTurn, setIsEnemyTurn] = useState(false);
   
   
 
@@ -65,6 +66,18 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
       }, 1100);
     }
   }, [battleStarting]);
+
+  useEffect(() => {
+    console.log("Player Digimon State:");
+    gameState.player.digimon.forEach((digimon, index) => {
+      console.log(`Player Digimon ${index}: ${digimon.displayName}, HP: ${digimon.hp}/${digimon.maxHp}, Shield: ${digimon.shield}`);
+    });
+  
+    console.log("Enemy Digimon State:");
+    gameState.enemy.digimon.forEach((digimon, index) => {
+      console.log(`Enemy Digimon ${index}: ${digimon.displayName}, HP: ${digimon.hp}/${digimon.maxHp}, Shield: ${digimon.shield}`);
+    });
+  }, [gameState]);
 
   useEffect(() => {
     if (showOpeningAttacks) {
@@ -102,50 +115,76 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     setHandKey(prevKey => prevKey + 1);
   }, []);
 
-  const processActionQueue = useCallback(() => {
-    console.log('Processing action queue:', gameState.actionQueue);
-    gameState.actionQueue.forEach(action => {
-      switch (action.type) {
-        case 'ANIMATE_ATTACK':
-          console.log('ANIMATE_ATTACK action:', action);
-          if (action.isEnemy) {
-            console.log(`Enemy attacking: ${action.sourceIndex}, Player hit: ${action.targetIndex}`);
-            setAttackingDigimon(null);
-            setHitDigimon({ isEnemy: false, index: action.targetIndex });
-          } else {
-            console.log(`Player attacking: ${action.sourceIndex}, Enemy hit: ${action.targetIndex}`);
-            setAttackingDigimon(action.sourceIndex);
-            setHitDigimon({ isEnemy: true, index: action.targetIndex });
-          }
-          setTimeout(() => {
-            console.log('Resetting attack/hit states');
-            setAttackingDigimon(null);
-            setHitDigimon(null);
-          }, 600);
-          break;
-        case 'ENEMY_ACTION':
-          console.log('ENEMY_ACTION:', action);
-          setAttackingDigimon(action.attackingEnemyIndex);
-          setHitDigimon({ isEnemy: false, index: action.targetPlayerIndex });
-          setTimeout(() => {
-            console.log('Resetting enemy attack/hit states');
-            setAttackingDigimon(null);
-            setHitDigimon(null);
-          }, 600);
-          break;
-      }
-    });
   
-    setGameState(prevState => {
-      console.log('Clearing action queue');
-      return { ...prevState, actionQueue: [] };
-    });
-  }, [gameState.actionQueue, setGameState]);
 
-  useEffect(() => {
-    console.log('Action queue changed, processing...');
+const processActionQueue = useCallback(() => {
+  if (gameState.actionQueue.length === 0) {
+    if (isEnemyTurn) {
+      setIsEnemyTurn(false);
+      const updatedState = startPlayerTurn(gameState);
+      setGameState(updatedState);
+    }
+    return;
+  }
+
+  const action = gameState.actionQueue[0];
+  let updatedState = { ...gameState, actionQueue: gameState.actionQueue.slice(1) };
+
+  switch (action.type) {
+    case 'APPLY_DAMAGE':
+      // The damage has already been applied in the applyDamage function
+      break;
+    case 'ENEMY_ACTION':
+      console.log('Processing enemy action:', action);
+      updatedState = applyDamage(action.damage, updatedState.player.digimon[action.targetPlayerIndex], updatedState, {
+        targetType: 'single_ally',
+        sourceDigimonIndex: action.attackingEnemyIndex,
+        targetDigimonIndex: action.targetPlayerIndex
+      });
+      break;
+    case 'END_ENEMY_TURN':
+      console.log('Ending enemy turn');
+      setIsEnemyTurn(false);
+      updatedState = startPlayerTurn(updatedState);
+      break;
+  }
+
+  setGameState(updatedState);
+
+  // Check if the battle has ended
+  const battleStatus = checkBattleEnd(updatedState);
+  if (battleStatus !== 'ongoing') {
+    onBattleEnd(battleStatus);
+    return;
+  }
+
+  // Continue processing the queue after a short delay
+  setTimeout(() => {
+    setGameState(prevState => ({
+      ...prevState,
+      actionQueue: updatedState.actionQueue
+    }));
+  }, 500);
+}, [gameState, isEnemyTurn, setGameState, startPlayerTurn, applyDamage, onBattleEnd]);
+
+
+  const processEnemyTurn = useCallback((state: GameState) => {
+    console.log('Processing enemy turn');
+    const enemyState = executeEnemyTurn(state);
+    setGameState(enemyState);
     processActionQueue();
-  }, [gameState.actionQueue, processActionQueue]);
+  }, [executeEnemyTurn, processActionQueue]);
+  
+  useEffect(() => {
+    if (gameState.actionQueue.length > 0) {
+      console.log('Action queue changed, processing...');
+      processActionQueue();
+    } else if (isEnemyTurn) {
+      console.log('Enemy turn, executing actions...');
+      const updatedState = executeEnemyTurn(gameState);
+      setGameState(updatedState);
+    }
+  }, [gameState, isEnemyTurn, processActionQueue, executeEnemyTurn]);
 
   useEffect(() => {
     console.log('attackingDigimon:', attackingDigimon);
@@ -276,6 +315,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     }));
   };
 
+
   const shuffleDiscardIntoDeck = () => {
     setIsShuffling(true);
     setTimeout(() => {
@@ -306,30 +346,9 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   const handleEndTurn = () => {
     deselectCard();
     let updatedState = endPlayerTurn(gameState);
-    updatedState = executeEnemyTurn(updatedState);
-    const battleResult = checkBattleEnd(updatedState);
-  
-    if (battleResult === 'ongoing') {
-      updatedState = startPlayerTurn(updatedState);
-      setGameState(updatedState);
-      
-      // Force re-render and set newly drawn card
-      const newCards = updatedState.player.hand.filter(card => 
-        !previousHandRef.current.some(prevCard => prevCard.instanceId === card.instanceId)
-      );
-      setNewlyDrawnCards(newCards.map(card => card.instanceId ?? '').filter(id => id !== ''));
-      setHandKey(prevKey => prevKey + 1);
-      
-      // Update the previous hand reference
-      previousHandRef.current = [...updatedState.player.hand];
-      
-      // Clear the newly drawn cards after animation
-      setTimeout(() => {
-        setNewlyDrawnCards([]);
-      }, 600);
-    } else {
-      onBattleEnd(battleResult === 'player_win' ? 'win' : 'lose');
-    }
+    setGameState(updatedState);
+    setIsEnemyTurn(true);
+    processEnemyTurn(updatedState);
   };
   
   const handleDiscard = () => {
@@ -362,27 +381,29 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
       }
       
       document.body.appendChild(cardElement);
-
+  
+      // Update the game state immediately to remove the card from hand
       setGameState(prevState => ({
         ...prevState,
         player: {
           ...prevState.player,
           hand: prevState.player.hand.slice(1),
-        }
+          discardPile: [discardedCard, ...prevState.player.discardPile]
+        },
+        cardsDiscardedThisTurn: prevState.cardsDiscardedThisTurn + 1,
+        cardsDiscardedThisBattle: prevState.cardsDiscardedThisBattle + 1
       }));
+  
       // Play the burn animation
       setTimeout(() => {
         cardElement.remove();
-        
-        // Update the game state after the animation
-        setGameState(prevState => ({
-          ...prevState,
-          player: {
-            ...prevState.player,
-            discardPile: [discardedCard, ...prevState.player.discardPile]
-          }
-        }));
       }, 1000); // Duration of the animation
+  
+      // Add a DISCARD_CARD action to the queue
+      setGameState(prevState => ({
+        ...prevState,
+        actionQueue: [...prevState.actionQueue, { type: 'DISCARD_CARD', card: discardedCard }]
+      }));
     }
     deselectCard();
   };
@@ -466,7 +487,12 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
 
   return (
     <div className="battle-screen-container">
-      <div className={`battle-screen ${battleStarting ? 'battle-starting' : ''}`} ref={battleScreenRef} onClick={handleBackgroundClick}>
+      <div className={`battle-screen ${isEnemyTurn ? 'enemy-turn' : ''}`} ref={battleScreenRef} onClick={handleBackgroundClick}>
+        {isEnemyTurn && (
+          <div className="enemy-turn-indicator">
+            Enemy Turn
+          </div>
+        )}
         {battleStarting && (
           <div className="battle-start-overlay">
             {showWarning && <div className="warning-sign">WARNING!</div>}
@@ -483,170 +509,171 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
           </div>
         )}
         <div className={`battle-content ${showBattleField ? 'show' : ''}`}>
-        <div 
+          <div 
             className="battle-background" 
             style={backgroundImage ? { backgroundImage: `url(${backgroundImage})` } : {}}
-          ></div>
-          {openingAttacksComplete && (<>
-        <div className="top-bar">
-          <div className="left-controls">
-            <div className="button-container">
-            <button 
-                className="discard-button"
-                onClick={handleDiscard}
-                onMouseEnter={() => setIsDiscardHovered(true)}
-                onMouseLeave={() => setIsDiscardHovered(false)}
-              >
-                Discard
-              </button>
-              <button 
-          className="end-turn-button" 
-          onClick={handleEndTurn} 
-          disabled={isAnimating}
-        >End Turn</button>
-            </div>
-            <div className="ram-and-deck">
-      <div className="ram-info">
-        <span className="ram-label">RAM</span>
-        <span className="ram-text">{gameState.player.ram}</span>
-        <div className="ram-crystals">
-        <RamDisplay
-              currentRam={gameState.player.ram}
-              maxRam={10}
-              highlightedRam={highlightedRam}
-            />
-        </div>
-      </div>
-      <div className={`deck-info ${isShuffling ? 'shuffling' : ''}`} onClick={handleDeckClick}>
-            <div className="deck-icon">D</div>
-            <span className="deck-count">{gameState.player.deck.length}</span>
-          </div>
-          <div className={`discard-info ${isShuffling ? 'shuffling' : ''}`} onClick={handleDiscardClick}>
-            <div className="discard-icon">X</div>
-            <span className="discard-count">{gameState.player.discardPile.length}</span>
-          </div>
-        </div>
-          </div>
-          <div className="turn-display">
-            TURN {gameState.turn}
-          </div>
-        </div>
-        <div className="battle-area">
-        <div className="enemy-digimon">
-  {gameState.enemy.digimon.map((digimon, index) => (
-    <div key={`enemy-${index}`} className="enemy-digimon-container" onClick={() => handleEnemyClick(index)}>
-      <DigimonSprite 
-        name={digimon.name} 
-        scale={spriteScale * 1.75}
-        isAttacking={attackingDigimon === index && hitDigimon?.isEnemy === true}
-        isOnHit={hitDigimon?.isEnemy && hitDigimon.index === index}
-      />
-      <div className="enemy-health-bar">
-        <div className="health-fill" style={{ width: `${(digimon.hp / digimon.maxHp) * 100}%` }}></div>
-        <span className="enemy-hp-number">{`${digimon.hp}/${digimon.maxHp}`}</span>
-      </div>
-      {digimon.shield > 0 && (
-        <div className="enemy-shield-bar">
-          <div 
-            className="shield-fill" 
-            style={{ width: `${(digimon.shield / digimon.maxHp) * 100}%` }}
-          ></div>
-          <span className="enemy-shield-number">{digimon.shield}</span>
-        </div>
-      )}
-      <div className="enemy-info-tooltip">
-        {digimon.displayName} - Type: {digimon.type}
-      </div>
-    </div>
-  ))}
-</div>
-        <div className="player-digimon">
-          {gameState.player.digimon.map((digimon, index) => (
-            <div key={`player-${index}`} className="player-digimon-container" onClick={() => handlePlayerDigimonClick(index)}>
-              <DigimonSprite 
-                name={digimon.name} 
-                scale={spriteScale * 1.6}
-                isAttacking={attackingDigimon === index && hitDigimon?.isEnemy === false}
-                isOnHit={hitDigimon?.isEnemy === false && hitDigimon.index === index}
-                style={{
-                  position: 'absolute',
-                  left: `${16.67 + index * 33.33}%`,
-                  bottom: '0',
-                  transform: 'translateX(-50%)',
-                }}
-              />
+          />
+          {openingAttacksComplete && (
+            <>
+              <div className="top-bar">
+                <div className="left-controls">
+                  <div className="button-container">
+                    <button 
+                      className="discard-button"
+                      onClick={handleDiscard}
+                      onMouseEnter={() => setIsDiscardHovered(true)}
+                      onMouseLeave={() => setIsDiscardHovered(false)}
+                    >
+                      Discard
+                    </button>
+                    <button 
+                      className="end-turn-button" 
+                      onClick={handleEndTurn} 
+                      disabled={isAnimating || isEnemyTurn}
+                    >
+                      End Turn
+                    </button>
+                  </div>
+                  <div className="ram-and-deck">
+                    <div className="ram-info">
+                      <span className="ram-label">RAM</span>
+                      <span className="ram-text">{gameState.player.ram}</span>
+                      <div className="ram-crystals">
+                        <RamDisplay
+                          currentRam={gameState.player.ram}
+                          maxRam={10}
+                          highlightedRam={highlightedRam}
+                        />
+                      </div>
+                    </div>
+                    <div className={`deck-info ${isShuffling ? 'shuffling' : ''}`} onClick={handleDeckClick}>
+                      <div className="deck-icon">D</div>
+                      <span className="deck-count">{gameState.player.deck.length}</span>
+                    </div>
+                    <div className={`discard-info ${isShuffling ? 'shuffling' : ''}`} onClick={handleDiscardClick}>
+                      <div className="discard-icon">X</div>
+                      <span className="discard-count">{gameState.player.discardPile.length}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="turn-display">
+                  TURN {gameState.turn}
+                </div>
               </div>
-            ))}
-          </div>
-        </div>
-        <div className="hand-area" key={handKey}>
-          {gameState.player.hand.map((card, index) => (
-            <CompactCard 
-              key={card.instanceId ?? index}
-              card={card} 
-              onClick={() => handleCardClick(card)}
-              isSelected={selectedCard?.instanceId === card.instanceId}
-              isPlayable={gameState.player.ram >= card.cost}
-              isTopCard={index === 0 && isDiscardHovered}
-              isNewlyDrawn={card.instanceId ? newlyDrawnCards.includes(card.instanceId) : false}
-              onMouseEnter={handleCardHover}
-              onMouseLeave={handleCardHoverEnd}
-            />
-          ))}
-    </div>
-    {hoveredCard && (
-          <FullCardDisplay 
-          card={hoveredCard} 
-          position={hoverPosition} 
-          attacker={gameState.player.digimon[hoveredCard.ownerDigimonIndex]}
-        />
-        )}
-       <div className="bottom-bar">
-  {gameState.player.digimon.map((digimon, index) => (
-    <div key={index} className="digimon-info">
-      <span className="digimon-name">{digimon.displayName}</span>
-      
-      <div className="hp-container">
-        <span className="hp-number">{digimon.hp}/{digimon.maxHp}</span>
-        <div className="hp-bar">
-          <div 
-            className="hp-fill" 
-            style={{ width: `${(digimon.hp / digimon.maxHp) * 100}%` }}
-          ></div>
-        </div>
-      </div>
-      
-      <div className="shield-container">
-        <span className="shield-icon">🛡️</span>
-        <span className="shield-number">{digimon.shield || 0}</span>
-        <div className="shield-bar">
-          <div 
-            className="shield-fill" 
-            style={{ width: `${((digimon.shield || 0) / digimon.maxHp) * 100}%` }}
-          ></div>
-        </div>
-      </div>
-    </div>
-  ))}
-</div>
-        <CardPileModal
-          isOpen={isDeckModalOpen}
-          onClose={() => setIsDeckModalOpen(false)}
-          cards={shuffledDeckForDisplay}
-          title="Draw Pile"
-        />
-      <CardPileModal
-        isOpen={isDiscardModalOpen}
-        onClose={() => setIsDiscardModalOpen(false)}
-        cards={gameState.player.discardPile}
-        title="Discard Pile"
-      />
-       </>
+              <div className="battle-area">
+                <div className="enemy-digimon">
+                  {gameState.enemy.digimon.map((digimon, index) => (
+                    <div key={`enemy-${index}`} className="enemy-digimon-container" onClick={() => handleEnemyClick(index)}>
+                      <DigimonSprite 
+                        name={digimon.name} 
+                        scale={spriteScale * 1.75}
+                        isAttacking={attackingDigimon === index && hitDigimon?.isEnemy === true}
+                        isOnHit={hitDigimon?.isEnemy && hitDigimon.index === index}
+                      />
+                      <div className="enemy-health-bar">
+                        <div className="health-fill" style={{ width: `${(digimon.hp / digimon.maxHp) * 100}%` }}></div>
+                        <span className="enemy-hp-number">{`${digimon.hp}/${digimon.maxHp}`}</span>
+                      </div>
+                      {digimon.shield > 0 && (
+                        <div className="enemy-shield-bar">
+                          <div 
+                            className="shield-fill" 
+                            style={{ width: `${(digimon.shield / digimon.maxHp) * 100}%` }}
+                          ></div>
+                          <span className="enemy-shield-number">{digimon.shield}</span>
+                        </div>
+                      )}
+                      <div className="enemy-info-tooltip">
+                        {digimon.displayName} - Type: {digimon.type}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="player-digimon">
+                  {gameState.player.digimon.map((digimon, index) => (
+                    <div key={`player-${index}`} className="player-digimon-container" onClick={() => handlePlayerDigimonClick(index)}>
+                      <DigimonSprite 
+                        name={digimon.name} 
+                        scale={spriteScale * 1.6}
+                        isAttacking={attackingDigimon === index && hitDigimon?.isEnemy === false}
+                        isOnHit={hitDigimon?.isEnemy === false && hitDigimon.index === index}
+                        style={{
+                          position: 'absolute',
+                          left: `${16.67 + index * 33.33}%`,
+                          bottom: '0',
+                          transform: 'translateX(-50%)',
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="hand-area" key={handKey}>
+                {gameState.player.hand.map((card, index) => (
+                  <CompactCard 
+                    key={card.instanceId ?? index}
+                    card={card} 
+                    onClick={() => handleCardClick(card)}
+                    isSelected={selectedCard?.instanceId === card.instanceId}
+                    isPlayable={gameState.player.ram >= card.cost && !isEnemyTurn}
+                    isTopCard={index === 0 && isDiscardHovered}
+                    isNewlyDrawn={card.instanceId ? newlyDrawnCards.includes(card.instanceId) : false}
+                    onMouseEnter={handleCardHover}
+                    onMouseLeave={handleCardHoverEnd}
+                  />
+                ))}
+              </div>
+              {hoveredCard && (
+                <FullCardDisplay 
+                  card={hoveredCard} 
+                  position={hoverPosition} 
+                  attacker={gameState.player.digimon[hoveredCard.ownerDigimonIndex]}
+                />
+              )}
+              <div className="bottom-bar">
+                {gameState.player.digimon.map((digimon, index) => (
+                  <div key={index} className="digimon-info">
+                    <span className="digimon-name">{digimon.displayName}</span>
+                    <div className="hp-container">
+                      <span className="hp-number">{digimon.hp}/{digimon.maxHp}</span>
+                      <div className="hp-bar">
+                        <div 
+                          className="hp-fill" 
+                          style={{ width: `${(digimon.hp / digimon.maxHp) * 100}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                    <div className="shield-container">
+                      <span className="shield-icon">🛡️</span>
+                      <span className="shield-number">{digimon.shield || 0}</span>
+                      <div className="shield-bar">
+                        <div 
+                          className="shield-fill" 
+                          style={{ width: `${((digimon.shield || 0) / digimon.maxHp) * 100}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <CardPileModal
+                isOpen={isDeckModalOpen}
+                onClose={() => setIsDeckModalOpen(false)}
+                cards={shuffledDeckForDisplay}
+                title="Draw Pile"
+              />
+              <CardPileModal
+                isOpen={isDiscardModalOpen}
+                onClose={() => setIsDiscardModalOpen(false)}
+                cards={gameState.player.discardPile}
+                title="Discard Pile"
+              />
+            </>
           )}
-          </div>
+        </div>
       </div>
     </div>
-  )
+  );
 };
 
 export default BattleScreen;

@@ -9,6 +9,12 @@ export type ComboTrigger = 'attack' | 'shield' | 'special';
 export type StatType = 'attack' | 'defense' | 'speed' | 'evasion' | 'critChance' | 'critDamage';
 export type ScalingFactor = 'enemiesHit' | 'drawnCardsCost' | 'turnNumber' | 'cardsPlayedThisTurn' | 'damageTakenThisTurn' | 'cardsDiscardedThisTurn' | 'cardsDiscardedThisBattle' | 'userShield' | 'corruptionStacks' | 'enemyCorruptionStacks' | 'discardedCardCount';
 export type DamageFormulaKey = 'LIGHT' | 'LIGHT2' | 'WEAK' | 'WEAK2' | 'BASIC' | 'BASIC2' | 'STRONG' | 'STRONG2' | 'HEAVY' | 'HEAVY2' | 'MEGA' | 'MEGA2' | 'CRITICAL_ATTACK' | 'LIGHT_HEAL' | 'WEAK_HEAL' | 'BASIC_HEAL' | 'STRONG_HEAL' | 'HEAVY_HEAL' | 'MEGA_HEAL' | 'CUSTOM';
+export type EnemyAction = {
+  type: 'ENEMY_ACTION';
+  attackingEnemyIndex: number;
+  targetPlayerIndex: number;
+  damage: number;
+};
 
 // Card-related interfaces
 export interface CardEffect {
@@ -104,7 +110,8 @@ export type BattleAction =
   | { type: 'DISCARD_CARD'; card: Card }
   | { type: 'SHUFFLE_DISCARD_TO_DECK' }
   | { type: 'END_PLAYER_TURN' }
-  | { type: 'ENEMY_ACTION'; attackingEnemyIndex: number; targetPlayerIndex: number }
+  | { type: 'END_ENEMY_TURN' }
+  | EnemyAction
   | { type: 'ANIMATE_ATTACK'; sourceIndex: number; targetIndex: number; isEnemy: boolean }
   | { type: 'APPLY_DAMAGE'; target: TargetInfo; damage: number; newHp: number; newShield: number };
 
