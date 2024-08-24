@@ -97,6 +97,9 @@ const drawSingleCard = (gameState: GameState): GameState => {
 export const startPlayerTurn = (state: GameState): GameState => {
   let updatedState = { ...state };
 
+  // Reset RAM to the starting value
+  updatedState.player.ram = calculateStartingRam(updatedState.player.digimon as Digimon[]);
+
   // Apply RAM modifiers from Digimon abilities or items
   updatedState.player.digimon.forEach(digimon => {
     if (digimon.passiveSkill && typeof digimon.passiveSkill.ramModifier === 'function') {
