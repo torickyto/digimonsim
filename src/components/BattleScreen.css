@@ -232,6 +232,11 @@
   z-index: 1000;
 }
 
+.discard-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .enemy-digimon {
   display: flex;
   justify-content: space-around;

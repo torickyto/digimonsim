@@ -94,6 +94,10 @@ const drawSingleCard = (gameState: GameState): GameState => {
   return { ...gameState };
 };
 
+const getAliveDigimon = (digimon: DigimonState[]): DigimonState[] => {
+  return digimon.filter(d => d.hp > 0);
+};
+
 export const startPlayerTurn = (state: GameState): GameState => {
   let updatedState = { ...state };
 
@@ -247,23 +251,43 @@ export const endPlayerTurn = (gameState: GameState): GameState => {
 export const executeEnemyTurn = (gameState: GameState): GameState => {
   let updatedState: GameState = { ...gameState };
 
+  console.log('Executing enemy turn');
+  console.log('All player Digimon:', updatedState.player.digimon.map(d => `${d.displayName} (HP: ${d.hp})`));
+
+  const alivePlayerDigimon = updatedState.player.digimon.filter(d => d.hp > 0);
+  console.log('Alive player Digimon:', alivePlayerDigimon.map(d => `${d.displayName} (HP: ${d.hp})`));
+
+  if (alivePlayerDigimon.length === 0) {
+    console.log('No alive player Digimon, skipping enemy turn');
+    return updatedState;
+  }
+
   const enemyActions: EnemyAction[] = updatedState.enemy.digimon
     .map((enemyDigimon, enemyIndex) => {
-      if (enemyDigimon.hp <= 0) return null;
+      if (enemyDigimon.hp <= 0) {
+        console.log(`Enemy Digimon ${enemyDigimon.displayName} is dead, skipping`);
+        return null;
+      }
 
-      const targetPlayerIndex = Math.floor(Math.random() * updatedState.player.digimon.length);
-      const targetPlayerDigimon = updatedState.player.digimon[targetPlayerIndex];
+      const randomAlivePlayerDigimon = alivePlayerDigimon[Math.floor(Math.random() * alivePlayerDigimon.length)];
+      const targetPlayerIndex = updatedState.player.digimon.findIndex(d => d.id === randomAlivePlayerDigimon.id);
+      
+      console.log(`Enemy ${enemyDigimon.displayName} (${enemyIndex}) targeting ${randomAlivePlayerDigimon.displayName} (index: ${targetPlayerIndex})`);
+      console.log(`Target Digimon HP: ${randomAlivePlayerDigimon.hp}`);
 
-      const damage = calculateDamage('BASIC' as DamageFormulaKey, enemyDigimon, targetPlayerDigimon);
+      const damage = calculateDamage('BASIC' as DamageFormulaKey, enemyDigimon, randomAlivePlayerDigimon);
+      console.log(`Calculated damage: ${damage}`);
 
       return {
         type: 'ENEMY_ACTION' as const,
         attackingEnemyIndex: enemyIndex,
-        targetPlayerIndex,
+        targetPlayerIndex: targetPlayerIndex,
         damage
       };
     })
     .filter((action): action is EnemyAction => action !== null);
+
+  console.log('Enemy actions:', enemyActions);
 
   updatedState.actionQueue = [...updatedState.actionQueue, ...enemyActions, { type: 'END_ENEMY_TURN' }];
 
@@ -271,6 +295,7 @@ export const executeEnemyTurn = (gameState: GameState): GameState => {
 
   return updatedState;
 };
+
 const prepareNextPlayerTurn = (gameState: GameState): GameState => {
   let updatedState: GameState = { ...gameState };
 
@@ -358,14 +383,13 @@ export const applyDamage = (damage: number, target: Digimon | DigimonState, game
 };
 
 export const checkBattleEnd = (gameState: GameState): 'ongoing' | 'win' | 'lose' => {
-  if (gameState.player.digimon.every(d => d.hp <= 0)) {
+  if (getAliveDigimon(gameState.player.digimon).length === 0) {
     return 'lose';
-  } else if (gameState.enemy.digimon.every(d => d.hp <= 0)) {
+  } else if (getAliveDigimon(gameState.enemy.digimon).length === 0) {
     return 'win';
   }
   return 'ongoing';
 };
-
 export const calculateDamageWithCrit = (attacker: Digimon, baseDamage: number): number => {
   const isCritical = Math.random() < attacker.critChance;
   const critMultiplier = isCritical ? 1.5 : 1; 
