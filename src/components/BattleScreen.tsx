@@ -458,23 +458,23 @@ useEffect(() => {
           targetDigimonIndex: index,
         };
   
-         // Set attacking state for the player's Digimon
-         setAttackingDigimon(selectedCard.ownerDigimonIndex);
-
-         // Only set hitDigimon for enemy if the card affects enemies
-         if (isEnemy && doesCardAffectEnemy(selectedCard)) {
-           setHitDigimon({ isEnemy, index: targetInfo.targetDigimonIndex });
-         } else if (!isEnemy) {
-           // For allies, we still want to show the hit animation for effects like healing or shielding
-           setHitDigimon({ isEnemy, index: targetInfo.targetDigimonIndex });
-         }
-   
+        // Set attacking state for the player's Digimon
+        setAttackingDigimon(selectedCard.ownerDigimonIndex);
+  
+        // Only set hitDigimon for enemy if the card affects enemies
+        if (isEnemy && doesCardAffectEnemy(selectedCard)) {
+          setHitDigimon({ isEnemy, index: targetInfo.targetDigimonIndex });
+        } else if (!isEnemy) {
+          // For allies, we still want to show the hit animation for effects like healing or shielding
+          setHitDigimon({ isEnemy, index: targetInfo.targetDigimonIndex });
+        }
+  
         // Play the card and update the game state
         const updatedState = playCard(gameState, cardIndex, targetInfo);
         setGameState(updatedState);
-
-      // Trigger action queue processing
-      setShouldProcessQueue(true);
+  
+        // Trigger action queue processing
+        setShouldProcessQueue(true);
   
         // Reset states after a short delay
         setTimeout(() => {
@@ -487,7 +487,6 @@ useEffect(() => {
       }
     }
   };
-
   const handleEnemyClick = (index: number) => {
     handleDigimonClick(true, index);
   };
@@ -592,14 +591,14 @@ useEffect(() => {
               </div>
               <div className="battle-area">
               <div className="enemy-digimon">
-  {gameState.enemy.digimon.map((digimon, index) => (
-    <div key={`enemy-${index}`} className="enemy-digimon-container" onClick={() => handleEnemyClick(index)}>
-      <DigimonSprite 
-        name={digimon.name} 
-        scale={spriteScale * 1.75}
-        isAttacking={attackingDigimon === index && hitDigimon?.isEnemy === true}
-        isOnHit={hitDigimon?.isEnemy && hitDigimon.index === index && doesCardAffectEnemy(selectedCard!)}
-      />
+                {gameState.enemy.digimon.map((digimon, index) => (
+                  <div key={`enemy-${index}`} className="enemy-digimon-container" onClick={() => handleEnemyClick(index)}>
+                    <DigimonSprite 
+                      name={digimon.name} 
+                      scale={spriteScale * 1.75}
+                      isAttacking={attackingDigimon === index && hitDigimon?.isEnemy === true}
+                      isOnHit={hitDigimon?.isEnemy && hitDigimon.index === index && doesCardAffectEnemy(selectedCard!)}
+                    />
                       <div className="enemy-health-bar">
                         <div className="health-fill" style={{ width: `${(digimon.hp / digimon.maxHp) * 100}%` }}></div>
                         <span className="enemy-hp-number">{`${digimon.hp}/${digimon.maxHp}`}</span>
