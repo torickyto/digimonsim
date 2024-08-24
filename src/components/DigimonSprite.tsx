@@ -42,8 +42,6 @@ const DigimonSprite: React.FC<DigimonSpriteProps> = ({
     }
   }, [isAttacking, isOnHit, onAttackComplete, name]);
 
-  console.log(`DigimonSprite ${name}: Rendering with animationClass=${animationClass}`);
-
   return (
     <div 
       className={`digimon ${name} ${animationClass}`}

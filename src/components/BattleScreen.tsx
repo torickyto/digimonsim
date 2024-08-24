@@ -49,6 +49,8 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   const [openingAttacksComplete, setOpeningAttacksComplete] = useState(false);
   const [isEnemyTurn, setIsEnemyTurn] = useState(false);
   const [shouldProcessQueue, setShouldProcessQueue] = useState(false);
+  const [currentEnemyActionIndex, setCurrentEnemyActionIndex] = useState(0);
+  const [isProcessingAction, setIsProcessingAction] = useState(false);
   
   
 
@@ -117,8 +119,8 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   }, []);
 
   const processActionQueue = useCallback((state: GameState) => {
-    if (state.actionQueue.length === 0) {
-      if (isEnemyTurn) {
+    if (isProcessingAction || state.actionQueue.length === 0) {
+      if (isEnemyTurn && state.actionQueue.length === 0) {
         setIsEnemyTurn(false);
         const updatedState = startPlayerTurn(state);
         setGameState(updatedState);
@@ -126,54 +128,69 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
       setShouldProcessQueue(false);
       return;
     }
-  
+
+    setIsProcessingAction(true);
     const action = state.actionQueue[0];
     let updatedState = { ...state, actionQueue: state.actionQueue.slice(1) };
-  
+
+    const processNextAction = () => {
+      setGameState(updatedState);
+      setIsProcessingAction(false);
+      if (updatedState.actionQueue.length > 0) {
+        setTimeout(() => setShouldProcessQueue(true), 100);
+      } else {
+        setShouldProcessQueue(false);
+      }
+    };
+
     switch (action.type) {
-      case 'APPLY_DAMAGE':
-        // The damage has already been applied in the applyDamage function
-        break;
       case 'ENEMY_ACTION':
         console.log('Processing enemy action:', action);
-        updatedState = applyDamage(action.damage, updatedState.player.digimon[action.targetPlayerIndex], updatedState, {
-          targetType: 'single_ally',
-          sourceDigimonIndex: action.attackingEnemyIndex,
-          targetDigimonIndex: action.targetPlayerIndex
-        });
+        setAttackingDigimon(action.attackingEnemyIndex);
+        setHitDigimon({ isEnemy: false, index: action.targetPlayerIndex });
+        
+        setTimeout(() => {
+          updatedState = applyDamage(action.damage, updatedState.player.digimon[action.targetPlayerIndex], updatedState, {
+            targetType: 'single_ally',
+            sourceDigimonIndex: action.attackingEnemyIndex,
+            targetDigimonIndex: action.targetPlayerIndex
+          });
+          setAttackingDigimon(null);
+          setHitDigimon(null);
+          processNextAction();
+        }, 1000); // Duration of the attack animation
         break;
       case 'END_ENEMY_TURN':
         console.log('Ending enemy turn');
         setIsEnemyTurn(false);
         updatedState = startPlayerTurn(updatedState);
+        processNextAction();
         break;
+      default:
+        processNextAction();
     }
-  
-    setGameState(updatedState);
-  
+
     // Check if the battle has ended
     const battleStatus = checkBattleEnd(updatedState);
     if (battleStatus !== 'ongoing') {
       onBattleEnd(battleStatus);
-      return;
     }
-  
-    // Schedule the next action processing
-    if (updatedState.actionQueue.length > 0) {
-      setTimeout(() => {
-        setShouldProcessQueue(true);
-      }, 100);
-    } else {
-      setShouldProcessQueue(false);
-    }
-  }, [setGameState, startPlayerTurn, applyDamage, onBattleEnd, isEnemyTurn, setShouldProcessQueue]);
+  }, [setGameState, startPlayerTurn, applyDamage, onBattleEnd, isEnemyTurn, isProcessingAction]);
 
-const processEnemyTurn = useCallback((state: GameState) => {
-  console.log('Processing enemy turn');
-  const enemyState = executeEnemyTurn(state);
-  setGameState(enemyState);
-  setShouldProcessQueue(true);
-}, [executeEnemyTurn]);
+  const processEnemyTurn = useCallback((state: GameState) => {
+    console.log('Processing enemy turn');
+    const enemyState = executeEnemyTurn(state);
+    setGameState(enemyState);
+    setCurrentEnemyActionIndex(0);
+    setShouldProcessQueue(true);
+  }, [executeEnemyTurn]);
+
+
+  useEffect(() => {
+    if (shouldProcessQueue && !isProcessingAction) {
+      processActionQueue(gameState);
+    }
+  }, [shouldProcessQueue, processActionQueue, gameState, isProcessingAction]);
   
 useEffect(() => {
   if (gameState.actionQueue.length > 0) {
@@ -360,8 +377,9 @@ useEffect(() => {
     let updatedState = endPlayerTurn(gameState);
     setGameState(updatedState);
     setIsEnemyTurn(true);
-    setShouldProcessQueue(true);
+    processEnemyTurn(updatedState);
   };
+
 
   const handleDiscard = () => {
     if (gameState.player.hand.length > 0) {
@@ -591,14 +609,14 @@ useEffect(() => {
               </div>
               <div className="battle-area">
               <div className="enemy-digimon">
-                {gameState.enemy.digimon.map((digimon, index) => (
-                  <div key={`enemy-${index}`} className="enemy-digimon-container" onClick={() => handleEnemyClick(index)}>
-                    <DigimonSprite 
-                      name={digimon.name} 
-                      scale={spriteScale * 1.75}
-                      isAttacking={attackingDigimon === index && hitDigimon?.isEnemy === true}
-                      isOnHit={hitDigimon?.isEnemy && hitDigimon.index === index && doesCardAffectEnemy(selectedCard!)}
-                    />
+      {gameState.enemy.digimon.map((digimon, index) => (
+        <div key={`enemy-${index}`} className="enemy-digimon-container" onClick={() => handleEnemyClick(index)}>
+          <DigimonSprite 
+            name={digimon.name} 
+            scale={spriteScale * 1.75}
+            isAttacking={attackingDigimon === index}
+            isOnHit={hitDigimon?.isEnemy && hitDigimon.index === index && doesCardAffectEnemy(selectedCard!)}
+          />
                       <div className="enemy-health-bar">
                         <div className="health-fill" style={{ width: `${(digimon.hp / digimon.maxHp) * 100}%` }}></div>
                         <span className="enemy-hp-number">{`${digimon.hp}/${digimon.maxHp}`}</span>
