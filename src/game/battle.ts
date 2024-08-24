@@ -107,8 +107,7 @@ export const startPlayerTurn = (state: GameState): GameState => {
 
   // Draw one card if it's not the first turn and there's room in the hand
   if (updatedState.turn > 1 && updatedState.player.hand.length < MAX_HAND_SIZE) {
-    const { newState, drawnCard } = drawCard(updatedState);
-    updatedState = newState;
+    updatedState = drawSingleCard(updatedState);
   }
 
   // Apply any start-of-turn effects
@@ -223,17 +222,14 @@ export const playCard = (gameState: GameState, cardIndex: number, targetInfo: Ta
 };
 
 export const endPlayerTurn = (gameState: GameState): GameState => {
-  let updatedState: GameState = {
+  return {
     ...gameState,
     phase: 'enemy',
     turn: gameState.turn + 1,
     cardsPlayedThisTurn: 0,
     cardsDiscardedThisTurn: 0,
+    actionQueue: [...gameState.actionQueue, { type: 'END_PLAYER_TURN' }]
   };
-
-  updatedState.actionQueue.push({ type: 'END_PLAYER_TURN' });
-
-  return updatedState;
 };
 
 export const executeEnemyTurn = (gameState: GameState): GameState => {
@@ -257,7 +253,7 @@ export const executeEnemyTurn = (gameState: GameState): GameState => {
     })
     .filter((action): action is EnemyAction => action !== null);
 
-  updatedState.actionQueue = [...enemyActions, { type: 'END_ENEMY_TURN' }];
+  updatedState.actionQueue = [...updatedState.actionQueue, ...enemyActions, { type: 'END_ENEMY_TURN' }];
 
   console.log('Enemy turn executed, action queue:', updatedState.actionQueue);
 

@@ -48,6 +48,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   const [initialAnimationComplete, setInitialAnimationComplete] = useState(false);
   const [openingAttacksComplete, setOpeningAttacksComplete] = useState(false);
   const [isEnemyTurn, setIsEnemyTurn] = useState(false);
+  const [shouldProcessQueue, setShouldProcessQueue] = useState(false);
   
   
 
@@ -115,83 +116,92 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     setHandKey(prevKey => prevKey + 1);
   }, []);
 
-  
-
-const processActionQueue = useCallback(() => {
-  if (gameState.actionQueue.length === 0) {
-    if (isEnemyTurn) {
-      setIsEnemyTurn(false);
-      const updatedState = startPlayerTurn(gameState);
-      setGameState(updatedState);
+  const processActionQueue = useCallback((state: GameState) => {
+    if (state.actionQueue.length === 0) {
+      if (isEnemyTurn) {
+        setIsEnemyTurn(false);
+        const updatedState = startPlayerTurn(state);
+        setGameState(updatedState);
+      }
+      setShouldProcessQueue(false);
+      return;
     }
-    return;
-  }
-
-  const action = gameState.actionQueue[0];
-  let updatedState = { ...gameState, actionQueue: gameState.actionQueue.slice(1) };
-
-  switch (action.type) {
-    case 'APPLY_DAMAGE':
-      // The damage has already been applied in the applyDamage function
-      break;
-    case 'ENEMY_ACTION':
-      console.log('Processing enemy action:', action);
-      updatedState = applyDamage(action.damage, updatedState.player.digimon[action.targetPlayerIndex], updatedState, {
-        targetType: 'single_ally',
-        sourceDigimonIndex: action.attackingEnemyIndex,
-        targetDigimonIndex: action.targetPlayerIndex
-      });
-      break;
-    case 'END_ENEMY_TURN':
-      console.log('Ending enemy turn');
-      setIsEnemyTurn(false);
-      updatedState = startPlayerTurn(updatedState);
-      break;
-  }
-
-  setGameState(updatedState);
-
-  // Check if the battle has ended
-  const battleStatus = checkBattleEnd(updatedState);
-  if (battleStatus !== 'ongoing') {
-    onBattleEnd(battleStatus);
-    return;
-  }
-
-  // Continue processing the queue after a short delay
-  setTimeout(() => {
-    setGameState(prevState => ({
-      ...prevState,
-      actionQueue: updatedState.actionQueue
-    }));
-  }, 500);
-}, [gameState, isEnemyTurn, setGameState, startPlayerTurn, applyDamage, onBattleEnd]);
-
-
-  const processEnemyTurn = useCallback((state: GameState) => {
-    console.log('Processing enemy turn');
-    const enemyState = executeEnemyTurn(state);
-    setGameState(enemyState);
-    processActionQueue();
-  }, [executeEnemyTurn, processActionQueue]);
   
-  useEffect(() => {
-    if (gameState.actionQueue.length > 0) {
-      console.log('Action queue changed, processing...');
-      processActionQueue();
-    } else if (isEnemyTurn) {
-      console.log('Enemy turn, executing actions...');
-      const updatedState = executeEnemyTurn(gameState);
-      setGameState(updatedState);
+    const action = state.actionQueue[0];
+    let updatedState = { ...state, actionQueue: state.actionQueue.slice(1) };
+  
+    switch (action.type) {
+      case 'APPLY_DAMAGE':
+        // The damage has already been applied in the applyDamage function
+        break;
+      case 'ENEMY_ACTION':
+        console.log('Processing enemy action:', action);
+        updatedState = applyDamage(action.damage, updatedState.player.digimon[action.targetPlayerIndex], updatedState, {
+          targetType: 'single_ally',
+          sourceDigimonIndex: action.attackingEnemyIndex,
+          targetDigimonIndex: action.targetPlayerIndex
+        });
+        break;
+      case 'END_ENEMY_TURN':
+        console.log('Ending enemy turn');
+        setIsEnemyTurn(false);
+        updatedState = startPlayerTurn(updatedState);
+        break;
     }
-  }, [gameState, isEnemyTurn, processActionQueue, executeEnemyTurn]);
+  
+    setGameState(updatedState);
+  
+    // Check if the battle has ended
+    const battleStatus = checkBattleEnd(updatedState);
+    if (battleStatus !== 'ongoing') {
+      onBattleEnd(battleStatus);
+      return;
+    }
+  
+    // Schedule the next action processing
+    if (updatedState.actionQueue.length > 0) {
+      setTimeout(() => {
+        setShouldProcessQueue(true);
+      }, 100);
+    } else {
+      setShouldProcessQueue(false);
+    }
+  }, [setGameState, startPlayerTurn, applyDamage, onBattleEnd, isEnemyTurn, setShouldProcessQueue]);
+
+const processEnemyTurn = useCallback((state: GameState) => {
+  console.log('Processing enemy turn');
+  const enemyState = executeEnemyTurn(state);
+  setGameState(enemyState);
+  setShouldProcessQueue(true);
+}, [executeEnemyTurn]);
+  
+useEffect(() => {
+  if (gameState.actionQueue.length > 0) {
+    console.log('Action queue changed, processing...');
+    processActionQueue(gameState);
+  } else if (isEnemyTurn) {
+    console.log('Enemy turn, executing actions...');
+    processEnemyTurn(gameState);
+  }
+}, [gameState, isEnemyTurn, processActionQueue, processEnemyTurn]);
 
   useEffect(() => {
     console.log('attackingDigimon:', attackingDigimon);
     console.log('hitDigimon:', hitDigimon);
   }, [attackingDigimon, hitDigimon]);
 
-  
+  useEffect(() => {
+    if (shouldProcessQueue) {
+      if (gameState.actionQueue.length > 0) {
+        console.log('Action queue changed, processing...');
+        processActionQueue(gameState);
+      } else if (isEnemyTurn) {
+        console.log('Enemy turn, executing actions...');
+        processEnemyTurn(gameState);
+      }
+      setShouldProcessQueue(false);
+    }
+  }, [shouldProcessQueue, isEnemyTurn, processActionQueue, processEnemyTurn]);
 
   useEffect(() => {
     // listener for the Escape key
@@ -344,13 +354,15 @@ const processActionQueue = useCallback(() => {
   };
 
   const handleEndTurn = () => {
+    if (isEnemyTurn) return;
+    
     deselectCard();
     let updatedState = endPlayerTurn(gameState);
     setGameState(updatedState);
     setIsEnemyTurn(true);
-    processEnemyTurn(updatedState);
+    setShouldProcessQueue(true);
   };
-  
+
   const handleDiscard = () => {
     if (gameState.player.hand.length > 0) {
       const discardedCard = gameState.player.hand[0];
