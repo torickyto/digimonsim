@@ -129,7 +129,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
       setShouldProcessQueue(false);
       return;
     }
-
+  
     setIsProcessingAction(true);
     const action = state.actionQueue[0];
     let updatedState = { ...state, actionQueue: state.actionQueue.slice(1) };
@@ -149,15 +149,17 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
         const enemyAction = action as EnemyAction;
         console.log('Processing enemy action:', enemyAction);
         console.log(`Enemy ${enemyAction.attackingEnemyIndex} attacking player Digimon ${enemyAction.targetPlayerIndex}`);
-        console.log('Current player Digimon state:', updatedState.player.digimon.map(d => ({ name: d.displayName, hp: d.hp })));
         
         setAttackingEnemyDigimon(enemyAction.attackingEnemyIndex);
         setHitDigimon({ isEnemy: false, index: enemyAction.targetPlayerIndex });
         
+        // Get the correct target Digimon
+        const targetDigimon = updatedState.player.digimon[enemyAction.targetPlayerIndex];
+        
         // Apply damage immediately
         updatedState = battleApplyDamage(
           enemyAction.damage, 
-          updatedState.player.digimon[enemyAction.targetPlayerIndex], 
+          targetDigimon, 
           updatedState, 
           {
             targetType: 'single_ally',

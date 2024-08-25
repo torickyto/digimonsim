@@ -254,10 +254,15 @@ export const executeEnemyTurn = (gameState: GameState): GameState => {
   console.log('Executing enemy turn');
   console.log('All player Digimon:', updatedState.player.digimon.map(d => `${d.displayName} (HP: ${d.hp})`));
 
-  const alivePlayerDigimon = updatedState.player.digimon.filter(d => d.hp > 0);
-  console.log('Alive player Digimon:', alivePlayerDigimon.map(d => `${d.displayName} (HP: ${d.hp})`));
+  // Create an array of indices of alive Digimon
+  const alivePlayerIndices = updatedState.player.digimon
+    .map((d, index) => ({ digimon: d, index }))
+    .filter(item => item.digimon.hp > 0)
+    .map(item => item.index);
 
-  if (alivePlayerDigimon.length === 0) {
+  console.log('Alive player Digimon indices:', alivePlayerIndices);
+
+  if (alivePlayerIndices.length === 0) {
     console.log('No alive player Digimon, skipping enemy turn');
     return updatedState;
   }
@@ -269,13 +274,18 @@ export const executeEnemyTurn = (gameState: GameState): GameState => {
         return null;
       }
 
-      const randomAlivePlayerDigimon = alivePlayerDigimon[Math.floor(Math.random() * alivePlayerDigimon.length)];
-      const targetPlayerIndex = updatedState.player.digimon.findIndex(d => d.id === randomAlivePlayerDigimon.id);
+      const randomAliveIndex = Math.floor(Math.random() * alivePlayerIndices.length);
+      const targetPlayerIndex = alivePlayerIndices[randomAliveIndex];
+      const targetPlayerDigimon = updatedState.player.digimon[targetPlayerIndex];
       
-      console.log(`Enemy ${enemyDigimon.displayName} (${enemyIndex}) targeting ${randomAlivePlayerDigimon.displayName} (index: ${targetPlayerIndex})`);
-      console.log(`Target Digimon HP: ${randomAlivePlayerDigimon.hp}`);
+      console.log(`Random alive index selected: ${randomAliveIndex}`);
+      console.log(`Target player Digimon: ${targetPlayerDigimon.displayName}`);
+      console.log(`Target player index in original array: ${targetPlayerIndex}`);
+      
+      console.log(`Enemy ${enemyDigimon.displayName} (${enemyIndex}) targeting ${targetPlayerDigimon.displayName} (index: ${targetPlayerIndex})`);
+      console.log(`Target Digimon HP: ${targetPlayerDigimon.hp}`);
 
-      const damage = calculateDamage('BASIC' as DamageFormulaKey, enemyDigimon, randomAlivePlayerDigimon);
+      const damage = calculateDamage('BASIC' as DamageFormulaKey, enemyDigimon, targetPlayerDigimon);
       console.log(`Calculated damage: ${damage}`);
 
       return {
@@ -341,7 +351,7 @@ export const drawCard = (state: GameState): { newState: GameState; drawnCard: Ca
 
 
 export const applyDamage = (damage: number, target: Digimon | DigimonState, gameState: GameState, targetInfo: TargetInfo): GameState => {
-  console.log('Applying damage:', damage, 'to target:', target);
+  console.log('Applying damage:', damage, 'to target:', target, 'at index:', targetInfo.targetDigimonIndex);
   let remainingDamage = damage;
   let updatedShield = target.shield;
   
@@ -357,19 +367,24 @@ export const applyDamage = (damage: number, target: Digimon | DigimonState, game
   
   const updatedHp = Math.max(0, target.hp - remainingDamage);
   console.log('Updated HP:', updatedHp, 'Remaining damage:', remainingDamage, 'Updated Shield:', updatedShield);
-  const updatedTarget = { ...target, hp: updatedHp, shield: updatedShield };
 
   let updatedState = { ...gameState };
 
   if (targetInfo.targetType === 'enemy') {
     updatedState.enemy.digimon = updatedState.enemy.digimon.map((d, index) => 
-      index === targetInfo.targetDigimonIndex ? updatedTarget : d
+      index === targetInfo.targetDigimonIndex ? { ...d, hp: updatedHp, shield: updatedShield } : d
     );
   } else {
-    updatedState.player.digimon = updatedState.player.digimon.map((d, index) => 
-      index === targetInfo.targetDigimonIndex ? { ...d, ...updatedTarget } : d
-    );
+    updatedState.player.digimon = updatedState.player.digimon.map((d, index) => {
+      if (index === targetInfo.targetDigimonIndex) {
+        console.log(`Updating player Digimon at index ${index}:`, { ...d, hp: updatedHp, shield: updatedShield });
+        return { ...d, hp: updatedHp, shield: updatedShield };
+      }
+      return d;
+    });
   }
+
+  console.log('Updated player Digimon:', updatedState.player.digimon);
 
   updatedState.actionQueue.push({ 
     type: 'APPLY_DAMAGE', 
