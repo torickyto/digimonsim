@@ -161,7 +161,7 @@ export interface DigimonState {
 
 export interface GameState {
   player: {
-    digimon: (Digimon | DigimonState)[];
+    digimon: Digimon[];
     hand: Card[];
     deck: Card[];
     discardPile: Card[];

@@ -215,7 +215,13 @@ export const playCard = (gameState: GameState, cardIndex: number, targetInfo: Ta
 
   // Apply damage if it's an attack card
   if (damage > 0 && targetInfo.targetType === 'enemy') {
-    updatedState = applyDamage(damage, updatedState.enemy.digimon[targetInfo.targetDigimonIndex], updatedState, targetInfo);
+    const { updatedState: damageState, removedCards } = applyDamage(
+      damage, 
+      updatedState.enemy.digimon[targetInfo.targetDigimonIndex], 
+      updatedState, 
+      targetInfo
+    );
+    updatedState = damageState;
   }
 
   // Add animation-related actions to the queue
@@ -251,42 +257,23 @@ export const endPlayerTurn = (gameState: GameState): GameState => {
 export const executeEnemyTurn = (gameState: GameState): GameState => {
   let updatedState: GameState = { ...gameState };
 
-  console.log('Executing enemy turn');
-  console.log('All player Digimon:', updatedState.player.digimon.map(d => `${d.displayName} (HP: ${d.hp})`));
-
-  // Create an array of indices of alive Digimon
   const alivePlayerIndices = updatedState.player.digimon
     .map((d, index) => ({ digimon: d, index }))
     .filter(item => item.digimon.hp > 0)
     .map(item => item.index);
 
-  console.log('Alive player Digimon indices:', alivePlayerIndices);
-
   if (alivePlayerIndices.length === 0) {
-    console.log('No alive player Digimon, skipping enemy turn');
     return updatedState;
   }
 
   const enemyActions: EnemyAction[] = updatedState.enemy.digimon
+    .filter(enemyDigimon => enemyDigimon.hp > 0)
     .map((enemyDigimon, enemyIndex) => {
-      if (enemyDigimon.hp <= 0) {
-        console.log(`Enemy Digimon ${enemyDigimon.displayName} is dead, skipping`);
-        return null;
-      }
-
       const randomAliveIndex = Math.floor(Math.random() * alivePlayerIndices.length);
       const targetPlayerIndex = alivePlayerIndices[randomAliveIndex];
       const targetPlayerDigimon = updatedState.player.digimon[targetPlayerIndex];
       
-      console.log(`Random alive index selected: ${randomAliveIndex}`);
-      console.log(`Target player Digimon: ${targetPlayerDigimon.displayName}`);
-      console.log(`Target player index in original array: ${targetPlayerIndex}`);
-      
-      console.log(`Enemy ${enemyDigimon.displayName} (${enemyIndex}) targeting ${targetPlayerDigimon.displayName} (index: ${targetPlayerIndex})`);
-      console.log(`Target Digimon HP: ${targetPlayerDigimon.hp}`);
-
       const damage = calculateDamage('BASIC' as DamageFormulaKey, enemyDigimon, targetPlayerDigimon);
-      console.log(`Calculated damage: ${damage}`);
 
       return {
         type: 'ENEMY_ACTION' as const,
@@ -294,14 +281,9 @@ export const executeEnemyTurn = (gameState: GameState): GameState => {
         targetPlayerIndex: targetPlayerIndex,
         damage
       };
-    })
-    .filter((action): action is EnemyAction => action !== null);
-
-  console.log('Enemy actions:', enemyActions);
+    });
 
   updatedState.actionQueue = [...updatedState.actionQueue, ...enemyActions, { type: 'END_ENEMY_TURN' }];
-
-  console.log('Enemy turn executed, action queue:', updatedState.actionQueue);
 
   return updatedState;
 };
@@ -350,7 +332,7 @@ export const drawCard = (state: GameState): { newState: GameState; drawnCard: Ca
 
 
 
-export const applyDamage = (damage: number, target: Digimon | DigimonState, gameState: GameState, targetInfo: TargetInfo): GameState => {
+export const applyDamage = (damage: number, target: Digimon | DigimonState, gameState: GameState, targetInfo: TargetInfo): { updatedState: GameState; removedCards: Card[] } => {
   console.log('Applying damage:', damage, 'to target:', target, 'at index:', targetInfo.targetDigimonIndex);
   let remainingDamage = damage;
   let updatedShield = target.shield;
@@ -369,6 +351,7 @@ export const applyDamage = (damage: number, target: Digimon | DigimonState, game
   console.log('Updated HP:', updatedHp, 'Remaining damage:', remainingDamage, 'Updated Shield:', updatedShield);
 
   let updatedState = { ...gameState };
+  let removedCards: Card[] = [];
 
   if (targetInfo.targetType === 'enemy') {
     updatedState.enemy.digimon = updatedState.enemy.digimon.map((d, index) => 
@@ -377,8 +360,13 @@ export const applyDamage = (damage: number, target: Digimon | DigimonState, game
   } else {
     updatedState.player.digimon = updatedState.player.digimon.map((d, index) => {
       if (index === targetInfo.targetDigimonIndex) {
-        console.log(`Updating player Digimon at index ${index}:`, { ...d, hp: updatedHp, shield: updatedShield });
-        return { ...d, hp: updatedHp, shield: updatedShield };
+        const updatedDigimon = { ...d, hp: updatedHp, shield: updatedShield };
+        if (updatedHp <= 0) {
+          const result = removeDeadDigimonCards(updatedState, index);
+          updatedState = result.updatedState;
+          removedCards = result.removedCards;
+        }
+        return updatedDigimon;
       }
       return d;
     });
@@ -394,8 +382,37 @@ export const applyDamage = (damage: number, target: Digimon | DigimonState, game
     newShield: updatedShield
   });
 
-  return updatedState;
+  return { updatedState, removedCards };
 };
+
+const removeDeadDigimonCards = (gameState: GameState, deadDigimonIndex: number): { updatedState: GameState; removedCards: Card[] } => {
+  const updatedState = { ...gameState };
+  const deadDigimonCards = updatedState.player.digimon[deadDigimonIndex].deck;
+  const removedCards: Card[] = [];
+
+  // Remove cards from deck
+  updatedState.player.deck = updatedState.player.deck.filter(card => {
+    const shouldRemove = deadDigimonCards.some(deadCard => deadCard.id === card.id);
+    if (shouldRemove) removedCards.push(card);
+    return !shouldRemove;
+  });
+
+  // Remove cards from hand
+  updatedState.player.hand = updatedState.player.hand.filter(card => {
+    const shouldRemove = deadDigimonCards.some(deadCard => deadCard.id === card.id);
+    if (shouldRemove) removedCards.push(card);
+    return !shouldRemove;
+  });
+  // Remove cards from discard pile
+  updatedState.player.discardPile = updatedState.player.discardPile.filter(card => {
+    const shouldRemove = deadDigimonCards.some(deadCard => deadCard.id === card.id);
+    if (shouldRemove) removedCards.push(card);
+    return !shouldRemove;
+  });
+
+  return { updatedState, removedCards };
+};
+
 
 export const checkBattleEnd = (gameState: GameState): 'ongoing' | 'win' | 'lose' => {
   if (getAliveDigimon(gameState.player.digimon).length === 0) {
