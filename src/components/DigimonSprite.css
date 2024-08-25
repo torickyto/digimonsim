@@ -36,8 +36,18 @@
     background-image: url('../assets/images/lucemon-sprite.png');
   }
 
-
-
+  .digimon.dead {
+    opacity: 0.7;
+    filter: grayscale(100%);
+    animation: none !important;
+    background-position: 0 0 !important;
+    transition: none !important;
+  }
+  
+  .digimon.dead * {
+    animation: none !important;
+    transition: none !important;
+  }
   /* small spritesheets */
   .agumon, .gabumon, .impmon {
     width: 64px;

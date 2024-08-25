@@ -176,7 +176,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
           setAttackingEnemyDigimon(null);
           setHitDigimon(null);
           processNextAction();
-        }, 600); // Duration of the attack animation
+        }, 1000); // Duration of the attack animation
         break;
       case 'END_ENEMY_TURN':
         console.log('Ending enemy turn');
@@ -553,12 +553,16 @@ useEffect(() => {
 
   return (
     <div className="battle-screen-container">
-      <div className={`battle-screen ${isEnemyTurn ? 'enemy-turn' : ''}`} ref={battleScreenRef} onClick={handleBackgroundClick}>
-        {isEnemyTurn && (
+    <div className={`battle-screen ${isEnemyTurn ? 'enemy-turn' : ''}`} ref={battleScreenRef} onClick={handleBackgroundClick}>
+      {isEnemyTurn && (
+        <>
+          <div className="enemy-turn-overlay"></div>
           <div className="enemy-turn-indicator">
-            Enemy Turn
+            <div className="enemy-turn-text">ENEMY TURN</div>
           </div>
-        )}
+          <div className="danger-flash"></div>
+        </>
+      )}
         {battleStarting && (
           <div className="battle-start-overlay">
             {showWarning && <div className="warning-sign">WARNING!</div>}
@@ -636,6 +640,7 @@ useEffect(() => {
         scale={spriteScale * 1.75}
         isAttacking={attackingEnemyDigimon === index}
         isOnHit={hitDigimon?.isEnemy && hitDigimon.index === index}
+        isDead={digimon.hp <= 0}
       />
                       <div className="enemy-health-bar">
                         <div className="health-fill" style={{ width: `${(digimon.hp / digimon.maxHp) * 100}%` }}></div>
@@ -664,6 +669,7 @@ useEffect(() => {
         scale={spriteScale * 1.6}
         isAttacking={attackingDigimon === index}
         isOnHit={hitDigimon?.isEnemy === false && hitDigimon.index === index}
+        isDead={digimon.hp <= 0}
         style={{
           position: 'absolute',
           left: `${16.67 + index * 33.33}%`,

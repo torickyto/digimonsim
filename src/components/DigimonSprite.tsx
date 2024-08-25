@@ -7,6 +7,7 @@ interface DigimonSpriteProps {
   isOnHit?: boolean;
   onAttackComplete?: () => void;
   scale?: number;
+  isDead?: boolean;
   style?: React.CSSProperties;
 }
 
@@ -14,6 +15,7 @@ const DigimonSprite: React.FC<DigimonSpriteProps> = ({
   name, 
   isAttacking = false, 
   isOnHit = false, 
+  isDead = false,
   onAttackComplete,
   scale = 1,
   style = {}
@@ -52,7 +54,8 @@ const DigimonSprite: React.FC<DigimonSpriteProps> = ({
       style={{
         ...style,
         transform: `${style.transform || ''} scale(${scale})`,
-        transformOrigin: 'bottom center'
+        transformOrigin: 'bottom center',
+        filter: isDead ? 'grayscale(100%)' : 'none'
       }}
     ></div>
   );
