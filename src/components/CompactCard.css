@@ -1,7 +1,13 @@
 .compact-card {
   display: flex;
   align-items: center;
-  background-color: rgba(0, 0, 0, 0.8);
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  background-color: rgba(0, 0, 0, 0.9);
   border-radius: calc(0.6 * var(--battle-vh));
   cursor: pointer;
   position: relative;

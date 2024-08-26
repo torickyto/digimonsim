@@ -96,7 +96,7 @@
 
 .stat-label {
   font-size: 1.1vw;
-  color: #00bcd4;
+  color: #ffd700;
 }
 
 .stat-value {
@@ -115,7 +115,7 @@
 
 .stat-bar {
   height: 100%;
-  background-color: #00bcd4;
+  background-color: #ffd700;
   transition: width 0.3s ease;
 }
 
@@ -160,7 +160,7 @@ h3 {
 
 .bar-fill {
   height: 100%;
-  background-color: #00bcd4;
+  background-color: #ffd700;
   transition: width 0.3s ease;
 }
 
@@ -173,7 +173,7 @@ h3 {
 
 .passive-skill {
   font-size: 1.2vw;
-  background-color: rgba(0, 188, 212, 0.1);
+  background-color: #ffd7001a;
   padding: 1vh 1vw;
   border-radius: 5px;
   text-align: center;

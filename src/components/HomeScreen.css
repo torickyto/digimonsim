@@ -204,7 +204,7 @@
   background: linear-gradient(
     45deg,
     transparent,
-    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0.15),
     transparent
   );
   transform: rotate(45deg);
@@ -246,7 +246,14 @@
 }
 
 .stat-navigation button {
+  
   background-color: #0098db;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(255, 255, 255, 0.15),
+    transparent
+  );
   color: #ffffff;
   border: none;
   border-radius: 5px;
@@ -277,6 +284,12 @@
   margin-top: 2vh;
   padding: 1vh 2vw;
   background-color: #0098db;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(255, 255, 255, 0.15),
+    transparent
+  );
   color: #ffffff;
   border: none;
   border-radius: 5px;
