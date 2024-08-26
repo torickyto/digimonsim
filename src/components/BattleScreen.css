@@ -100,6 +100,7 @@
 }
 
 .discard-button, .end-turn-button {
+  font-family: "Comfortaa", sans-serif;
   font-size: calc(1.4 * var(--battle-vh));
   padding: calc(0.5 * var(--battle-vh)) calc(1 * var(--battle-vh));
   background-color: rgba(0, 0, 0, 0.7);
