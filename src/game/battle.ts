@@ -257,6 +257,8 @@ export const playCard = (gameState: GameState, cardIndex: number, targetInfo: Ta
     });
   }
 
+  updatedState = resolveCardEffects(card, updatedState, targetInfo);
+
   return updatedState;
 };
 
