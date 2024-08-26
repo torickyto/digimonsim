@@ -1,0 +1,147 @@
+.compact-card {
+  display: flex;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.8);
+  border-radius: calc(0.6 * var(--battle-vh));
+  cursor: pointer;
+  position: relative;
+  padding: calc(0.05 * var(--battle-vh));
+  margin-bottom: calc(0. * var(--battle-vh));
+  border: calc(0.2 * var(--battle-vh)) solid transparent;
+  transition: transform 0.2s ease-in-out, border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, left 0.2s ease-in-out;
+}
+
+.compact-card:hover {
+  transform: translateY(calc(-0.3 * var(--battle-vh)));
+}
+
+.compact-card.playable {
+  border-color: #ffd700;
+  box-shadow: 0 0 calc(0.5 * var(--battle-vh)) rgba(229, 255, 0, 0.5);
+}
+
+.compact-card.selected {
+  box-shadow: 0 0 calc(1 * var(--battle-vh)) #5efdf7;
+  transform: translateY(calc(-0.3 * var(--battle-vh)));
+  border: calc(0.4 * var(--battle-vh)) solid #5efdf7;
+  animation: selectCard 0.2s ease-in-out forwards;
+}
+
+@keyframes selectCard {
+  0% {
+    left: 0;
+  }
+  100% {
+    left: calc(2 * var(--battle-vh));
+  }
+}
+
+.compact-card.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.card-image {
+  width: calc(6 * var(--battle-vh) * 1.2);
+  height: calc(3.82 * var(--battle-vh) * 1.2);
+  border-radius: calc(0.3 * var(--battle-vh));
+  object-fit: cover;
+}
+
+.card-info {
+  display: flex;
+  flex-direction: column;
+  margin-left: calc(0.5 * var(--battle-vh));
+  flex-grow: 1;
+}
+
+.card-name {
+  color: white;
+  font-size: calc(1.5 * var(--battle-vh));
+  font-weight: bold;
+  text-shadow: 0 0 calc(0.2 * var(--battle-vh)) rgba(0, 0, 0, 0.5);
+}
+
+.card-cost {
+  position: absolute;
+  top: calc(0.2 * var(--battle-vh));
+  right: calc(0.2 * var(--battle-vh));
+  color: #000;
+  font-size: calc(1.2 * var(--battle-vh));
+  font-weight: bold;
+  border-radius: 10%;
+  width: calc(2.5 * var(--battle-vh));
+  height: calc(2.5 * var(--battle-vh));
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 0 calc(0.3 * var(--battle-vh)) rgba(0, 0, 0, 0.3);
+  transition: background-color 0.2s ease-in-out;
+}
+
+.card-cost.playable {
+  background-color: #ffd700;
+}
+
+.card-cost.not-playable {
+  background-color: #808080;
+}
+
+.compact-card.top-card {
+  box-shadow: 0 0 calc(1 * var(--battle-vh)) rgba(255, 0, 0, 0.7);
+  animation: pulse 1s infinite alternate;
+}
+
+.discard-button.hovered {
+  background-color: rgba(255, 0, 0, 0.2);
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 10px 3px rgba(255, 0, 0, 0.3); }
+  100% { box-shadow: 0 0 20px 8px rgba(255, 0, 0, 0.6); }
+}
+
+@keyframes burnCard {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(50px, -50px) rotate(45deg);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translate(100px, -100px) rotate(90deg);
+    opacity: 0;
+  }
+}
+
+@keyframes drawCard {
+  0% {
+    transform: translateX(-100%) translateY(10%);
+    opacity: 0;
+  }
+  33% {
+    transform: translateX(-50%) translateY(10%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0) translateY(0);
+    opacity: 1;
+  }
+}
+
+.compact-card.draw-animation {
+  animation: drawCard 0.4s ease-out;
+}
+
+.card-animation.burn {
+  position: fixed;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  animation: burnCard 1s forwards;
+  z-index: 9999;
+  pointer-events: none;
+  border: 3px solid red;
+}

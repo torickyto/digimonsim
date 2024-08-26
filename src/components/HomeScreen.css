@@ -15,7 +15,7 @@
   }
 
   
-  .top-bar, .bottom-bar {
+  .top-bar, .bottom-bar1 {
     display: flex;
     justify-content: space-between;
     padding: 10px;
@@ -77,7 +77,6 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background-color: rgba(50, 49, 59, 0.9);
     padding: 20px;
     border-radius: 10px;
     z-index: 2;

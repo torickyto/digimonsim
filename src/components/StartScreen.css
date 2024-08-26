@@ -1,128 +1,67 @@
 .start-screen {
-    padding-top: 45px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
-    background-color: #444774;
-    color: #f0f0f0;
-  }
-  
-  h1 {
-    font-size: 28px;
-    margin-bottom: 30px;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-  }
-  
-  .digimon-selection {
-    display: flex;
-    justify-content: space-around;
-    width: 100%;
-    max-width: 1200px;
-  }
-  
-  .digimon-option {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 30%;
-    padding: 20px;
-    border-radius: 15px;
-    box-shadow: 0 6px 12px rgba(0,0,0,0.2);
-    transition: transform 0.3s ease;
-  }
-  
-  .digimon-option:hover {
-    transform: translateY(-5px);
-  }
-  
-  .spotlight {
-    width: 150px;
-    height: 150px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-  
-  .info-box {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-  
-  .info-box h2 {
-    font-size: 24px;
-    margin-bottom: 5px;
-    color: #32313b;
-  }
-  
-  .info-box p {
-    font-size: 16px;
-    color: #32313b;
-    font-weight: bold;
-  }
-  
-  .button-container {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-  }
-  
-  .view-stats-button, .select-digimon-button {
-    padding: 10px 20px;
-    margin: 5px 0;
-    border: none;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 16px;
-    font-family: "Comfortaa", sans-serif;
-    transition: background-color 0.3s, transform 0.1s;
-  }
-  
-  .view-stats-button {
-    background-color: #32313b;
-    color: #ffffff;
-  }
-  
-  .select-digimon-button {
-    background-color: #8dd894;
-    color: #32313b;
-  }
-  
-  .view-stats-button:hover, .select-digimon-button:hover {
-    transform: scale(1.05);
-  }
-  
-  .stats-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .stats-content {
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 15px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  }
-  
-  .stats-content button {
-    margin-top: 10px;
-    padding: 8px 16px;
-    background-color: #32313b;
-    color: #ffffff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 14px;
-  }
-  
-  .stats-content button:hover {
-    background-color: #4a4958;
-  }
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #444774;
+  color: #f0f0f0;
+}
+
+h1, h2 {
+  margin-bottom: 20px;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.digimon-selection, .party-selection {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.digimon-option, .party-member {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 15px;
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.digimon-option:hover, .party-member:hover {
+  transform: translateY(-5px);
+}
+
+button {
+  margin-top: 10px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+button:hover:not(:disabled) {
+  background-color: #8dd894;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.start-game-button {
+  margin-top: 20px;
+  font-size: 18px;
+  padding: 10px 20px;
+  background-color: #8dd894;
+  color: #32313b;
+}
+
+.start-game-button:hover:not(:disabled) {
+  background-color: #7ac481;
+}

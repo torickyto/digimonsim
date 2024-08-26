@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { CardType } from '../shared/types';
-import DetailedCard from './DetailedCard';
+import { Card as CardType } from '../shared/types';
 import './CardDex.css';
 
 interface CardDexProps {
@@ -46,11 +45,6 @@ const CardDex: React.FC<CardDexProps> = ({ cards }) => {
           </div>
         ))}
       </div>
-      {hoveredCard && (
-        <div className="card-details-popup">
-          <DetailedCard card={hoveredCard} />
-        </div>
-      )}
     </div>
   );
 };
