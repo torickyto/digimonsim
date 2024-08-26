@@ -41,7 +41,6 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   const [hitDigimon, setHitDigimon] = useState<{ isEnemy: boolean, index: number } | null>(null);
   const [battleStarting, setBattleStarting] = useState(true);
   const [showWarning, setShowWarning] = useState(true);
-  const [showSpiralWipe, setShowSpiralWipe] = useState(false);
   const [showBattleField, setShowBattleField] = useState(false);
   const [showGlitchTransition, setShowGlitchTransition] = useState(true);
   const [showOpeningAttacks, setShowOpeningAttacks] = useState(false);
@@ -52,6 +51,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   const [currentEnemyActionIndex, setCurrentEnemyActionIndex] = useState(0);
   const [isProcessingAction, setIsProcessingAction] = useState(false);
   const [attackingEnemyDigimon, setAttackingEnemyDigimon] = useState<number | null>(null);
+  const [removedCards, setRemovedCards] = useState<{ [digimonIndex: number]: Card[] }>({});
   
   
 
@@ -119,82 +119,6 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     setHandKey(prevKey => prevKey + 1);
   }, []);
 
-  const processActionQueue = useCallback((state: GameState) => {
-    if (isProcessingAction || state.actionQueue.length === 0) {
-      if (isEnemyTurn && state.actionQueue.length === 0) {
-        setIsEnemyTurn(false);
-        const updatedState = startPlayerTurn(state);
-        setGameState(updatedState);
-      }
-      setShouldProcessQueue(false);
-      return;
-    }
-  
-    setIsProcessingAction(true);
-    const action = state.actionQueue[0];
-    let updatedState = { ...state, actionQueue: state.actionQueue.slice(1) };
-
-    const processNextAction = () => {
-      setGameState(updatedState);
-      setIsProcessingAction(false);
-      if (updatedState.actionQueue.length > 0) {
-        setTimeout(() => setShouldProcessQueue(true), 500); // delay between actions
-      } else {
-        setShouldProcessQueue(false);
-      }
-    };
-
-    switch (action.type) {
-      case 'ENEMY_ACTION':
-        const enemyAction = action as EnemyAction;
-        console.log('Processing enemy action:', enemyAction);
-        console.log(`Enemy ${enemyAction.attackingEnemyIndex} attacking player Digimon ${enemyAction.targetPlayerIndex}`);
-        
-        setAttackingEnemyDigimon(enemyAction.attackingEnemyIndex);
-        setHitDigimon({ isEnemy: false, index: enemyAction.targetPlayerIndex });
-        
-        // Get the correct target Digimon
-        const targetDigimon = updatedState.player.digimon[enemyAction.targetPlayerIndex];
-        
-        // Apply damage immediately
-        updatedState = battleApplyDamage(
-          enemyAction.damage, 
-          targetDigimon, 
-          updatedState, 
-          {
-            targetType: 'single_ally',
-            sourceDigimonIndex: enemyAction.attackingEnemyIndex,
-            targetDigimonIndex: enemyAction.targetPlayerIndex
-          }
-        );
-        
-        // Update the state to trigger a re-render
-        setGameState(updatedState);
-        
-        // Set a timeout to reset the animation states
-        setTimeout(() => {
-          setAttackingEnemyDigimon(null);
-          setHitDigimon(null);
-          processNextAction();
-        }, 1000); // Duration of the attack animation
-        break;
-      case 'END_ENEMY_TURN':
-        console.log('Ending enemy turn');
-        setIsEnemyTurn(false);
-        updatedState = startPlayerTurn(updatedState);
-        processNextAction();
-        break;
-      default:
-        processNextAction();
-    }
-  
-
-    // Check if the battle has ended
-    const battleStatus = checkBattleEnd(updatedState);
-    if (battleStatus !== 'ongoing') {
-      onBattleEnd(battleStatus);
-    }
-  }, [setGameState, startPlayerTurn, battleApplyDamage, onBattleEnd, isEnemyTurn, isProcessingAction]);
 
   const processEnemyTurn = useCallback((state: GameState) => {
     console.log('Processing enemy turn');
@@ -204,40 +128,11 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     setShouldProcessQueue(true);
   }, [executeEnemyTurn]);
 
-
-  useEffect(() => {
-    if (shouldProcessQueue && !isProcessingAction) {
-      processActionQueue(gameState);
-    }
-  }, [shouldProcessQueue, processActionQueue, gameState, isProcessingAction]);
-  
-useEffect(() => {
-  if (gameState.actionQueue.length > 0) {
-    console.log('Action queue changed, processing...');
-    processActionQueue(gameState);
-  } else if (isEnemyTurn) {
-    console.log('Enemy turn, executing actions...');
-    processEnemyTurn(gameState);
-  }
-}, [gameState, isEnemyTurn, processActionQueue, processEnemyTurn]);
-
   useEffect(() => {
     console.log('attackingDigimon:', attackingDigimon);
     console.log('hitDigimon:', hitDigimon);
   }, [attackingDigimon, hitDigimon]);
 
-  useEffect(() => {
-    if (shouldProcessQueue) {
-      if (gameState.actionQueue.length > 0) {
-        console.log('Action queue changed, processing...');
-        processActionQueue(gameState);
-      } else if (isEnemyTurn) {
-        console.log('Enemy turn, executing actions...');
-        processEnemyTurn(gameState);
-      }
-      setShouldProcessQueue(false);
-    }
-  }, [shouldProcessQueue, isEnemyTurn, processActionQueue, processEnemyTurn]);
 
   useEffect(() => {
     // listener for the Escape key
@@ -341,25 +236,28 @@ useEffect(() => {
     return () => clearTimeout(timer);
   }, [gameState.player.hand]);
 
-   const animateCardBurn = async (card: Card) => {
+  const animateCardBurn = useCallback(async (card: Card) => {
     const cardElement = document.createElement('div');
     cardElement.classList.add('card-animation', 'burn');
     cardElement.style.backgroundImage = `url('/assets/cards/${card.id}.png')`;
-    document.querySelector('.battle-screen')?.appendChild(cardElement);
-
+    
+    // Position the card element
+    const battleScreen = document.querySelector('.battle-screen');
+    if (battleScreen) {
+      const rect = battleScreen.getBoundingClientRect();
+      cardElement.style.position = 'fixed';
+      cardElement.style.left = `${rect.left + rect.width / 2}px`;
+      cardElement.style.top = `${rect.top + rect.height / 2}px`;
+      cardElement.style.width = `${rect.width * 0.1}px`;
+      cardElement.style.height = `${rect.height * 0.2}px`;
+    }
+    
+    document.body.appendChild(cardElement);
+  
     await new Promise(resolve => setTimeout(resolve, 1000)); // Duration of the animation
-
+  
     cardElement.remove();
-    // Update the UI to show the card has been discarded
-    setGameState(prevState => ({
-      ...prevState,
-      player: {
-        ...prevState.player,
-        hand: prevState.player.hand.slice(1),
-        discardPile: [...prevState.player.discardPile, card]
-      }
-    }));
-  };
+  }, []);
 
 
   const shuffleDiscardIntoDeck = () => { //NEED TO BE RE-IMPLEMENTED WITH ANIM
@@ -527,6 +425,193 @@ useEffect(() => {
   const handleEnemyClick = (index: number) => {
     handleDigimonClick(true, index);
   };
+
+  const handleDigimonDeath = useCallback(async (deadDigimonIndex: number, prevState: GameState) => {
+    console.log(`Handling death of Digimon at index ${deadDigimonIndex}`);
+    
+    const deadDigimon = prevState.player.digimon[deadDigimonIndex];
+    console.log(`Dead Digimon: ${deadDigimon.displayName}`);
+      
+      // Collect all cards belonging to the dead Digimon
+      const cardsToRemove = [
+        ...prevState.player.hand.filter(card => card.ownerDigimonIndex === deadDigimonIndex),
+        ...prevState.player.deck.filter(card => card.ownerDigimonIndex === deadDigimonIndex),
+        ...prevState.player.discardPile.filter(card => card.ownerDigimonIndex === deadDigimonIndex),
+      ];
+      console.log(`Cards to remove: ${cardsToRemove.length}`);
+  
+      // Remove cards from hand, deck, and discard pile
+      const newHand = prevState.player.hand.filter(card => card.ownerDigimonIndex !== deadDigimonIndex);
+      const newDeck = prevState.player.deck.filter(card => card.ownerDigimonIndex !== deadDigimonIndex);
+      const newDiscardPile = prevState.player.discardPile.filter(card => card.ownerDigimonIndex !== deadDigimonIndex);
+  
+      console.log(`New hand size: ${newHand.length}`);
+      console.log(`New deck size: ${newDeck.length}`);
+      console.log(`New discard pile size: ${newDiscardPile.length}`);
+  
+      // Update the removedCards state
+      const newRemovedCards = {
+        ...prevState.removedCards,
+        [deadDigimonIndex]: [...(prevState.removedCards[deadDigimonIndex] || []), ...cardsToRemove]
+      };
+  
+      // Add BURN_CARD actions to the queue for each removed card
+      const burnActions: BattleAction[] = cardsToRemove.map(card => ({
+        type: 'BURN_CARD',
+        card: card,
+      }));
+  
+  return {
+    ...prevState,
+    player: {
+      ...prevState.player,
+      hand: newHand,
+      deck: newDeck,
+      discardPile: newDiscardPile,
+    },
+    removedCards: newRemovedCards,
+    actionQueue: [...prevState.actionQueue, ...burnActions],
+  };
+}, []);
+
+  useEffect(() => {
+    console.log("Current game state after potential Digimon death:");
+    console.log("Hand:", gameState.player.hand);
+    console.log("Deck:", gameState.player.deck);
+    console.log("Discard pile:", gameState.player.discardPile);
+    console.log("Removed cards:", gameState.removedCards);
+  }, [gameState.player.hand, gameState.player.deck, gameState.player.discardPile, gameState.removedCards]);
+
+  const handleDigimonRevive = (revivedDigimonIndex: number) => {
+    setGameState(prevState => {
+      const cardsToRestore = removedCards[revivedDigimonIndex] || [];
+      
+      return {
+        ...prevState,
+        player: {
+          ...prevState.player,
+          deck: [...prevState.player.deck, ...cardsToRestore],
+        },
+      };
+    });
+  
+    // Remove the restored cards from removedCards
+    setRemovedCards(prev => {
+      const newRemovedCards = { ...prev };
+      delete newRemovedCards[revivedDigimonIndex];
+      return newRemovedCards;
+    });
+  };
+
+  
+
+  const processActionQueue = useCallback(async (state: GameState) => {
+    if (isProcessingAction || state.actionQueue.length === 0) {
+      if (isEnemyTurn && state.actionQueue.length === 0) {
+        setIsEnemyTurn(false);
+        const updatedState = startPlayerTurn(state);
+        setGameState(updatedState);
+      }
+      setShouldProcessQueue(false);
+      return;
+    }
+  
+    setIsProcessingAction(true);
+    const action = state.actionQueue[0];
+    let updatedState = { ...state, actionQueue: state.actionQueue.slice(1) };
+
+    const processNextAction = () => {
+      setGameState(updatedState);
+      setIsProcessingAction(false);
+      if (updatedState.actionQueue.length > 0) {
+        setTimeout(() => setShouldProcessQueue(true), 500); // delay between actions
+      } else {
+        setShouldProcessQueue(false);
+      }
+    };
+
+    switch (action.type) {
+      case 'ENEMY_ACTION':
+        const enemyAction = action as EnemyAction;
+        console.log('Processing enemy action:', enemyAction);
+        console.log(`Enemy ${enemyAction.attackingEnemyIndex} attacking player Digimon ${enemyAction.targetPlayerIndex}`);
+        
+        setAttackingEnemyDigimon(enemyAction.attackingEnemyIndex);
+        setHitDigimon({ isEnemy: false, index: enemyAction.targetPlayerIndex });
+        
+        // Get the correct target Digimon
+        const targetDigimon = updatedState.player.digimon[enemyAction.targetPlayerIndex];
+        
+        // Apply damage immediately
+        updatedState = battleApplyDamage(
+          enemyAction.damage, 
+          targetDigimon, 
+          updatedState, 
+          {
+            targetType: 'single_ally',
+            sourceDigimonIndex: enemyAction.attackingEnemyIndex,
+            targetDigimonIndex: enemyAction.targetPlayerIndex
+          }
+        );
+        
+        // Update the state to trigger a re-render
+        setGameState(updatedState);
+        
+        // Set a timeout to reset the animation states
+        setTimeout(() => {
+          setAttackingEnemyDigimon(null);
+          setHitDigimon(null);
+          processNextAction();
+        }, 1000); // Duration of the attack animation
+        break;
+        case 'DIGIMON_DEATH':
+  console.log(`Processing DIGIMON_DEATH action for Digimon at index ${action.digimonIndex}`);
+  updatedState = await handleDigimonDeath(action.digimonIndex, updatedState);
+  processNextAction();
+  break;
+      case 'BURN_CARD':
+        const burnAction = action as { type: 'BURN_CARD', card: Card };
+        animateCardBurn(burnAction.card).then(() => {
+          processNextAction();
+        });
+        break;
+      case 'END_ENEMY_TURN':
+        console.log('Ending enemy turn');
+        setIsEnemyTurn(false);
+        updatedState = startPlayerTurn(updatedState);
+        processNextAction();
+        break;
+      default:
+        processNextAction();
+    }
+  
+
+    // Check if the battle has ended
+    const battleStatus = checkBattleEnd(updatedState);
+    if (battleStatus !== 'ongoing') {
+      onBattleEnd(battleStatus);
+    }
+  }, [setGameState, startPlayerTurn, battleApplyDamage, onBattleEnd, isEnemyTurn, isProcessingAction, handleDigimonDeath, animateCardBurn]);
+
+
+  useEffect(() => {
+    if (shouldProcessQueue && !isProcessingAction) {
+      processActionQueue(gameState).catch(error => {
+        console.error('Error processing action queue:', error);
+      });
+    }
+  }, [shouldProcessQueue, processActionQueue, gameState, isProcessingAction]);
+  
+useEffect(() => {
+  if (gameState.actionQueue.length > 0) {
+    console.log('Action queue changed, processing...');
+    processActionQueue(gameState);
+  } else if (isEnemyTurn) {
+    console.log('Enemy turn, executing actions...');
+    processEnemyTurn(gameState);
+  }
+}, [gameState, isEnemyTurn, processActionQueue, processEnemyTurn]);
+
 
   const handlePlayerDigimonClick = (index: number) => {
     handleDigimonClick(false, index);

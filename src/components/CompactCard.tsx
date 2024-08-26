@@ -23,15 +23,7 @@ const CompactCard: React.FC<CompactCardProps> = ({
   onMouseEnter,
   onMouseLeave
 }) => {
-  const [isAnimating, setIsAnimating] = useState(false);
-
-  useEffect(() => {
-    if (isNewlyDrawn) {
-      setIsAnimating(true);
-      const timer = setTimeout(() => setIsAnimating(false), 500); // Match this to your CSS animation duration
-      return () => clearTimeout(timer);
-    }
-  }, [isNewlyDrawn]);
+  const isAnimating = isNewlyDrawn;
 
   return (
     <div 

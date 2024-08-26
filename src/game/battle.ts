@@ -25,6 +25,7 @@ export const initializeBattle = (playerTeam: Digimon[], enemyTeam: Digimon[]): G
     phase: 'player',
     cardsPlayedThisTurn: 0,
     damageTakenThisTurn: 0,
+    removedCards: {},
     cardsDiscardedThisTurn: 0,
     cardsDiscardedThisBattle: 0,
     temporaryEffects: {
@@ -370,7 +371,9 @@ export const applyDamage = (damage: number, target: Digimon | DigimonState, game
 
   let updatedState = { ...gameState };
 
-  if (targetInfo.targetType === 'enemy') {
+  const isEnemyTarget = ['enemy', 'all_enemies', 'random_enemy'].includes(targetInfo.targetType);
+
+  if (isEnemyTarget) {
     updatedState.enemy.digimon = updatedState.enemy.digimon.map((d, index) => 
       index === targetInfo.targetDigimonIndex ? { ...d, hp: updatedHp, shield: updatedShield } : d
     );
@@ -382,6 +385,15 @@ export const applyDamage = (damage: number, target: Digimon | DigimonState, game
       }
       return d;
     });
+
+    // Check if the player's Digimon has died
+    if (updatedHp <= 0) {
+      console.log(`Player Digimon at index ${targetInfo.targetDigimonIndex} has died. Adding DIGIMON_DEATH action to queue.`);
+      updatedState.actionQueue.push({
+        type: 'DIGIMON_DEATH',
+        digimonIndex: targetInfo.targetDigimonIndex
+      });
+    }
   }
 
   console.log('Updated player Digimon:', updatedState.player.digimon);

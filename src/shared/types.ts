@@ -112,6 +112,8 @@ export type BattleAction =
   | { type: 'END_PLAYER_TURN' }
   | { type: 'END_ENEMY_TURN' }
   | EnemyAction
+  | { type: 'DIGIMON_DEATH'; digimonIndex: number }
+  | { type: 'BURN_CARD'; card: Card }
   | { type: 'ANIMATE_ATTACK'; sourceIndex: number; targetIndex: number; isEnemy: boolean }
   | { type: 'APPLY_DAMAGE'; target: TargetInfo; damage: number; newHp: number; newShield: number };
 
@@ -195,6 +197,7 @@ export interface GameState {
     burstCards: Card[];
     onceEffectsUsed: string[]; 
   };
+  removedCards: { [digimonIndex: number]: Card[] };
 }
 
 // Digimon-related interfaces

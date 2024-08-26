@@ -25,16 +25,16 @@ const DigimonSprite: React.FC<DigimonSpriteProps> = ({
 
   useEffect(() => {
     if (isAttacking) {
-      console.log(`DigimonSprite ${name}: Setting animation to 'attacking'`);
+      //console.log(`DigimonSprite ${name}: Setting animation to 'attacking'`);
       setAnimationClass('attacking');
       const timer = setTimeout(() => {
-        console.log(`DigimonSprite ${name}: Attack animation complete, returning to 'breathing'`);
+        //console.log(`DigimonSprite ${name}: Attack animation complete, returning to 'breathing'`);
         setAnimationClass('breathing');
         onAttackComplete?.();
       }, 600); 
       return () => clearTimeout(timer);
     } else if (isOnHit) {
-      console.log(`DigimonSprite ${name}: Setting animation to 'onHit'`);
+      //console.log(`DigimonSprite ${name}: Setting animation to 'onHit'`);
       setAnimationClass('onHit');
       const timer = setTimeout(() => {
         console.log(`DigimonSprite ${name}: OnHit animation complete, returning to 'breathing'`);
@@ -42,7 +42,7 @@ const DigimonSprite: React.FC<DigimonSpriteProps> = ({
       }, 600); 
       return () => clearTimeout(timer);
     } else {
-      console.log(`DigimonSprite ${name}: Setting animation to 'breathing'`);
+      //console.log(`DigimonSprite ${name}: Setting animation to 'breathing'`);
       setAnimationClass('breathing');
     }
   }, [isAttacking, isOnHit, onAttackComplete, name]);
