@@ -65,35 +65,33 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
   return (
     <div className="home-screen">
       <div className="digivice">
-        <div className="digivice-content">
-          <div className="screen-wrapper">
-            <div className="screen" ref={screenRef}>
-              <div className="screen-content">
-                <div className="digimon-display">
-                  {playerTeam.map((digimon, index) => (
-                    <div key={index} className="digimon-card" onClick={() => handleOpenDeckEditor(digimon)}>
-                      <DigimonSprite 
-                        name={digimon.name} 
-                        scale={spriteScale * 1.5} 
-                      />
-                      <p>{digimon.displayName}</p>
-                    </div>
-                  ))}
-                </div>
+        <div className="screen-wrapper">
+          <div className="screen" ref={screenRef}>
+            <div className="screen-content">
+              <div className="digimon-display">
+                {playerTeam.map((digimon, index) => (
+                  <div key={index} className="digimon-card" onClick={() => handleOpenDeckEditor(digimon)}>
+                    <DigimonSprite 
+                      name={digimon.name} 
+                      scale={spriteScale * 1.5} 
+                    />
+                    <p>{digimon.displayName}</p>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
-          <div className="controls-container">
-            <div className="button-container">
-              <button className="stats-button" onClick={toggleStats}>Stats</button>
-              <button className="eggs-button" onClick={toggleEggs}>Eggs</button>
-              <button className="party-button" onClick={toggleParty}>Party</button>
-              <button className="battle-button" onClick={onStartBattle}>Battle</button>
-            </div>
-            <div className="button-container">
-              <button className="dev-button" onClick={toggleCardCollection}>DEV: Cards</button>
-              <button className="test-arena-button" onClick={toggleTestArena}>DEV: Test Battle</button>
-            </div>
+        </div>
+        <div className="controls-container">
+          <div className="button-container">
+            <button className="stats-button" onClick={toggleStats}>Stats</button>
+            <button className="eggs-button" onClick={toggleEggs}>Eggs</button>
+            <button className="party-button" onClick={toggleParty}>Party</button>
+            <button className="battle-button" onClick={onStartBattle}>Battle</button>
+          </div>
+          <div className="button-container">
+            <button className="dev-button" onClick={toggleCardCollection}>DEV: Cards</button>
+            <button className="test-arena-button" onClick={toggleTestArena}>DEV: Test Battle</button>
           </div>
         </div>
       </div>
