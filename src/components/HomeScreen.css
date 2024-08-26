@@ -1,108 +1,277 @@
 .home-screen {
-    font-family: "Ubuntu Mono", monospace;
-    width: 100%;
-    height: 100vh;
-    background-image: url('/src/assets/backgrounds/palacelaboratory.png');
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: auto;
-    display: flex;
+  font-family: "Ubuntu Mono", monospace;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+  color: #f0f0f0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.digivice {
+  width: 90vw;
+  height: 90vh;
+  max-width: 1600px;
+  max-height: 900px;
+  background: linear-gradient(145deg, #2c3e50, #34495e);
+  border-radius: 30px;
+  display: flex;
+  flex-direction: row;
+  padding: 20px;
+  box-shadow: 
+    0 0 0 10px #3498db,
+    0 0 20px rgba(52, 152, 219, 0.5),
+    inset 0 0 15px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.digivice::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 15px;
+  background: linear-gradient(90deg, #e74c3c, #3498db);
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(231, 76, 60, 0.7);
+}
+
+.screen-wrapper {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  background: radial-gradient(circle, #2c3e50, #34495e);
+  border-radius: 20px;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+.screen {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background-color: #1abc9c;
+  border: 10px solid #16a085;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 
+    0 0 20px rgba(26, 188, 156, 0.7),
+    inset 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.screen-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.screen-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('/src/assets/backgrounds/shadowhell.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 1;
+  filter: brightness(0.8) contrast(1.2);
+}
+
+.digimon-display {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  top: 20%;
+}
+
+.digimon-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 0 10px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.digimon-card:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+}
+
+.digimon-card p {
+  margin-top: 5px;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  color: #ecf0f1;
+}
+
+.controls-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px;
+  background: linear-gradient(145deg, #34495e, #2c3e50);
+  border-radius: 0 20px 20px 0;
+  width: 220px;
+  box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.3);
+}
+
+.button-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.button-container button {
+  font-family: "Ubuntu Mono", monospace;
+  font-size: 16px;
+  padding: 15px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #3498db, #2980b9);
+  color: #ecf0f1;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 
+    0 4px 6px rgba(0, 0, 0, 0.1), 
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  text-transform: uppercase;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.button-container button:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 6px 8px rgba(0, 0, 0, 0.15), 
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  background: linear-gradient(145deg, #3498db, #2980b9);
+}
+
+.button-container button:active {
+  transform: translateY(1px);
+  box-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.stats-button { background: linear-gradient(145deg, #e74c3c, #c0392b) !important; }
+.eggs-button { background: linear-gradient(145deg, #2ecc71, #27ae60) !important; }
+.party-button { background: linear-gradient(145deg, #f39c12, #d35400) !important; }
+.battle-button { background: linear-gradient(145deg, #9b59b6, #8e44ad) !important; }
+
+.dev-button, .test-arena-button {
+  font-size: 14px;
+  padding: 10px;
+  background: linear-gradient(145deg, #95a5a6, #7f8c8d) !important;
+}
+
+.modal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(52, 73, 94, 0.9);
+  padding: 20px;
+  border-radius: 10px;
+  z-index: 3;
+  max-width: 80%;
+  max-height: 80%;
+  overflow-y: auto;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+.modal h2 {
+  margin-top: 0;
+  color: #f7d794;
+}
+
+.modal ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.modal li {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 5px;
+  border-radius: 5px;
+}
+
+.modal .digimon-sprite {
+  width: 32px;
+  height: 32px;
+  margin-right: 10px;
+}
+
+.modal button {
+  margin-top: 10px;
+  background-color: #f7b731;
+  color: #333;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.modal button:hover {
+  background-color: #ffa502;
+}
+
+@media (max-aspect-ratio: 16/9) {
+  .digivice {
+    width: 90vw;
+    height: auto;
+    aspect-ratio: 16 / 9;
+  }
+}
+
+@media (min-aspect-ratio: 16/9) {
+  .digivice {
+    width: auto;
+    height: 90vh;
+    aspect-ratio: 16 / 9;
+  }
+}
+@media (max-aspect-ratio: 16/9) {
+  .digivice {
     flex-direction: column;
-    background-color: #444774;
-    color: #f0f0f0;
-    position: relative;
-    overflow: hidden;
+  }
+  
+  .controls-container {
+    width: 100%;
+    flex-direction: row;
+    border-radius: 0 0 20px 20px;
   }
 
-  
-  .top-bar, .bottom-bar1 {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px;
-    z-index: 1;
+  .button-container {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-around;
   }
-  
-  .top-bar {
-    align-items: flex-start;
-  }
-  
-  .bottom-bar {
-    align-items: flex-end;
-  }
-  
-  .digimon-display {
-    flex-grow: 1;
-    display: flex;
-    margin-top: 80px;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .digimon-display .digimon-sprite {
-    width: 200px;
-    height: 200px;
-    image-rendering: pixelated;
-  }
-  
-  button {
-    font-family: "Ubuntu Mono", monospace;
-    font-size: 16px;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 20px;
-    background-color: rgba(255, 255, 255, 0.2);
-    color: #f0f0f0;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  button:hover {
-    background-color: rgba(255, 255, 255, 0.3);
-  }
-  
-  .stats-button, .eggs-button {
-    background-color: rgba(133, 218, 235, 0.7);
-  }
-  
-  .digimon-button {
-    background-color: rgba(245, 218, 167, 0.7);
-  }
-  
-  .battle-button {
-    background-color: rgba(202, 96, 174, 0.7);
-  }
-  
-  .modal {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    padding: 20px;
-    border-radius: 10px;
-    z-index: 2;
-  }
-  
-  .modal h2 {
-    margin-top: 0;
-  }
-  
-  .modal ul {
-    list-style-type: none;
-    padding: 0;
-  }
-  
-  .modal li {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-  }
-  
-  .modal .digimon-sprite {
-    width: 32px;
-    height: 32px;
-    margin-right: 10px;
-  }
-  
-  .modal button {
-    margin-top: 10px;
-  }
+}

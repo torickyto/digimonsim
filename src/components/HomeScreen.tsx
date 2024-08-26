@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import DigimonSprite from './DigimonSprite';
 import DigimonStatScreen from './DigimonStatScreen';
 import CardDex from './CardDex';
@@ -23,6 +23,22 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
   const [showTestArena, setShowTestArena] = useState(false);
   const [showDeckEditor, setShowDeckEditor] = useState(false);
   const [selectedDigimon, setSelectedDigimon] = useState<Digimon | null>(null);
+  const [spriteScale, setSpriteScale] = useState(1);
+  const screenRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const updateSpriteScale = () => {
+      if (screenRef.current) {
+        const { width, height } = screenRef.current.getBoundingClientRect();
+        const scale = Math.min(width / 1280, height / 720);
+        setSpriteScale(scale);
+      }
+    };
+
+    updateSpriteScale();
+    window.addEventListener('resize', updateSpriteScale);
+    return () => window.removeEventListener('resize', updateSpriteScale);
+  }, []);
 
   const toggleStats = () => setShowStats(!showStats);
   const toggleParty = () => setShowParty(!showParty);
@@ -39,7 +55,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
       d.id === updatedDigimon.id ? updatedDigimon : d
     );
     onUpdatePlayerTeam(updatedTeam);
-    console.log('Updated team:', updatedTeam);
     setShowDeckEditor(false);
   };
 
@@ -49,26 +64,36 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
 
   return (
     <div className="home-screen">
-      <div className="top-bar">
-        <button className="stats-button" onClick={toggleStats}>Stats</button>
-        <button className="eggs-button" onClick={toggleEggs}>Eggs ({eggs.length})</button>
-        <button className="dev-button" onClick={toggleCardCollection}>Dev: Cards</button>
-      </div>
-      
-      <div className="digimon-display">
-        {playerTeam.map((digimon, index) => (
-          <div key={index} className="digimon-card" onClick={() => handleOpenDeckEditor(digimon)}>
-            <DigimonSprite name={digimon.name} />
-            <p>{digimon.displayName}</p>
-            <button>Edit Deck</button>
+      <div className="digivice">
+        <div className="screen-wrapper">
+          <div className="screen" ref={screenRef}>
+            <div className="screen-content">
+              <div className="digimon-display">
+                {playerTeam.map((digimon, index) => (
+                  <div key={index} className="digimon-card" onClick={() => handleOpenDeckEditor(digimon)}>
+                    <DigimonSprite 
+                      name={digimon.name} 
+                      scale={spriteScale * 1.5} 
+                    />
+                    <p>{digimon.displayName}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-        ))}
-      </div>
-
-      <div className="bottom-bar1">
-        <button className="party-button" onClick={toggleParty}>Party</button>
-        <button className="battle-button" onClick={onStartBattle}>Battle</button>
-        <button className="test-arena-button" onClick={toggleTestArena}>DEV TEST BATTLE</button>
+        </div>
+        <div className="controls-container">
+          <div className="button-container">
+            <button className="stats-button" onClick={toggleStats}>Stats</button>
+            <button className="eggs-button" onClick={toggleEggs}>Eggs</button>
+            <button className="party-button" onClick={toggleParty}>Party</button>
+            <button className="battle-button" onClick={onStartBattle}>Battle</button>
+          </div>
+          <div className="button-container">
+            <button className="dev-button" onClick={toggleCardCollection}>DEV: Cards</button>
+            <button className="test-arena-button" onClick={toggleTestArena}>DEV: Test Battle</button>
+          </div>
+        </div>
       </div>
 
       {showStats && (
