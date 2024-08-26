@@ -105,16 +105,6 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     }
   }, [showOpeningAttacks, playerTeam.length, enemyTeam.length]);
 
-  useEffect(() => {
-    // Only update the turn and phase without drawing a card
-    setGameState(prevState => ({
-      ...prevState,
-      turn: 1,
-      phase: 'player'
-    }));
-    setHandKey(prevKey => prevKey + 1);
-  }, []);
-
 
   const processEnemyTurn = useCallback((state: GameState) => {
     console.log('Processing enemy turn');
@@ -202,7 +192,6 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   
     if (newCards.length > 0) {
       setNewlyDrawnCards(newCards.map(card => card.instanceId ?? '').filter(id => id !== ''));
-      setHandKey(prevKey => prevKey + 1); // Force re-render of hand area
     }
     
     const timer = setTimeout(() => {
@@ -520,9 +509,6 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     });
   };
 
-  const logCardDraw = (source: string) => {
-    console.log(`Card drawn from: ${source}`);
-  };
 
   const processActionQueue = useCallback(async (state: GameState) => {
     if (isProcessingAction || state.actionQueue.length === 0) {

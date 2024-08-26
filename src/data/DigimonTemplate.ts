@@ -29,6 +29,36 @@ export const DigimonTemplates: Record<string, DigimonTemplate> = {
     startingCard: CardCollection.BADA_BOOM,
     passiveSkill: nullPassiveSkill
   },
+  patamon: {
+    name: 'patamon',
+    displayName: 'Patamon',
+    type: 'VACCINE' as DigimonType,
+    baseHp: 40,
+    baseAttack: 6,
+    baseHealing: 3,
+    baseEvadeChance: 0.05,
+    baseCritChance: 0.05,
+    baseAccuracy: 1,
+    baseCorruptionResistance: 0.2,
+    baseBuggedResistance: 0.2,
+    startingCard: CardCollection.BOOM_BUBBLE,
+    passiveSkill: nullPassiveSkill
+  },
+  tentomon: {
+    name: 'tentomon',
+    displayName: 'Tentomon',
+    type: 'DATA' as DigimonType,
+    baseHp: 40,
+    baseAttack: 6,
+    baseHealing: 3,
+    baseEvadeChance: 0.05,
+    baseCritChance: 0.05,
+    baseAccuracy: 1,
+    baseCorruptionResistance: 0.2,
+    baseBuggedResistance: 0.2,
+    startingCard: CardCollection.SUPER_SHOCKER,
+    passiveSkill: nullPassiveSkill
+  },
   goblimon: {
     name: 'goblimon',
     displayName: 'Goblimon',

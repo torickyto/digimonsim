@@ -42,8 +42,12 @@ const DigimonSprite: React.FC<DigimonSpriteProps> = ({
       }, 600); 
       return () => clearTimeout(timer);
     } else {
+      if (isDead) {
+        setAnimationClass('onHit');
+      } else {
       //console.log(`DigimonSprite ${name}: Setting animation to 'breathing'`);
       setAnimationClass('breathing');
+      }
     }
   }, [isAttacking, isOnHit, onAttackComplete, name]);
 

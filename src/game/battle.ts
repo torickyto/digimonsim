@@ -22,7 +22,7 @@ export const initializeBattle = (playerTeam: Digimon[], enemyTeam: Digimon[]): G
     enemy: {
       digimon: enemyTeam.map(digimon => ({ ...digimon })),
     },
-    turn: 0,  // Start at turn 0
+    turn: 1,  
     phase: 'initial',  // Add a new 'initial' phase
     cardsPlayedThisTurn: 0,
     damageTakenThisTurn: 0,
@@ -126,7 +126,7 @@ export const startPlayerTurn = (state: GameState): GameState => {
   updatedState.player.ram = Math.min(updatedState.player.ram, MAX_RAM);
 
   // Draw one card if it's not the first turn and there's room in the hand
-  if (updatedState.turn > 0 && updatedState.player.hand.length < MAX_HAND_SIZE) {
+  if (updatedState.turn > 1 && updatedState.player.hand.length < MAX_HAND_SIZE) {
     console.log('Drawing card at start of turn');
     updatedState = drawSingleCard(updatedState);
   } else {

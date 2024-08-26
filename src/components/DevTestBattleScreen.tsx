@@ -22,7 +22,7 @@ const createCustomTeam = (digimonNames: string[], cardSets: Card[][]): Digimon[]
   // Pre-made player teams
   const preMadeTeams: { name: string; digimon: Digimon[] }[] = [
     {
-      name: "Demon Lords",
+      name: "OPIUM",
       digimon: createCustomTeam(
         ['beelzemon', 'devimon', 'wizardmon'],
         [
@@ -32,6 +32,18 @@ const createCustomTeam = (digimonNames: string[], cardSets: Card[][]): Digimon[]
         ]
       )
     },
+
+    {
+        name: "OG",
+        digimon: createCustomTeam(
+          ['patamon', 'tentomon', 'agumon'],
+          [
+            [CardCollection.BUBBLE, CardCollection.BOOM_BUBBLE, CardCollection.GLIDE],
+            [CardCollection.SUPER_SHOCKER, CardCollection.DYNAMO_ROCKET, CardCollection.ROLLING_GUARD],
+            [CardCollection.PEPPER_BREATH, CardCollection.BABY_BURNER, CardCollection.SPITFIRE]
+          ]
+        )
+      },
     // Add more pre-made teams here
   ];
 
