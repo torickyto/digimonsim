@@ -83,9 +83,19 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
   const toggleEggs = () => setShowEggs(!showEggs);
   const toggleCardCollection = () => setShowCardCollection(!showCardCollection);
   const toggleTestArena = () => setShowTestArena(!showTestArena);
-  const handleOpenDeckEditor = (digimon: Digimon) => {
-    setSelectedDigimon(digimon);
+  const handleOpenDeckEditor = () => {
     setShowDeckEditor(true);
+  };
+
+  const handleCloseDeckEditor = () => {
+    setShowDeckEditor(false);
+  };
+
+  const handleUpdateNickname = (id: string, nickname: string) => {
+    const updatedTeam = playerTeam.map(digimon => 
+      digimon.id === id ? { ...digimon, nickname } : digimon
+    );
+    onUpdatePlayerTeam(updatedTeam);
   };
 
   const handleSaveDeck = (updatedDigimon: Digimon) => {
@@ -94,6 +104,11 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
     );
     onUpdatePlayerTeam(updatedTeam);
     setShowDeckEditor(false);
+  };
+
+  const handleDigivolve = () => {
+    // Placeholder for digivolve functionality
+    console.log("Digivolve functionality to be implemented");
   };
 
   if (showTestArena) {
@@ -109,7 +124,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
               <div className="screen-content">
                 <div className="digimon-display">
                   {playerTeam.map((digimon, index) => (
-                    <div key={index} className="digimon-card" onClick={() => handleOpenDeckEditor(digimon)}>
+                    <div key={index} className="digimon-card">
                       <DigimonSprite 
                         name={digimon.name} 
                         scale={spriteScale * 1.5} 
@@ -119,34 +134,49 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
                   ))}
                 </div>
                 {showStats && (
-                   <div className="stat-overlay">
-                   <div className="stat-navigation">
-                     <button onClick={() => cycleDigimon('prev')}>&lt; Prev</button>
-                     {isEditingNickname ? (
-                       <input
-                         ref={nicknameInputRef}
-                         type="text"
-                         value={newNickname}
-                         onChange={(e) => setNewNickname(e.target.value)}
-                         onBlur={handleNicknameSave}
-                         onKeyPress={(e) => e.key === 'Enter' && handleNicknameSave()}
-                         className="nickname-input"
-                       />
-                     ) : (
-                       <h2>
-                         {playerTeam[currentDigimonIndex].nickname || playerTeam[currentDigimonIndex].displayName}
-                         <FaPencilAlt className="edit-icon" onClick={handleNicknameEdit} />
-                       </h2>
-                     )}
-                     <button onClick={() => cycleDigimon('next')}>Next &gt;</button>
-                   </div>
-                   <DigimonStatScreen 
-                     digimon={playerTeam[currentDigimonIndex]} 
-                     isObtained={true}
-                   />
-                   <button className="close-stats" onClick={toggleStats}>Close</button>
+                  <div className="stat-overlay">
+                    <div className="stat-navigation">
+                      <button onClick={() => cycleDigimon('prev')}>&lt; Prev</button>
+                      {isEditingNickname ? (
+                        <input
+                          ref={nicknameInputRef}
+                          type="text"
+                          value={newNickname}
+                          onChange={(e) => setNewNickname(e.target.value)}
+                          onBlur={handleNicknameSave}
+                          onKeyPress={(e) => e.key === 'Enter' && handleNicknameSave()}
+                          className="nickname-input"
+                        />
+                      ) : (
+                        <h2>
+                          {playerTeam[currentDigimonIndex].nickname || playerTeam[currentDigimonIndex].displayName}
+                          <FaPencilAlt className="edit-icon" onClick={handleNicknameEdit} />
+                        </h2>
+                      )}
+                      <button onClick={() => cycleDigimon('next')}>Next &gt;</button>
+                    </div>
+                    <DigimonStatScreen 
+                      digimon={playerTeam[currentDigimonIndex]} 
+                      isObtained={true}
+                    />
+                    <div className="stat-actions">
+                      <button className="deck-button" onClick={handleOpenDeckEditor}>Deck</button>
+                      <button className="digivolve-button" onClick={handleDigivolve}>Digivolve</button>
+                    </div>
                   </div>
                 )}
+                {showDeckEditor && (
+  <div className="stat-overlay">
+    <DeckEditor 
+      digimon={playerTeam[currentDigimonIndex]}
+      onSave={handleSaveDeck}
+      onClose={handleCloseDeckEditor}
+      onPrev={() => cycleDigimon('prev')}
+      onNext={() => cycleDigimon('next')}
+      onUpdateNickname={handleUpdateNickname}
+    />
+  </div>
+)}
               </div>
             </div>
           </div>
@@ -195,6 +225,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
           digimon={selectedDigimon} 
           onSave={handleSaveDeck} 
           onClose={() => setShowDeckEditor(false)} 
+          onPrev={() => cycleDigimon('prev')}
+           onNext={() => cycleDigimon('next')}
+           onUpdateNickname={handleUpdateNickname}
         />
       )}
 
