@@ -12,6 +12,7 @@ export function createDigimon(template: DigimonTemplate, level: number = 1): Dig
     name: template.name,
     displayName: template.displayName,
     type: template.type,
+    digivolutionStage: template.digivolutionStage,
     level,
     exp: 0,
     

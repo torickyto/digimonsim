@@ -38,7 +38,7 @@ const DigimonStatScreen: React.FC<DigimonStatScreenProps> = ({ digimon, isObtain
           <div className="digimon-type" style={{ backgroundColor: typeColor }}>{digimon.type}</div>
           <div className="digimon-details">
           <span className="digimon-level">Level: {digimon.level}</span>
-            <span className="digimon-stage">Stage: Rookie</span>
+          <span className="digimon-stage">Stage: {digimon.digivolutionStage}</span>
             
           </div>
         </div>

@@ -18,6 +18,7 @@ export const createUniqueDigimon = (templateName: string, level: number = 1): Di
     id: Date.now(),
     ...template,
     level,
+    digivolutionStage: template.digivolutionStage,
     hp: calculateBaseStat(template.baseHp, level),
     maxHp: calculateBaseStat(template.baseHp, level),
     attack: calculateBaseStat(template.baseAttack, level),
