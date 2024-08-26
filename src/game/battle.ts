@@ -8,9 +8,10 @@ import { resolveCardEffects } from './cardEffects';
 
 
 export const initializeBattle = (playerTeam: Digimon[], enemyTeam: Digimon[]): GameState => {
+  console.log('Initializing battle');
   const initialState: GameState = {
     player: {
-      digimon: playerTeam.map(digimon => ({ ...digimon })), // Create a new object for each Digimon
+      digimon: playerTeam.map(digimon => ({ ...digimon })),
       hand: [],
       deck: playerTeam.flatMap((digimon, index) => 
         digimon.deck.map(card => ({ ...card, ownerDigimonIndex: index }))
@@ -21,8 +22,8 @@ export const initializeBattle = (playerTeam: Digimon[], enemyTeam: Digimon[]): G
     enemy: {
       digimon: enemyTeam.map(digimon => ({ ...digimon })),
     },
-    turn: 1,
-    phase: 'player',
+    turn: 0,  // Start at turn 0
+    phase: 'initial',  // Add a new 'initial' phase
     cardsPlayedThisTurn: 0,
     damageTakenThisTurn: 0,
     removedCards: {},
@@ -38,6 +39,7 @@ export const initializeBattle = (playerTeam: Digimon[], enemyTeam: Digimon[]): G
   };
 
   initialState.player.deck = shuffleDeck(initialState.player.deck);
+  console.log('Initial hand size after drawInitialHand:', initialState.player.hand.length);
 
   return drawInitialHand(initialState);
 };
@@ -62,16 +64,19 @@ const shuffleDeck = (deck: Card[]): Card[] => {
 
 const drawInitialHand = (gameState: GameState): GameState => {
   const cardsToDraw = Math.min(gameState.player.digimon.length + 2, 5);
+  console.log('Drawing initial hand, cards to draw:', cardsToDraw);
   let updatedState = { ...gameState };
 
   for (let i = 0; i < cardsToDraw; i++) {
     updatedState = drawSingleCard(updatedState);
   }
 
+  console.log('Hand size after drawing initial hand:', updatedState.player.hand.length);
   return updatedState;
 };
 
 const drawSingleCard = (gameState: GameState): GameState => {
+  console.log('Drawing single card');
   if (gameState.player.deck.length === 0) {
     gameState.player.deck = shuffleDeck([...gameState.player.discardPile]);
     gameState.player.discardPile = [];
@@ -84,11 +89,13 @@ const drawSingleCard = (gameState: GameState): GameState => {
     if (gameState.player.hand.length < MAX_HAND_SIZE) {
       gameState.player.hand.push(drawnCard);
       gameState.actionQueue.push({ type: 'DRAW_CARD', card: drawnCard });
+      console.log('Card added to hand, new hand size:', gameState.player.hand.length);
     } else {
 
       gameState.player.discardPile.push(drawnCard);
       gameState.cardsDiscardedThisBattle++;
       gameState.actionQueue.push({ type: 'BURN_CARD', card: drawnCard });
+      console.log('Card burned due to full hand');
     }
   }
 
@@ -100,7 +107,12 @@ const getAliveDigimon = (digimon: DigimonState[]): DigimonState[] => {
 };
 
 export const startPlayerTurn = (state: GameState): GameState => {
+  console.log('Starting player turn');
   let updatedState = { ...state };
+
+  // Increment the turn counter at the start of the function
+  updatedState.turn += 1;
+  console.log('Turn:', updatedState.turn);
 
   // Reset RAM to the starting value
   updatedState.player.ram = calculateStartingRam(updatedState.player.digimon as Digimon[]);
@@ -114,14 +126,18 @@ export const startPlayerTurn = (state: GameState): GameState => {
   updatedState.player.ram = Math.min(updatedState.player.ram, MAX_RAM);
 
   // Draw one card if it's not the first turn and there's room in the hand
-  if (updatedState.turn > 1 && updatedState.player.hand.length < MAX_HAND_SIZE) {
+  if (updatedState.turn > 0 && updatedState.player.hand.length < MAX_HAND_SIZE) {
+    console.log('Drawing card at start of turn');
     updatedState = drawSingleCard(updatedState);
+  } else {
+    console.log('Not drawing card: first turn or hand full');
   }
 
   // Apply any start-of-turn effects
   updatedState = applyStartOfTurnEffects(updatedState);
   updatedState.phase = 'player';
 
+  console.log('Player hand size at end of startPlayerTurn:', updatedState.player.hand.length);
   return updatedState;
 };
     
@@ -242,7 +258,6 @@ export const endPlayerTurn = (gameState: GameState): GameState => {
   return {
     ...gameState,
     phase: 'enemy',
-    turn: gameState.turn + 1,
     cardsPlayedThisTurn: 0,
     cardsDiscardedThisTurn: 0,
     actionQueue: [...gameState.actionQueue, { type: 'END_PLAYER_TURN' }]

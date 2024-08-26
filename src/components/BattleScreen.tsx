@@ -72,14 +72,14 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   }, [battleStarting]);
 
   useEffect(() => {
-    console.log("Player Digimon State:");
+  
     gameState.player.digimon.forEach((digimon, index) => {
-      console.log(`Player Digimon ${index}: ${digimon.displayName}, HP: ${digimon.hp}/${digimon.maxHp}, Shield: ${digimon.shield}`);
+      
     });
   
-    console.log("Enemy Digimon State:");
+   
     gameState.enemy.digimon.forEach((digimon, index) => {
-      console.log(`Enemy Digimon ${index}: ${digimon.displayName}, HP: ${digimon.hp}/${digimon.maxHp}, Shield: ${digimon.shield}`);
+     
     });
   }, [gameState]);
 
@@ -106,16 +106,12 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   }, [showOpeningAttacks, playerTeam.length, enemyTeam.length]);
 
   useEffect(() => {
-    if (openingAttacksComplete) {
-      const initialState = startPlayerTurn(gameState);
-      setGameState(initialState);
-      setHandKey(prevKey => prevKey + 1); // Force re-render for initial hand
-    }
-  }, [openingAttacksComplete]);
-
-  useEffect(() => {
-    const initialState = startPlayerTurn(gameState);
-    setGameState(initialState);
+    // Only update the turn and phase without drawing a card
+    setGameState(prevState => ({
+      ...prevState,
+      turn: 1,
+      phase: 'player'
+    }));
     setHandKey(prevKey => prevKey + 1);
   }, []);
 
@@ -128,10 +124,6 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     setShouldProcessQueue(true);
   }, [executeEnemyTurn]);
 
-  useEffect(() => {
-    console.log('attackingDigimon:', attackingDigimon);
-    console.log('hitDigimon:', hitDigimon);
-  }, [attackingDigimon, hitDigimon]);
 
 
   useEffect(() => {
@@ -149,17 +141,6 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     };
   }, []);
 
-  useEffect(() => {
-  console.log("Player Digimon Shields:");
-  gameState.player.digimon.forEach((digimon, index) => {
-    console.log(`Player Digimon ${index}: ${digimon.displayName}, Shield: ${digimon.shield}`);
-  });
-
-  console.log("Enemy Digimon Shields:");
-  gameState.enemy.digimon.forEach((digimon, index) => {
-    console.log(`Enemy Digimon ${index}: ${digimon.displayName}, Shield: ${digimon.shield}`);
-  });
-}, [gameState]);
 
   const deselectCard = () => {
     setSelectedCard(null);
@@ -192,9 +173,6 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     return () => window.removeEventListener('resize', updateScaleFactor);
 }, []);
   
-  useEffect(() => {
-    setGameState(startPlayerTurn(gameState));
-  }, []);
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -294,14 +272,14 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     let updatedState = endPlayerTurn(gameState);
     setGameState(updatedState);
     setIsEnemyTurn(true);
-    setHitDigimon(null); // reset hitDigimon state
+    setHitDigimon(null);
     processEnemyTurn(updatedState);
   };
-
 
   const handleDiscard = () => {
     if (gameState.player.hand.length > 0) {
       const discardedCard = gameState.player.hand[0];
+      console.log(`discard button clicked. card discarded`);
       
       // Create and append the card animation element
       const cardElement = document.createElement('div');
@@ -374,6 +352,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   const handleDiscardClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsDiscardModalOpen(true);
+    
   };
 
   const doesCardAffectTarget = (card: Card, isEnemy: boolean): boolean => {
@@ -515,13 +494,10 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   };
 }, []);
 
+
   useEffect(() => {
-    console.log("Current game state after potential Digimon death:");
-    console.log("Hand:", gameState.player.hand);
-    console.log("Deck:", gameState.player.deck);
-    console.log("Discard pile:", gameState.player.discardPile);
-    console.log("Removed cards:", gameState.removedCards);
-  }, [gameState.player.hand, gameState.player.deck, gameState.player.discardPile, gameState.removedCards]);
+    console.log('Hand changed. New hand size:', gameState.player.hand.length);
+  }, [gameState.player.hand]);
 
   const handleDigimonRevive = (revivedDigimonIndex: number) => {
     setGameState(prevState => {
@@ -544,14 +520,14 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     });
   };
 
-  
+  const logCardDraw = (source: string) => {
+    console.log(`Card drawn from: ${source}`);
+  };
 
   const processActionQueue = useCallback(async (state: GameState) => {
     if (isProcessingAction || state.actionQueue.length === 0) {
       if (isEnemyTurn && state.actionQueue.length === 0) {
-        setIsEnemyTurn(false);
-        const updatedState = startPlayerTurn(state);
-        setGameState(updatedState);
+        console.log('Enemy turn ended, transitioning to player turn');
       }
       setShouldProcessQueue(false);
       return;
@@ -635,13 +611,6 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   }, [setGameState, startPlayerTurn, battleApplyDamage, onBattleEnd, isEnemyTurn, isProcessingAction, handleDigimonDeath, animateCardBurn]);
 
 
-  useEffect(() => {
-    if (shouldProcessQueue && !isProcessingAction) {
-      processActionQueue(gameState).catch(error => {
-        console.error('Error processing action queue:', error);
-      });
-    }
-  }, [shouldProcessQueue, processActionQueue, gameState, isProcessingAction]);
   
 useEffect(() => {
   if (gameState.actionQueue.length > 0) {

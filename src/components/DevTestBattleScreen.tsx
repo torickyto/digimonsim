@@ -4,6 +4,7 @@ import { createDigimon } from '../shared/digimonManager';
 import { DigimonTemplates } from '../data/DigimonTemplate';
 import { CardCollection } from '../shared/cardCollection';
 import BattleScreen from './BattleScreen';
+import './DevTestBattleScreen.css';
 
 interface DevTestBattleScreenProps {
     onExit: () => void;
@@ -98,7 +99,7 @@ const createCustomTeam = (digimonNames: string[], cardSets: Card[][]): Digimon[]
         <h1>DEV TEST BATTLE</h1>
         <h2>Select a player team:</h2>
         {preMadeTeams.map((team, index) => (
-          <button key={index} onClick={() => handleTeamSelect(team.digimon)}>
+          <button className='devbutton' key={index} onClick={() => handleTeamSelect(team.digimon)}>
             {team.name}
           </button>
         ))}
@@ -110,13 +111,13 @@ const createCustomTeam = (digimonNames: string[], cardSets: Card[][]): Digimon[]
         </ul>
         <h2>Select a battle scenario:</h2>
         {battleScenarios.map((scenario, index) => (
-          <button key={index} onClick={() => handleScenarioSelect(scenario)}>
+          <button className='devbutton' key={index} onClick={() => handleScenarioSelect(scenario)}>
             {scenario.name}
           </button>
         ))}
         <h3>Selected Scenario: {selectedScenario.name}</h3>
-        <button onClick={startBattle}>Start Battle</button>
-        <button onClick={onExit}>Exit to Home Screen</button>
+        <button className='devbutton' onClick={startBattle}>Start Battle</button>
+        <button className='devbutton' onClick={onExit}>Exit to Home Screen</button>
       </div>
     );
   };

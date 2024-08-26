@@ -174,7 +174,7 @@ export interface GameState {
   };
   actionQueue: BattleAction[];
   turn: number;
-  phase: 'player' | 'enemy';
+  phase: 'player' | 'enemy' | 'initial';
   cardsPlayedThisTurn: number;
   damageTakenThisTurn: number;
   cardsDiscardedThisTurn: number;
