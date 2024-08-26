@@ -220,6 +220,75 @@
   box-shadow: 0 6px 12px rgba(0, 188, 212, 0.3);
 }
 
+.stat-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(18, 18, 18, 0.9);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 10;
+  padding: 2vh;
+  box-sizing: border-box;
+  backdrop-filter: blur(5px);
+}
+
+.stat-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 2vh;
+}
+
+.stat-navigation button {
+  background-color: #0098db;
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+  padding: 1vh 2vw;
+  font-size: 1.5vw;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.stat-navigation button:hover {
+  background-color: #ffd700;
+}
+
+.stat-navigation h2 {
+  color: #ffd700;
+  font-size: 2.5vw;
+  margin: 0;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.stat-overlay .digimon-stat-screen {
+  width: 100%;
+  height: calc(100% - 10vh);
+  overflow: hidden;
+}
+
+.close-stats {
+  margin-top: 2vh;
+  padding: 1vh 2vw;
+  background-color: #0098db;
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1.5vw;
+  transition: background-color 0.3s ease;
+}
+
+.close-stats:hover {
+  background-color: #ffd700;
+}
+
 .stats-button { background-color: #0098db; }
 .eggs-button { background-color: #0098db; }
 .party-button { background-color: #0098db; }

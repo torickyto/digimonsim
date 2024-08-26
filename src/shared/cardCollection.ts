@@ -144,7 +144,7 @@ export const CardCollection: Record<string, Card> = {
     'Pepper Breath',
     'attack',
     2,
-    'DATA',
+    'VACCINE',
     '',
     'enemy',
     [{
@@ -161,7 +161,7 @@ export const CardCollection: Record<string, Card> = {
     'Spit Fire',
     'attack',
     3,
-    'DATA',
+    'VACCINE',
     '',
     'random_enemy',
     [{
@@ -178,7 +178,7 @@ export const CardCollection: Record<string, Card> = {
     'Baby Burner',
     'attack',
     4,
-    'DATA',
+    'VACCINE',
     '',
     'all_enemies',
     [{
@@ -196,7 +196,7 @@ export const CardCollection: Record<string, Card> = {
     'Blue Blaster',
     'attack',
     2,
-    'VACCINE',
+    'DATA',
     '',
     'enemy',
     [{
@@ -220,7 +220,7 @@ SKULL_CRACKER: createCard(
   'Skull Cracker',
   'attack',
   1,
-  'VACCINE',
+  'DATA',
   '',
   'enemy',
   [{
@@ -238,7 +238,7 @@ BLUE_CYCLONE: createCard(
   'Blue Cyclone',
   'attack',
   4,
-  'VACCINE',
+  'DATA',
   '',
   'all_enemies',
   [{

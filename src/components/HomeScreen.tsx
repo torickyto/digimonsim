@@ -25,6 +25,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
   const [selectedDigimon, setSelectedDigimon] = useState<Digimon | null>(null);
   const [spriteScale, setSpriteScale] = useState(1);
   const screenRef = useRef<HTMLDivElement>(null);
+  const [currentDigimonIndex, setCurrentDigimonIndex] = useState(0);
 
   useEffect(() => {
     const updateSpriteScale = () => {
@@ -40,7 +41,21 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
     return () => window.removeEventListener('resize', updateSpriteScale);
   }, []);
 
-  const toggleStats = () => setShowStats(!showStats);
+  const toggleStats = () => {
+    setShowStats(!showStats);
+    setCurrentDigimonIndex(0);
+  };
+
+  const cycleDigimon = (direction: 'next' | 'prev') => {
+    setCurrentDigimonIndex((prevIndex) => {
+      if (direction === 'next') {
+        return (prevIndex + 1) % playerTeam.length;
+      } else {
+        return (prevIndex - 1 + playerTeam.length) % playerTeam.length;
+      }
+    });
+  };
+
   const toggleParty = () => setShowParty(!showParty);
   const toggleEggs = () => setShowEggs(!showEggs);
   const toggleCardCollection = () => setShowCardCollection(!showCardCollection);
@@ -80,12 +95,23 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
                     </div>
                   ))}
                 </div>
+                {showStats && (
+                  <div className="stat-overlay">
+                    <div className="stat-navigation">
+                      <button onClick={() => cycleDigimon('prev')}>&lt; Prev</button>
+                      <h2>{playerTeam[currentDigimonIndex].displayName}</h2>
+                      <button onClick={() => cycleDigimon('next')}>Next &gt;</button>
+                    </div>
+                    <DigimonStatScreen digimon={playerTeam[currentDigimonIndex]} isObtained={true} />
+                    <button className="close-stats" onClick={toggleStats}>Close</button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
           <div className="controls-container">
             <div className="hbutton-container">
-              <button className="stats-button" onClick={toggleStats}>Stats</button>
+            <button className="stats-button" onClick={toggleStats}>Stats</button>
               <button className="eggs-button" onClick={toggleEggs}>Eggs</button>
               <button className="party-button" onClick={toggleParty}>Party</button>
               <button className="battle-button" onClick={onStartBattle}>Battle</button>
@@ -97,13 +123,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
           </div>
         </div>
       </div>
-
-      {showStats && (
-        <div className="modal">
-          <DigimonStatScreen digimon={playerTeam[0]} isObtained={true} />
-          <button onClick={toggleStats}>Close</button>
-        </div>
-      )}
 
       {showParty && (
         <div className="modal">
