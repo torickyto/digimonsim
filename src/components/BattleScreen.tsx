@@ -511,7 +511,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     setIsProcessingAction(true);
     const action = state.actionQueue[0];
     let updatedState = { ...state, actionQueue: state.actionQueue.slice(1) };
-
+  
     const processNextAction = () => {
       setGameState(updatedState);
       setIsProcessingAction(false);
@@ -521,7 +521,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
         setShouldProcessQueue(false);
       }
     };
-
+  
     switch (action.type) {
       case 'ENEMY_ACTION':
         const enemyAction = action as EnemyAction;
@@ -567,16 +567,24 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
           processNextAction();
         });
         break;
-        case 'END_ENEMY_TURN':
-          console.log('Ending enemy turn');
-          setIsEnemyTurn(false);
-          const { updatedState: newState, drawnCard } = startPlayerTurn(updatedState);
-          updatedState = newState;
-          if (drawnCard) {
-            setNewlyDrawnCards([drawnCard.instanceId ?? '']);
-          }
+        case 'DRAW_CARD':
+          const newlyDrawnCard = action.card;
+          setNewlyDrawnCards(prev => [...prev, newlyDrawnCard.instanceId ?? '']);
+          setTimeout(() => {
+            setNewlyDrawnCards(prev => prev.filter(id => id !== newlyDrawnCard.instanceId));
+          }, 500); // Duration of the draw animation
           processNextAction();
           break;
+          case 'END_ENEMY_TURN':
+            console.log('Ending enemy turn');
+            setIsEnemyTurn(false);
+            const { updatedState: newState, drawnCard } = startPlayerTurn(updatedState);
+            updatedState = newState;
+            if (drawnCard) {
+              setNewlyDrawnCards([drawnCard.instanceId ?? '']);
+            }
+            processNextAction();
+            break;
       default:
         processNextAction();
     }
@@ -754,21 +762,21 @@ useEffect(() => {
   ))}
 </div>
               </div>
-              <div className="hand-area" key={handKey}>
-                {gameState.player.hand.map((card, index) => (
-                  <CompactCard 
-                    key={card.instanceId ?? index}
-                    card={card} 
-                    onClick={() => handleCardClick(card)}
-                    isSelected={selectedCard?.instanceId === card.instanceId}
-                    isPlayable={gameState.player.ram >= card.cost && !isEnemyTurn}
-                    isTopCard={index === 0 && isDiscardHovered}
-                    isNewlyDrawn={card.instanceId ? newlyDrawnCards.includes(card.instanceId) : false}
-                    onMouseEnter={handleCardHover}
-                    onMouseLeave={handleCardHoverEnd}
-                  />
-                ))}
-              </div>
+              <div className="hand-area">
+      {gameState.player.hand.map((card, index) => (
+        <CompactCard 
+          key={card.instanceId ?? index}
+          card={card} 
+          onClick={() => handleCardClick(card)}
+          isSelected={selectedCard?.instanceId === card.instanceId}
+          isPlayable={gameState.player.ram >= card.cost && !isEnemyTurn}
+          isTopCard={index === 0 && isDiscardHovered}
+          isNewlyDrawn={card.instanceId ? newlyDrawnCards.includes(card.instanceId) : false}
+          onMouseEnter={handleCardHover}
+          onMouseLeave={handleCardHoverEnd}
+        />
+      ))}
+    </div>
               {hoveredCard && (
                 <FullCardDisplay 
                   card={hoveredCard} 

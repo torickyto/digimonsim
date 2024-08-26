@@ -9,7 +9,8 @@ import {
   StatusEffectType,
   ScalingFactor,
   StatType,
-  DamageFormulaKey
+  DamageFormulaKey,
+  BattleAction
 } from '../shared/types';
 import { CORRUPTION_DAMAGE_PER_STACK } from '../game/gameConstants';
 import { DamageCalculations } from '../shared/damageCalculations';
@@ -246,13 +247,22 @@ function drawCards(amount: number, gameState: GameState): GameState {
   const newDeck = gameState.player.deck.slice(amount);
   const newHand = [...gameState.player.hand, ...drawnCards];
   
+  const drawActions: BattleAction[] = drawnCards.map(card => ({
+    type: 'DRAW_CARD' as const,
+    card
+  }));
+
   return {
     ...gameState,
     player: {
       ...gameState.player,
       hand: newHand,
       deck: newDeck
-    }
+    },
+    actionQueue: [
+      ...gameState.actionQueue,
+      ...drawActions
+    ]
   };
 }
 
