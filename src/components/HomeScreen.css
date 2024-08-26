@@ -1,8 +1,8 @@
 :root {
   --primary-color: #00bcd4;
   --secondary-color: #ff4081;
-  --background-color: #121212;
-  --surface-color: #1e1e1e;
+  --background-color: #655057;
+  --surface-color: #a8c8a6;
   --text-color: #ffffff;
   --accent-color: #64ffda;
 }
@@ -11,7 +11,7 @@
   font-family: 'Roboto', sans-serif;
   width: 100vw;
   height: 100vh;
-  background: linear-gradient(135deg, #463c5e, #5d4776);
+  background: linear-gradient(135deg, #f6edcd, #f0cf8e);
   color: var(--text-color);
   display: flex;
   justify-content: center;
@@ -29,7 +29,7 @@
   display: flex;
   flex-direction: column;
   padding: 20px;
-  box-shadow: 0 0 30px rgba(134, 0, 212, 0.3);
+  box-shadow: 0 0 30px rgba(133, 226, 105, 0.3);
   position: relative;
   overflow: hidden;
 }
@@ -44,7 +44,7 @@
   background: conic-gradient(
     from 0deg,
     transparent 0deg 340deg,
-    rgba(0, 188, 212, 0.2) 360deg
+    #cb8175 360deg
   );
   animation: rotate 10s linear infinite;
 }
@@ -72,7 +72,7 @@
   border-radius: 20px;
   overflow: hidden;
   padding: 3%;
-  box-shadow: 0 0 20px rgba(0, 188, 212, 0.2);
+  box-shadow: 0 0 20px rgba(78, 59, 59, 0.2);
 }
 
 .screen {
@@ -81,6 +81,8 @@
   aspect-ratio: 16 / 9;
   position: relative;
   overflow: hidden;
+  border-radius: 20px;
+  border: 10px solid #6d8d8a;
 }
 
 .screen-content {
@@ -102,7 +104,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: url('/src/assets/backgrounds/wleaderroom.png');
+  background-image: url('/src/assets/backgrounds/northcave.png');
   background-size: 100% 100%;
   background-position: center;
   background-repeat: no-repeat;
@@ -153,7 +155,7 @@
 .digimon-card p {
   margin-top: 10px;
   font-weight: bold;
-  text-shadow: 0 0 10px rgba(0, 188, 212, 0.5);
+  text-shadow: 0 0 10px rgba(37, 27, 28, 0.5);
 }
 
 .controls-container {
@@ -164,7 +166,7 @@
   background-color: var(--surface-color);
   border-radius: 20px;
   width: 220px;
-  box-shadow: 0 0 20px rgba(205, 0, 212, 0.2);
+  box-shadow: 0 0 20px rgba(241, 148, 26, 0.2);
 }
 
 .button-container {
@@ -216,10 +218,10 @@
   box-shadow: 0 6px 12px rgba(0, 188, 212, 0.3);
 }
 
-.stats-button { background-color: #444774; }
-.eggs-button { background-color: #444774; }
-.party-button { background-color: #444774; }
-.battle-button { background-color: #855395; }
+.stats-button { background-color: #655057; }
+.eggs-button { background-color: #655057; }
+.party-button { background-color: #655057; }
+.battle-button { background-color: #cb8175; }
 
 .dev-button, .test-arena-button {
   background-color: #32313b;
@@ -238,9 +240,9 @@
   max-width: 80%;
   max-height: 80%;
   overflow-y: auto;
-  box-shadow: 0 0 40px rgba(0, 188, 212, 0.4);
+  box-shadow: 0 0 40px rgba(87, 69, 69, 0.4);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(0, 188, 212, 0.2);
+  border: 1px solid rgba(131, 61, 61, 0.2);
 }
 
 @media (max-width: 768px) {
