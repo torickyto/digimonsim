@@ -239,7 +239,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   const animateCardBurn = useCallback(async (card: Card) => {
     const cardElement = document.createElement('div');
     cardElement.classList.add('card-animation', 'burn');
-    cardElement.style.backgroundImage = `url('/assets/cards/${card.id}.png')`;
+    cardElement.style.backgroundImage = `url(${require(`../assets/cards/${card.name.toLowerCase().replace(/\s+/g, '')}.png`)})`;
     
     // Position the card element
     const battleScreen = document.querySelector('.battle-screen');
@@ -455,11 +455,53 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
         [deadDigimonIndex]: [...(prevState.removedCards[deadDigimonIndex] || []), ...cardsToRemove]
       };
   
-      // Add BURN_CARD actions to the queue for each removed card
-      const burnActions: BattleAction[] = cardsToRemove.map(card => ({
-        type: 'BURN_CARD',
-        card: card,
-      }));
+      cardsToRemove.forEach(card => {
+        const cardElement = document.createElement('div');
+        cardElement.classList.add('card-animation', 'burn');
+        cardElement.style.backgroundImage = `url(${require(`../assets/cards/${card.name.toLowerCase().replace(/\s+/g, '')}.png`)})`;
+
+        //{require(`../assets/cards/${card.name.toLowerCase().replace(/\s+/g, '')}.png`)
+        //`url('/assets/cards/${card.id}.png')
+        
+        // Position the card element based on its location
+        const handArea = document.querySelector('.hand-area');
+        const deckInfo = document.querySelector('.deck-info');
+        const discardInfo = document.querySelector('.discard-info');
+    
+        if (handArea && prevState.player.hand.includes(card)) {
+          const cardIndex = prevState.player.hand.findIndex(c => c.instanceId === card.instanceId);
+          const handCard = handArea.children[cardIndex] as HTMLElement;
+          if (handCard) {
+            const rect = handCard.getBoundingClientRect();
+            cardElement.style.position = 'fixed';
+            cardElement.style.left = `${rect.left}px`;
+            cardElement.style.top = `${rect.top}px`;
+            cardElement.style.width = `${rect.width}px`;
+            cardElement.style.height = `${rect.height}px`;
+          }
+        } else if (deckInfo && prevState.player.deck.includes(card)) {
+          const rect = deckInfo.getBoundingClientRect();
+          cardElement.style.position = 'fixed';
+          cardElement.style.left = `${rect.left}px`;
+          cardElement.style.top = `${rect.top}px`;
+          cardElement.style.width = `${rect.width}px`;
+          cardElement.style.height = `${rect.height}px`;
+        } else if (discardInfo && prevState.player.discardPile.includes(card)) {
+          const rect = discardInfo.getBoundingClientRect();
+          cardElement.style.position = 'fixed';
+          cardElement.style.left = `${rect.left}px`;
+          cardElement.style.top = `${rect.top}px`;
+          cardElement.style.width = `${rect.width}px`;
+          cardElement.style.height = `${rect.height}px`;
+        }
+        
+        document.body.appendChild(cardElement);
+        
+        // Remove the card element after the animation
+        setTimeout(() => {
+          cardElement.remove();
+        }, 1000); // Duration of the animation
+      });
   
   return {
     ...prevState,
@@ -470,7 +512,6 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
       discardPile: newDiscardPile,
     },
     removedCards: newRemovedCards,
-    actionQueue: [...prevState.actionQueue, ...burnActions],
   };
 }, []);
 
