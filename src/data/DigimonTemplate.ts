@@ -74,6 +74,21 @@ export const DigimonTemplates: Record<string, DigimonTemplate> = {
     startingCard: CardCollection.GOBLIN_STRIKE,
     passiveSkill: nullPassiveSkill
   },
+  terriermon: {
+    name: 'terriermon',
+    displayName: 'Terriermon',
+    type: 'DATA' as DigimonType,
+    baseHp: 50,
+    baseAttack: 6,
+    baseHealing: 3,
+    baseEvadeChance: 0.05,
+    baseCritChance: 0.05,
+    baseAccuracy: 1,
+    baseCorruptionResistance: 0.2,
+    baseBuggedResistance: 0.2,
+    startingCard: CardCollection.BOOM_BUBBLE,
+    passiveSkill: nullPassiveSkill
+  },
   beelzemon: {
     name: 'beelzemon',
     displayName: 'Beelzemon',
@@ -119,6 +134,21 @@ export const DigimonTemplates: Record<string, DigimonTemplate> = {
     startingCard: CardCollection.THUNDER_BOMB,
     passiveSkill: nullPassiveSkill
   },
+  gawappamon: {
+    name: 'gawappamon',
+    displayName: 'Gawappamon',
+    type: 'DATA' as DigimonType,
+    baseHp: 120,
+    baseAttack: 24,
+    baseHealing: 12,
+    baseEvadeChance: 0.12,
+    baseCritChance: 0.08,
+    baseAccuracy: 0.93,
+    baseCorruptionResistance: 0.3,
+    baseBuggedResistance: 0.4,
+    startingCard: CardCollection.DJ_SHOOTER,
+    passiveSkill: nullPassiveSkill
+  },
   agumon: {
     name: 'agumon',
     displayName: 'Agumon',
@@ -132,21 +162,6 @@ export const DigimonTemplates: Record<string, DigimonTemplate> = {
     baseCorruptionResistance: 0.25,
     baseBuggedResistance: 0.25,
     startingCard: CardCollection.PEPPER_BREATH,
-    passiveSkill: nullPassiveSkill
-  },
-  gawappamon: {
-    name: 'gawappamon',
-    displayName: 'Gawappamon',
-    type: 'DATA' as DigimonType,
-    baseHp: 55,
-    baseAttack: 17,
-    baseHealing: 10,
-    baseEvadeChance: 0.11,
-    baseCritChance: 0.07,
-    baseAccuracy: 0.91,
-    baseCorruptionResistance: 0.3,
-    baseBuggedResistance: 0.35,
-    startingCard: CardCollection.DJ_SHOOTER,
     passiveSkill: nullPassiveSkill
   },
   gabumon: {

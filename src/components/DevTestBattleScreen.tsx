@@ -36,13 +36,11 @@ const createCustomTeam = (digimonNames: string[], cardSets: Card[][]): Digimon[]
     {
         name: "OG",
         digimon: createCustomTeam(
-          ['patamon', 'tentomon', 'agumon'],
+          ['patamon', 'tentomon', 'terriermon'],
           [
             [CardCollection.BUBBLE, CardCollection.BOOM_BUBBLE, CardCollection.GLIDE],
-            //[CardCollection.SUPER_SHOCKER, CardCollection.DYNAMO_ROCKET, CardCollection.ROLLING_GUARD],
-            //[CardCollection.PEPPER_BREATH, CardCollection.BABY_BURNER, CardCollection.SPITFIRE]
-            [CardCollection.SUPER_SHOCKER],
-            [CardCollection.PEPPER_BREATH]
+            [CardCollection.SUPER_SHOCKER, CardCollection.DYNAMO_ROCKET, CardCollection.ROLLING_GUARD],
+            [CardCollection.PEPPER_BREATH, CardCollection.BABY_BURNER, CardCollection.SPITFIRE]
           ]
         )
       },
@@ -73,6 +71,15 @@ const createCustomTeam = (digimonNames: string[], cardSets: Card[][]): Digimon[]
       ],
       background: require('../assets/backgrounds/shadowhell.png')
     },
+
+    {
+        name: "Mines",
+        enemies: [
+          createDigimon(DigimonTemplates['gawappamon']),
+          createDigimon(DigimonTemplates['devimon'])
+        ],
+        background: require('../assets/backgrounds/magnetmine.png')
+      },
     // Add more battle scenarios here
   ];
 
