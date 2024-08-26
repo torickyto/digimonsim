@@ -181,27 +181,16 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
 
   useEffect(() => {
     console.log('Hand changed. Current hand:', gameState.player.hand);
-    console.log('Previous hand:', previousHandRef.current);
+    console.log('Newly drawn cards:', newlyDrawnCards);
   
-    const currentHand = gameState.player.hand;
-    const newCards = currentHand.filter(card => 
-      !previousHandRef.current.some(prevCard => prevCard.instanceId === card.instanceId)
-    );
-    
-    console.log('New cards:', newCards);
+    if (newlyDrawnCards.length > 0) {
+      const timer = setTimeout(() => {
+        setNewlyDrawnCards([]);
+      }, 600); 
   
-    if (newCards.length > 0) {
-      setNewlyDrawnCards(newCards.map(card => card.instanceId ?? '').filter(id => id !== ''));
+      return () => clearTimeout(timer);
     }
-    
-    const timer = setTimeout(() => {
-      setNewlyDrawnCards([]);
-    }, 600); // Slightly longer than the animation duration to ensure it completes
-
-    previousHandRef.current = [...currentHand];
-
-    return () => clearTimeout(timer);
-  }, [gameState.player.hand]);
+  }, [gameState.player.hand, newlyDrawnCards]);
 
   const animateCardBurn = useCallback(async (card: Card) => {
     const cardElement = document.createElement('div');
@@ -258,7 +247,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     if (isEnemyTurn) return;
     
     deselectCard();
-    let updatedState = endPlayerTurn(gameState);
+    const updatedState = endPlayerTurn(gameState);
     setGameState(updatedState);
     setIsEnemyTurn(true);
     setHitDigimon(null);
@@ -578,12 +567,16 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
           processNextAction();
         });
         break;
-      case 'END_ENEMY_TURN':
-        console.log('Ending enemy turn');
-        setIsEnemyTurn(false);
-        updatedState = startPlayerTurn(updatedState);
-        processNextAction();
-        break;
+        case 'END_ENEMY_TURN':
+          console.log('Ending enemy turn');
+          setIsEnemyTurn(false);
+          const { updatedState: newState, drawnCard } = startPlayerTurn(updatedState);
+          updatedState = newState;
+          if (drawnCard) {
+            setNewlyDrawnCards([drawnCard.instanceId ?? '']);
+          }
+          processNextAction();
+          break;
       default:
         processNextAction();
     }
@@ -595,7 +588,6 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
       onBattleEnd(battleStatus);
     }
   }, [setGameState, startPlayerTurn, battleApplyDamage, onBattleEnd, isEnemyTurn, isProcessingAction, handleDigimonDeath, animateCardBurn]);
-
 
   
 useEffect(() => {

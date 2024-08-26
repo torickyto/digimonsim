@@ -39,8 +39,10 @@ const createCustomTeam = (digimonNames: string[], cardSets: Card[][]): Digimon[]
           ['patamon', 'tentomon', 'agumon'],
           [
             [CardCollection.BUBBLE, CardCollection.BOOM_BUBBLE, CardCollection.GLIDE],
-            [CardCollection.SUPER_SHOCKER, CardCollection.DYNAMO_ROCKET, CardCollection.ROLLING_GUARD],
-            [CardCollection.PEPPER_BREATH, CardCollection.BABY_BURNER, CardCollection.SPITFIRE]
+            //[CardCollection.SUPER_SHOCKER, CardCollection.DYNAMO_ROCKET, CardCollection.ROLLING_GUARD],
+            //[CardCollection.PEPPER_BREATH, CardCollection.BABY_BURNER, CardCollection.SPITFIRE]
+            [CardCollection.SUPER_SHOCKER],
+            [CardCollection.PEPPER_BREATH]
           ]
         )
       },

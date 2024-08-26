@@ -68,45 +68,48 @@ const drawInitialHand = (gameState: GameState): GameState => {
   let updatedState = { ...gameState };
 
   for (let i = 0; i < cardsToDraw; i++) {
-    updatedState = drawSingleCard(updatedState);
+    const result = drawSingleCard(updatedState);
+    updatedState = result.newState;
   }
 
   console.log('Hand size after drawing initial hand:', updatedState.player.hand.length);
   return updatedState;
 };
 
-const drawSingleCard = (gameState: GameState): GameState => {
+const drawSingleCard = (gameState: GameState): { newState: GameState; drawnCard: Card | null } => {
   console.log('Drawing single card');
-  if (gameState.player.deck.length === 0) {
-    gameState.player.deck = shuffleDeck([...gameState.player.discardPile]);
-    gameState.player.discardPile = [];
-    gameState.actionQueue.push({ type: 'SHUFFLE_DISCARD_TO_DECK' });
+  let newState = { ...gameState };
+  let drawnCard: Card | null = null;
+
+  if (newState.player.deck.length === 0) {
+    newState.player.deck = shuffleDeck([...newState.player.discardPile]);
+    newState.player.discardPile = [];
+    newState.actionQueue.push({ type: 'SHUFFLE_DISCARD_TO_DECK' });
   }
 
-  if (gameState.player.deck.length > 0) {
-    const drawnCard = gameState.player.deck.pop()!;
+  if (newState.player.deck.length > 0) {
+    drawnCard = newState.player.deck.pop()!;
 
-    if (gameState.player.hand.length < MAX_HAND_SIZE) {
-      gameState.player.hand.push(drawnCard);
-      gameState.actionQueue.push({ type: 'DRAW_CARD', card: drawnCard });
-      console.log('Card added to hand, new hand size:', gameState.player.hand.length);
+    if (newState.player.hand.length < MAX_HAND_SIZE) {
+      newState.player.hand.push(drawnCard);
+      newState.actionQueue.push({ type: 'DRAW_CARD', card: drawnCard });
+      console.log('Card added to hand, new hand size:', newState.player.hand.length);
     } else {
-
-      gameState.player.discardPile.push(drawnCard);
-      gameState.cardsDiscardedThisBattle++;
-      gameState.actionQueue.push({ type: 'BURN_CARD', card: drawnCard });
+      newState.player.discardPile.push(drawnCard);
+      newState.cardsDiscardedThisBattle++;
+      newState.actionQueue.push({ type: 'BURN_CARD', card: drawnCard });
       console.log('Card burned due to full hand');
     }
   }
 
-  return { ...gameState };
+  return { newState, drawnCard };
 };
 
 const getAliveDigimon = (digimon: DigimonState[]): DigimonState[] => {
   return digimon.filter(d => d.hp > 0);
 };
 
-export const startPlayerTurn = (state: GameState): GameState => {
+export const startPlayerTurn = (state: GameState): { updatedState: GameState; drawnCard: Card | null } => {
   console.log('Starting player turn');
   let updatedState = { ...state };
 
@@ -125,10 +128,13 @@ export const startPlayerTurn = (state: GameState): GameState => {
   });
   updatedState.player.ram = Math.min(updatedState.player.ram, MAX_RAM);
 
+  let drawnCard: Card | null = null;
   // Draw one card if it's not the first turn and there's room in the hand
   if (updatedState.turn > 1 && updatedState.player.hand.length < MAX_HAND_SIZE) {
     console.log('Drawing card at start of turn');
-    updatedState = drawSingleCard(updatedState);
+    const result = drawSingleCard(updatedState);
+    updatedState = result.newState;
+    drawnCard = result.drawnCard;
   } else {
     console.log('Not drawing card: first turn or hand full');
   }
@@ -138,7 +144,7 @@ export const startPlayerTurn = (state: GameState): GameState => {
   updatedState.phase = 'player';
 
   console.log('Player hand size at end of startPlayerTurn:', updatedState.player.hand.length);
-  return updatedState;
+  return { updatedState, drawnCard };
 };
     
 const applyStartOfTurnEffects = (state: GameState): GameState => {
