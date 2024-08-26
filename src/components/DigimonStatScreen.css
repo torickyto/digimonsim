@@ -70,6 +70,13 @@
 .digimon-stage {
   margin-right: 10%;
 }
+
+.date-obtained {
+  font-size: .75vw;
+  color: #c2c2c2;
+  margin-top: 1%;
+}
+
 .stats-section {
   margin-bottom: 0vh;
 }

@@ -196,7 +196,7 @@ export interface PassiveSkill {
 }
 
 export interface DigimonState {
-  id: number;
+  id: string;
   name: string;
   displayName: string;
   type: DigimonType;
@@ -224,6 +224,8 @@ export interface DigimonState {
   
   // Passive skill (can be null)
   passiveSkill: PassiveSkill | null;
+  nickname?: string;
+  dateObtained: Date;
 }
 
 export interface DigimonTemplate {
@@ -234,7 +236,7 @@ export interface DigimonTemplate {
   baseHp: number;
   baseAttack: number;
   baseHealing: number;
-  baseEvadeChance: number;  
+  baseEvadeChance: number;
   baseCritChance: number;
   baseAccuracy: number;
   baseCorruptionResistance: number;
@@ -245,6 +247,8 @@ export interface DigimonTemplate {
 
 export interface Digimon extends DigimonState {
   deck: Card[];
+  dateObtained: Date;
+  nickname?: string;
 }
 
 export interface DigimonEgg {

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import DigimonSprite from './DigimonSprite';
 import { Digimon, TYPE_COLORS } from '../shared/types';
 import './DigimonStatScreen.css';
@@ -9,6 +9,7 @@ interface DigimonStatScreenProps {
 }
 
 const DigimonStatScreen: React.FC<DigimonStatScreenProps> = ({ digimon, isObtained }) => {
+
   const typeColor = TYPE_COLORS[digimon.type] || '#ffffff';
   const containerRef = useRef<HTMLDivElement>(null);
   const [spriteScale, setSpriteScale] = useState(1);
@@ -17,7 +18,7 @@ const DigimonStatScreen: React.FC<DigimonStatScreenProps> = ({ digimon, isObtain
     const updateSpriteScale = () => {
       if (containerRef.current) {
         const { width, height } = containerRef.current.getBoundingClientRect();
-        const scale = Math.min(width / 400, height / 400) * 0.8;
+        const scale = Math.min(width / 400, height / 400) * 0.6;
         setSpriteScale(scale);
       }
     };
@@ -26,6 +27,11 @@ const DigimonStatScreen: React.FC<DigimonStatScreenProps> = ({ digimon, isObtain
     window.addEventListener('resize', updateSpriteScale);
     return () => window.removeEventListener('resize', updateSpriteScale);
   }, []);
+
+
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  };
   
   return (
     <div className="digimon-stat-screen" ref={containerRef}>
@@ -34,7 +40,10 @@ const DigimonStatScreen: React.FC<DigimonStatScreenProps> = ({ digimon, isObtain
           <DigimonSprite name={digimon.name} scale={spriteScale} />
         </div>
         <div className="sdigimon-info">
-          <h2 className="digimon-name">{digimon.displayName}</h2>
+          <h2 className="digimon-name">{digimon.displayName} </h2>
+          <span className="date-obtained">
+          Obtained: {formatDate(digimon.dateObtained)}
+        </span>
           <div className="digimon-type" style={{ backgroundColor: typeColor }}>{digimon.type}</div>
           <div className="digimon-details">
           <span className="digimon-level">Level: {digimon.level}</span>

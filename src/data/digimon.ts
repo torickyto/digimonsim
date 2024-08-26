@@ -9,13 +9,14 @@ import { getStarterDeck } from '../shared/cardCollection';
 import { calculateBaseStat } from '../shared/statCalculations';
 import { DigimonTemplates, getDigimonTemplate, getAllDigimonTemplates } from './DigimonTemplate';
 import { EXPERIENCE_PER_LEVEL, DAMAGE_MULTIPLIERS } from '../game/gameConstants';
+import { v4 as uuidv4 } from 'uuid';
 
 export const createUniqueDigimon = (templateName: string, level: number = 1): Digimon => {
   const template = getDigimonTemplate(templateName);
   if (!template) throw new Error(`No template found for ${templateName}`);
 
   const digimon: Digimon = {
-    id: Date.now(),
+    id: uuidv4(),
     ...template,
     level,
     digivolutionStage: template.digivolutionStage,
@@ -31,7 +32,9 @@ export const createUniqueDigimon = (templateName: string, level: number = 1): Di
     shield: 0,
     statusEffects: [],
     exp: 0,
-    deck: getStarterDeck(templateName)
+    deck: getStarterDeck(templateName),
+    nickname: undefined,
+    dateObtained: new Date()
   };
 
   return digimon;
@@ -40,7 +43,7 @@ export const createUniqueDigimon = (templateName: string, level: number = 1): Di
 export const getAllDigimon = (): Digimon[] => 
   getAllDigimonTemplates().map(name => createUniqueDigimon(name));
 
-export const getDigimonById = (id: number): Digimon | undefined => {
+export const getDigimonById = (id: string): Digimon | undefined => {
   const allDigimon = getAllDigimon();
   return allDigimon.find(digimon => digimon.id === id);
 };

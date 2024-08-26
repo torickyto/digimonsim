@@ -7,6 +7,7 @@ import { CardCollection as AllCards } from '../shared/cardCollection';
 import './HomeScreen.css';
 import DeckEditor from './DeckEditor';
 import DevTestBattleScreen from './DevTestBattleScreen';
+import { FaPencilAlt } from 'react-icons/fa';
 
 interface HomeScreenProps {
   playerTeam: Digimon[];
@@ -26,6 +27,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
   const [spriteScale, setSpriteScale] = useState(1);
   const screenRef = useRef<HTMLDivElement>(null);
   const [currentDigimonIndex, setCurrentDigimonIndex] = useState(0);
+  const [isEditingNickname, setIsEditingNickname] = useState(false);
+  const [newNickname, setNewNickname] = useState('');
+  const nicknameInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const updateSpriteScale = () => {
@@ -41,6 +45,12 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
     return () => window.removeEventListener('resize', updateSpriteScale);
   }, []);
 
+  useEffect(() => {
+    if (isEditingNickname && nicknameInputRef.current) {
+      nicknameInputRef.current.focus();
+    }
+  }, [isEditingNickname]);
+
   const toggleStats = () => {
     setShowStats(!showStats);
     setCurrentDigimonIndex(0);
@@ -54,6 +64,19 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
         return (prevIndex - 1 + playerTeam.length) % playerTeam.length;
       }
     });
+  };
+
+  const handleNicknameEdit = () => {
+    setNewNickname(playerTeam[currentDigimonIndex].nickname || playerTeam[currentDigimonIndex].displayName);
+    setIsEditingNickname(true);
+  };
+
+  const handleNicknameSave = () => {
+    const updatedTeam = playerTeam.map((digimon, index) => 
+      index === currentDigimonIndex ? { ...digimon, nickname: newNickname } : digimon
+    );
+    onUpdatePlayerTeam(updatedTeam);
+    setIsEditingNickname(false);
   };
 
   const toggleParty = () => setShowParty(!showParty);
@@ -91,19 +114,37 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
                         name={digimon.name} 
                         scale={spriteScale * 1.5} 
                       />
-                      <p>{digimon.displayName}</p>
+                      <p>{digimon.nickname ? digimon.nickname : digimon.displayName}</p>
                     </div>
                   ))}
                 </div>
                 {showStats && (
-                  <div className="stat-overlay">
-                    <div className="stat-navigation">
-                      <button onClick={() => cycleDigimon('prev')}>&lt; Prev</button>
-                      <h2>{playerTeam[currentDigimonIndex].displayName}</h2>
-                      <button onClick={() => cycleDigimon('next')}>Next &gt;</button>
-                    </div>
-                    <DigimonStatScreen digimon={playerTeam[currentDigimonIndex]} isObtained={true} />
-                    <button className="close-stats" onClick={toggleStats}>Close</button>
+                   <div className="stat-overlay">
+                   <div className="stat-navigation">
+                     <button onClick={() => cycleDigimon('prev')}>&lt; Prev</button>
+                     {isEditingNickname ? (
+                       <input
+                         ref={nicknameInputRef}
+                         type="text"
+                         value={newNickname}
+                         onChange={(e) => setNewNickname(e.target.value)}
+                         onBlur={handleNicknameSave}
+                         onKeyPress={(e) => e.key === 'Enter' && handleNicknameSave()}
+                         className="nickname-input"
+                       />
+                     ) : (
+                       <h2>
+                         {playerTeam[currentDigimonIndex].nickname || playerTeam[currentDigimonIndex].displayName}
+                         <FaPencilAlt className="edit-icon" onClick={handleNicknameEdit} />
+                       </h2>
+                     )}
+                     <button onClick={() => cycleDigimon('next')}>Next &gt;</button>
+                   </div>
+                   <DigimonStatScreen 
+                     digimon={playerTeam[currentDigimonIndex]} 
+                     isObtained={true}
+                   />
+                   <button className="close-stats" onClick={toggleStats}>Close</button>
                   </div>
                 )}
               </div>
