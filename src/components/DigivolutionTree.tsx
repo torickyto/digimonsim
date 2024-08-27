@@ -145,7 +145,7 @@ const DigivolutionTree: React.FC<DigivolutionTreeProps> = ({ currentDigimon, all
           className={`digimon-node ${node.digimon.name === currentDigimon.name ? 'current' : ''}`}
           style={{ 
             left: (node.x + offset.x) * scale - 32, 
-            top: (node.y + offset.y) * scale - 32,
+            top: (node.y + offset.y) * scale - 88,
             transform: `scale(${scale})`
           }}
         >

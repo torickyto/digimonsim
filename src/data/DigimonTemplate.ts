@@ -78,6 +78,22 @@ export const DigimonTemplates: Record<string, DigimonTemplate> = {
     startingCard: CardCollection.PEPPER_BREATH,
     passiveSkill: nullPassiveSkill
   },
+  minomon: {
+    name: 'minomon',
+    displayName: 'Minomon',
+    type: 'FREE' as DigimonType,
+    digivolutionStage: 'In-Training' as DigivolutionStage,
+    baseHp: 35,
+    baseAttack: 4,
+    baseHealing: 2,
+    baseEvadeChance: 0.05,
+    baseCritChance: 0.05,
+    baseAccuracy: 1,
+    baseCorruptionResistance: 0.2,
+    baseBuggedResistance: 0.2,
+    startingCard: CardCollection.PEPPER_BREATH,
+    passiveSkill: nullPassiveSkill
+  },
   gummymon: {
     name: 'gummymon',
     displayName: 'Gummymon',
@@ -204,6 +220,22 @@ export const DigimonTemplates: Record<string, DigimonTemplate> = {
     baseCorruptionResistance: 0.2,
     baseBuggedResistance: 0.2,
     startingCard: CardCollection.BOOM_BUBBLE,
+    passiveSkill: nullPassiveSkill
+  },
+  kamemon: {
+    name: 'kamemon',
+    displayName: 'Kamemon',
+    type: 'DATA' as DigimonType,
+    digivolutionStage: 'Rookie' as DigivolutionStage,
+    baseHp: 50,
+    baseAttack: 8,
+    baseHealing: 4,
+    baseEvadeChance: 0.05,
+    baseCritChance: 0.05,
+    baseAccuracy: 1,
+    baseCorruptionResistance: 0.2,
+    baseBuggedResistance: 0.2,
+    startingCard: CardCollection.PEPPER_BREATH,
     passiveSkill: nullPassiveSkill
   },
   greymon: {
@@ -382,6 +414,22 @@ export const DigimonTemplates: Record<string, DigimonTemplate> = {
     startingCard: CardCollection.DJ_SHOOTER,
     passiveSkill: nullPassiveSkill //start each battle with 25 shield
   },
+  shawujingmon: {
+    name: 'shawujingmon',
+    displayName: 'Shawujingmon',
+    type: 'DATA' as DigimonType,
+    digivolutionStage: 'Ultimate' as DigivolutionStage,
+    baseHp: 80,
+    baseAttack: 23,
+    baseHealing: 9,
+    baseEvadeChance: 0.15,
+    baseCritChance: 0.1,
+    baseAccuracy: 1,
+    baseCorruptionResistance: 0.3,
+    baseBuggedResistance: 0.3,
+    startingCard: CardCollection.DJ_SHOOTER,
+    passiveSkill: nullPassiveSkill // DEALING DAMAGE GIVES THE USER 5 SHIELD (once per card). BASE RAM VALUE + 1
+  },
   superstarmon: {
     name: 'superstarmon',
     displayName: 'Superstarmon',
@@ -444,7 +492,7 @@ export const DigimonTemplates: Record<string, DigimonTemplate> = {
     baseCorruptionResistance: 0.6,
     baseBuggedResistance: 0.6,
     startingCard: CardCollection.JUMBO_CRATER,
-    passiveSkill: nullPassiveSkill //START EACH BATTLE WITH + 50 SHIELD. BASE RAM VALUE + 1
+    passiveSkill: nullPassiveSkill //START EACH BATTLE WITH + 50 SHIELD. BASE RAM VALUE + 2
   },
   kimeramon: {
     name: 'kimeramon',
