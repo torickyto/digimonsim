@@ -27,32 +27,27 @@ const DigivolutionTree: React.FC<DigivolutionTreeProps> = ({ currentDigimon, all
   const [scale, setScale] = useState(1);
 
   useEffect(() => {
-    const digimonNames = Array.from(new Set(connections.flatMap(c => [c.from, c.to])));
     const digimonByStage = stageOrder.map(stage => 
-      digimonNames.filter(name => {
-        const digimon = allDigimon.find(d => d.name === name);
-        return digimon && digimon.digivolutionStage === stage;
-      })
+      allDigimon.filter(d => d.digivolutionStage === stage)
     );
 
     const totalWidth = window.innerWidth * 0.8;
     const totalHeight = window.innerHeight * 0.8;
-    const stageWidth = totalWidth / stageOrder.length;
+    const columnWidth = totalWidth / stageOrder.length;
 
-    const newNodes = digimonByStage.flatMap((stageDigimon, stageIndex) => 
-      stageDigimon.map((name, index) => {
-        const digimon = allDigimon.find(d => d.name === name) || 
-                        { id: `placeholder-${name}`, name, displayName: name, digivolutionStage: stageOrder[stageIndex] } as Digimon;
-        return {
-          digimon,
-          x: stageWidth * (stageIndex + 0.5) + window.innerWidth * 0.1,
-          y: (index + 1) * totalHeight / (stageDigimon.length + 1) + window.innerHeight * 0.1
-        };
-      })
-    );
+    const newNodes: DigimonNode[] = [];
+
+    digimonByStage.forEach((stageDigimon, stageIndex) => {
+      const columnX = columnWidth * (stageIndex + 0.5) + window.innerWidth * 0.1;
+      
+      stageDigimon.forEach((digimon, index) => {
+        const y = (index + 1) * totalHeight / (stageDigimon.length + 1) + window.innerHeight * 0.1;
+        newNodes.push({ digimon, x: columnX, y });
+      });
+    });
 
     setNodes(newNodes);
-  }, [allDigimon, connections]);
+  }, [allDigimon]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -81,13 +76,20 @@ const DigivolutionTree: React.FC<DigivolutionTreeProps> = ({ currentDigimon, all
 
         ctx.beginPath();
         ctx.moveTo(startNode.x, startNode.y);
-        ctx.lineTo(endNode.x, endNode.y);
+
+        // Create a curved line
+        const midX = (startNode.x + endNode.x) / 2;
+        const midY = (startNode.y + endNode.y) / 2;
+        const controlX = midX + (endNode.x - startNode.x) / 4;
+        const controlY = midY;
+
+        ctx.quadraticCurveTo(controlX, controlY, endNode.x, endNode.y);
         ctx.strokeStyle = gradient;
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 2;
         ctx.stroke();
 
         // Draw arrow
-        const angle = Math.atan2(endNode.y - startNode.y, endNode.x - startNode.x);
+        const angle = Math.atan2(endNode.y - controlY, endNode.x - controlX);
         ctx.save();
         ctx.translate(endNode.x, endNode.y);
         ctx.rotate(angle);
