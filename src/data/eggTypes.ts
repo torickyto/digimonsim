@@ -35,58 +35,58 @@ export const EggTypes: EggType[] = [
   },
   {
     id: 5,
+    name: "Legendary Egg",
+    possibleOutcomes: ['wizardmon', 'salamon', 'gatomon']
+  },
+  {
+    id: 6,
     name: "Orange Egg",
     possibleOutcomes: ['palmon', 'tentomon', 'mushroomon']
   },
   {
-    id: 6,
+    id: 7,
     name: "Terra Egg",
     possibleOutcomes: ['elecmon', 'tapirmon', 'terriermon']
   },
   {
-    id: 7,
+    id: 8,
     name: "Titan Egg",
     possibleOutcomes: ['agumon', 'veemon', 'monodramon']
   },
   {
-    id: 8,
+    id: 9,
     name: "Cloudy Egg",
     possibleOutcomes: ['gomamon', 'betamon', 'syakomon']
   },
   {
-    id: 9,
+    id: 10,
     name: "Striped Egg",
     possibleOutcomes: ['hagurumon', 'guardromon', 'mekanorimon']
   },
   {
-    id: 10,
+    id: 11,
     name: "Cursed Egg",
     possibleOutcomes: ['devimon', 'impmon', 'keramon']
   },
   {
-    id: 11,
+    id: 12,
     name: "Green Egg",
     possibleOutcomes: ['gatomon', 'salamon', 'angewomon']
   },
   {
-    id: 12,
+    id: 13,
     name: "Verdant Egg",
     possibleOutcomes: ['agumon', 'coronamon', 'flamemon']
   },
   {
-    id: 13,
+    id: 14,
     name: "Gaia Egg",
     possibleOutcomes: ['patamon', 'biyomon', 'hawkmon']
   },
   {
-    id: 14,
-    name: "Lovely Egg",
-    possibleOutcomes: ['gotsumon', 'armadillomon', 'ogremon']
-  },
-  {
     id: 15,
-    name: "Darkness Egg",
-    possibleOutcomes: ['demidevimon', 'devimon', 'myotismon']
+    name: "Lovely Egg",
+    possibleOutcomes: ['kimeramon']
   },
   {
     id: 16,

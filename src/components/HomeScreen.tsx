@@ -146,9 +146,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
     const newDigimon = createUniqueDigimon(newDigimonTemplate.name);
     setNewlyHatchedDigimon(newDigimon);
     
-    // Add the new Digimon to owned Digimon
-    const updatedOwnedDigimon = [...ownedDigimon, newDigimon];
-    onUpdateOwnedDigimon(updatedOwnedDigimon);
     setShowNewDigimonStats(true);
 
     // Update eggs
