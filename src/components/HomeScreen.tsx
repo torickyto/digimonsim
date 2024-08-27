@@ -116,6 +116,12 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
     }
   };
 
+   useEffect(() => {
+    if (showDigivolutionModal) {
+      handleDigivolve();
+    }
+  }, [showDigivolutionModal]);
+
   useEffect(() => {
     const connections = getDigivolutionConnections();
     const digimonNames = Array.from(new Set(connections.flatMap(c => [c.from, c.to])));
@@ -269,6 +275,26 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
     />
   </div>
 )}
+       {showDigivolutionModal && digivolvingDigimon && newDigimonForm && (
+        <div className="digivolution-overlay">
+          <div className="digivolution-content">
+            <h2>{digivolvingDigimon.nickname || digivolvingDigimon.displayName} IS DIGIVOLVING</h2>
+            <div className={`digivolution-animation stage-${digivolutionStage}`}>
+              <div className="digimon-container original">
+                <DigimonSprite name={digivolvingDigimon.name} scale={2} />
+              </div>
+              <div className="digivolution-effect"></div>
+              <div className="digimon-container target">
+                <DigimonSprite 
+                  name={newDigimonForm} 
+                  scale={2} 
+                  isAttacking={digivolutionStage === 4}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
               </div>
             </div>
           </div>
@@ -312,29 +338,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
         </div>
       )}
 
-{showDigivolutionModal && digivolvingDigimon && newDigimonForm && (
-        <div className="digivolution-modal">
-          <div className="digivolution-content">
-            <h2>{digivolvingDigimon.nickname || digivolvingDigimon.displayName} is digivolving!</h2>
-            <div className={`digivolution-animation stage-${digivolutionStage}`}>
-              <div className="digimon-container original">
-                <DigimonSprite name={digivolvingDigimon.name} scale={2} />
-              </div>
-              <div className="digivolution-effect"></div>
-              <div className="digimon-container target">
-                <DigimonSprite 
-                  name={newDigimonForm} 
-                  scale={2} 
-                  isAttacking={digivolutionStage === 4}
-                />
-              </div>
-            </div>
-            {digivolutionStage === 0 && (
-              <button onClick={handleDigivolve}>Start Digivolution</button>
-            )}
-          </div>
-        </div>
-      )}
       {showDeckEditor && selectedDigimon && (
         <DeckEditor 
           digimon={selectedDigimon} 
