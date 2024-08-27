@@ -253,8 +253,8 @@ export interface Digimon extends DigimonState {
 
 export interface DigimonEgg {
   id: number;
+  typeId: number;
   hatchTime: number;
-  possibleDigimon: string[];
 }
 
 // Battle-related interfaces

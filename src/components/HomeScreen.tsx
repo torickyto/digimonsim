@@ -17,6 +17,7 @@ import { calculateBaseStat } from '../shared/statCalculations';
 import { v4 as uuidv4 } from 'uuid';
 import DevDigimonPartyBox from './DevDigimonPartyBox';
 import DigimonPartyBox from './DigimonPartyBox';
+import Eggs from './Eggs';
 
 interface HomeScreenProps {
   playerTeam: Digimon[];
@@ -25,6 +26,8 @@ interface HomeScreenProps {
   onUpdatePlayerTeam: (updatedTeam: Digimon[]) => void;
   onUpdateOwnedDigimon: (updatedOwnedDigimon: Digimon[]) => void; 
   ownedDigimon: Digimon[];  
+  onGenerateEgg: () => void;
+  onHatchEgg: (eggId: number) => void;
 }
 
 const HomeScreen: React.FC<HomeScreenProps> = ({ 
@@ -33,7 +36,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   onStartBattle, 
   onUpdatePlayerTeam,
   onUpdateOwnedDigimon,  
-  ownedDigimon  
+  ownedDigimon,  
+  onGenerateEgg,
+  onHatchEgg
 }) => {
   const [showStats, setShowStats] = useState(false);
   const [showParty, setShowParty] = useState(false);
@@ -401,6 +406,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
             <div className="hbutton-container">
               <button className="stats-button" onClick={toggleStats}>Stats</button>
               <button className="eggs-button" onClick={toggleEggs}>Eggs</button>
+            <button onClick={onGenerateEgg}>DEV Generate Egg</button>
               <button className="party-button" onClick={toggleParty}>Party</button>
               <button className="battle-button" onClick={onStartBattle}>Battle</button>
             </div>
@@ -415,12 +421,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
 
       {showEggs && (
         <div className="modal">
-          <h2>Your Eggs</h2>
-          <ul>
-            {eggs.map((egg) => (
-              <li key={egg.id}>Egg {egg.id}</li>
-            ))}
-          </ul>
+          <Eggs eggs={eggs} />
+          <button onClick={() => eggs.length > 0 && onHatchEgg(eggs[0].id)}>Hatch First Egg</button>
           <button onClick={toggleEggs}>Close</button>
         </div>
       )}

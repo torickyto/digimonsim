@@ -1,0 +1,36 @@
+.eggs-container {
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.8);
+    border-radius: 10px;
+  }
+  
+  .eggs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 20px;
+  }
+  
+  .egg-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .egg-sprite {
+    background-image: url('../assets/images/digitama-sheet.png');
+    background-repeat: no-repeat;
+    background-size: 576px 256px;
+    width: 32px;
+    height: 32px;
+    image-rendering: pixelated;
+  }
+  
+  .egg-info {
+    font-size: 12px;
+    text-align: center;
+    margin-top: 10px;
+  }
+  
+  .egg-info div {
+    margin-bottom: 5px;
+  }
