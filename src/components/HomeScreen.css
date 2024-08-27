@@ -479,6 +479,147 @@
   border: 1px solid rgba(0, 188, 212, 0.2);
 }
 
+.digivolution-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #222323;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+.digivolution-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+
+.digivolution-animation {
+  width: 100%;
+  height: 80%;
+  position: relative;
+  overflow: hidden;
+}
+
+.digimon-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transition: all 0.5s ease-in-out;
+}
+
+.digimon-container.original {
+  opacity: 1;
+  visibility: visible;
+}
+
+.digimon-container.target {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.digivolution-effect {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 0;
+  height: 0;
+  background-color: white;
+  border-radius: 50%;
+  opacity: 0;
+  transition: all 1s ease-in-out;
+}
+
+.digivolution-animation.stage-1 .digimon-container.original {
+  animation: pulse 0.5s infinite alternate;
+}
+
+.digivolution-animation.stage-2 .digimon-container.original,
+.digivolution-animation.stage-3 .digimon-container.original,
+.digivolution-animation.stage-4 .digimon-container.original {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.digivolution-animation.stage-2 .digivolution-effect {
+  width: 300vw;
+  height: 300vw;
+  opacity: 0.8;
+}
+
+.digivolution-animation.stage-3 .digimon-container.target,
+.digivolution-animation.stage-4 .digimon-container.target {
+  opacity: 1;
+  visibility: visible;
+}
+
+.digivolution-animation.stage-3 .digimon-container.target {
+  animation: appear 1s forwards;
+}
+
+@keyframes pulse {
+  0% { transform: translate(-50%, -50%) scale(1); }
+  100% { transform: translate(-50%, -50%) scale(1.1); }
+}
+
+@keyframes appear {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+.digivolution-overlay h2 {
+  font-size: 2.5em;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.digivolution-overlay button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 1.2em;
+  background-color: #ffd700;
+  color: black;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.digivolution-overlay button:hover {
+  background-color: #ffea00;
+}
+.digivolution-modal h2 {
+  font-size: 2.5em;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.digivolution-modal button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 1.2em;
+  background-color: #ffd700;
+  color: black;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.digivolution-modal button:hover {
+  background-color: #ffea00;
+}
+
 @media (max-width: 768px) {
   .digivice-content {
     flex-direction: column;
