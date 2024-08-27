@@ -3,6 +3,7 @@ import { Digimon } from '../shared/types';
 import DigimonSprite from './DigimonSprite';
 import './DigimonPartyBox.css';
 import { FaPlus } from 'react-icons/fa';
+import { createUniqueDigimon } from '../data/digimon';
 
 interface DevDigimonPartyBoxProps {
   party: Digimon[];
@@ -24,7 +25,9 @@ const DevDigimonPartyBox: React.FC<DevDigimonPartyBoxProps> = ({ party, allDigim
 
   const handleBoxDigimonClick = (digimon: Digimon) => {
     if (selectedPartyIndex !== null) {
-      onSwapDigimon(selectedPartyIndex, digimon);
+      // Create a new unique Digimon instance
+      const newDigimon = createUniqueDigimon(digimon.name);
+      onSwapDigimon(selectedPartyIndex, newDigimon);
       setSelectedPartyIndex(null);
     }
   };
@@ -62,12 +65,16 @@ const DevDigimonPartyBox: React.FC<DevDigimonPartyBoxProps> = ({ party, allDigim
           {[0, 1, 2].map((index) => renderDigimonCard(party[index] || null, index, true))}
         </div>
       </div>
-      <h3>STORAGE</h3>
+      <h3>ALL DIGIMON</h3>
       <div className="box-container">
         <div className="box-grid">
-          {allDigimon
-            .filter(digimon => !party.some(partyMember => partyMember && partyMember.id === digimon.id))
-            .map((digimon, index) => renderDigimonCard(digimon, index, false))}
+          {allDigimon.map((digimon, index) => {
+            if (!digimon || !digimon.name) {
+              console.error('Invalid Digimon:', digimon);
+              return null;
+            }
+            return renderDigimonCard(digimon, index, false);
+          })}
         </div>
       </div>
     </div>

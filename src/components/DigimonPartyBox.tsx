@@ -14,7 +14,7 @@ const DigimonPartyBox: React.FC<DigimonPartyBoxProps> = ({ party, ownedDigimon, 
     const [selectedPartyIndex, setSelectedPartyIndex] = useState<number | null>(null);
   
     const handlePartySlotClick = (index: number) => {
-      if (selectedPartyIndex === index && party[index]) {
+      if (selectedPartyIndex === index && party[index] && party.length > 1) {
         onSwapDigimon(index, null);
         setSelectedPartyIndex(null);
       } else {
@@ -29,30 +29,32 @@ const DigimonPartyBox: React.FC<DigimonPartyBoxProps> = ({ party, ownedDigimon, 
       }
     };
 
-    const renderDigimonCard = (digimon: Digimon | null, index: number, isPartySlot: boolean) => {
-        const cardClass = isPartySlot ? 'party-slot' : 'box-slot';
-        const selectedClass = isPartySlot && selectedPartyIndex === index ? 'selected' : '';
-        const emptyClass = !digimon ? 'empty' : '';
-        return (
-          <div
-            key={digimon ? digimon.id : `slot-${index}`}
-            className={`pdigimon-card ${cardClass} ${selectedClass} ${emptyClass}`}
-            onClick={() => isPartySlot ? handlePartySlotClick(index) : digimon && handleBoxDigimonClick(digimon)}
-          >
-            {digimon ? (
-              <>
-                <div className="plevel">Lv.{digimon.level}</div>
-                <div className="psprite-container">
-                  <DigimonSprite name={digimon.name} scale={1.2} />
-                </div>
-                <div className="pname">{digimon.nickname || digimon.displayName}</div>
-              </>
-            ) : (
-              <FaPlus className="add-icon" />
-            )}
-          </div>
-        );
-      };
+     const renderDigimonCard = (digimon: Digimon | null, index: number, isPartySlot: boolean) => {
+    const cardClass = isPartySlot ? 'party-slot' : 'box-slot';
+    const selectedClass = isPartySlot && selectedPartyIndex === index ? 'selected' : '';
+    const emptyClass = !digimon ? 'empty' : '';
+    const disabledClass = isPartySlot && party.length === 1 && digimon ? 'disabled' : '';
+
+    return (
+      <div
+        key={digimon ? digimon.id : `slot-${index}`}
+        className={`pdigimon-card ${cardClass} ${selectedClass} ${emptyClass} ${disabledClass}`}
+        onClick={() => isPartySlot ? handlePartySlotClick(index) : digimon && handleBoxDigimonClick(digimon)}
+      >
+        {digimon ? (
+          <>
+            <div className="plevel">Lv.{digimon.level}</div>
+            <div className="psprite-container">
+              <DigimonSprite name={digimon.name} scale={1.2} />
+            </div>
+            <div className="pname">{digimon.nickname || digimon.displayName}</div>
+          </>
+        ) : (
+          <FaPlus className="add-icon" />
+        )}
+      </div>
+    );
+  };
 
       const availableDigimon = ownedDigimon.filter(digimon => !party.some(partyMember => partyMember && partyMember.id === digimon.id));
 

@@ -23,9 +23,18 @@ interface HomeScreenProps {
   eggs: DigimonEgg[];
   onStartBattle: () => void;
   onUpdatePlayerTeam: (updatedTeam: Digimon[]) => void;
+  onUpdateOwnedDigimon: (updatedOwnedDigimon: Digimon[]) => void; 
+  ownedDigimon: Digimon[];  
 }
 
-const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle, onUpdatePlayerTeam }) => {
+const HomeScreen: React.FC<HomeScreenProps> = ({ 
+  playerTeam, 
+  eggs, 
+  onStartBattle, 
+  onUpdatePlayerTeam,
+  onUpdateOwnedDigimon,  
+  ownedDigimon  
+}) => {
   const [showStats, setShowStats] = useState(false);
   const [showParty, setShowParty] = useState(false);
   const [showEggs, setShowEggs] = useState(false);
@@ -48,7 +57,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
   const [showPartyBox, setShowPartyBox] = useState(false);
   const [showDevPartyBox, setShowDevPartyBox] = useState(false);
   const [allObtainedDigimon, setAllObtainedDigimon] = useState<Digimon[]>([]);
-  const [ownedDigimon, setOwnedDigimon] = useState<Digimon[]>([]);
+  const [localOwnedDigimon, setLocalOwnedDigimon] = useState<Digimon[]>(ownedDigimon);
+
+
 
   useEffect(() => {
     // Check for digivolution conditions
@@ -79,45 +90,43 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
     });
   }, [playerTeam]);
 
-  useEffect(() => {
-    // Update ownedDigimon whenever allObtainedDigimon or playerTeam changes
-    setOwnedDigimon(allObtainedDigimon.filter(d => !playerTeam.some(pd => pd.id === d.id)));
-  }, [allObtainedDigimon, playerTeam]);
+    useEffect(() => {
+    setLocalOwnedDigimon(ownedDigimon);
+  }, [ownedDigimon]);
 
   const handleSwapDigimon = (partyIndex: number, newDigimon: Digimon | null) => {
     let updatedTeam = [...playerTeam];
-    let updatedAllObtainedDigimon = [...allObtainedDigimon];
-
+    let updatedOwnedDigimon = [...localOwnedDigimon];
+  
     if (newDigimon) {
       // Adding a Digimon to the party
       if (updatedTeam[partyIndex]) {
         // Swap
         const oldDigimon = updatedTeam[partyIndex];
         updatedTeam[partyIndex] = newDigimon;
-        updatedAllObtainedDigimon = updatedAllObtainedDigimon.map(d => 
-          d.id === newDigimon.id ? newDigimon :
-          d.id === oldDigimon.id ? oldDigimon : d
-        );
+        updatedOwnedDigimon = updatedOwnedDigimon.filter(d => d.id !== newDigimon.id);
+        if (!updatedOwnedDigimon.find(d => d.id === oldDigimon.id)) {
+          updatedOwnedDigimon.push(oldDigimon);
+        }
       } else {
         // Add to empty slot
         updatedTeam[partyIndex] = newDigimon;
-        updatedAllObtainedDigimon = updatedAllObtainedDigimon.map(d => 
-          d.id === newDigimon.id ? newDigimon : d
-        );
+        updatedOwnedDigimon = updatedOwnedDigimon.filter(d => d.id !== newDigimon.id);
       }
     } else {
       // Removing a Digimon from the party
-      if (updatedTeam[partyIndex]) {
+      if (updatedTeam[partyIndex] && updatedTeam.length > 1) {
         const removedDigimon = updatedTeam[partyIndex];
         updatedTeam = updatedTeam.filter((_, index) => index !== partyIndex);
-        updatedAllObtainedDigimon = updatedAllObtainedDigimon.map(d => 
-          d.id === removedDigimon.id ? removedDigimon : d
-        );
+        if (!updatedOwnedDigimon.find(d => d.id === removedDigimon.id)) {
+          updatedOwnedDigimon.push(removedDigimon);
+        }
       }
     }
-
+  
     onUpdatePlayerTeam(updatedTeam);
-    setAllObtainedDigimon(updatedAllObtainedDigimon);
+    setLocalOwnedDigimon(updatedOwnedDigimon);
+    onUpdateOwnedDigimon(updatedOwnedDigimon);
   };
 
 
@@ -306,20 +315,20 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
       <div className="stat-overlay">
         <DigimonPartyBox
           party={playerTeam}
-          ownedDigimon={ownedDigimon}
+          ownedDigimon={localOwnedDigimon}
           onSwapDigimon={handleSwapDigimon}
         />
       </div>
           )}
-                {showDevPartyBox && (
-            <div className="stat-overlay">
-              <DevDigimonPartyBox
-                party={playerTeam}
-                allDigimon={allDigimon}
-                onSwapDigimon={handleSwapDigimon}
-              />
-            </div>
-          )}
+                 {showDevPartyBox && (
+      <div className="stat-overlay">
+        <DevDigimonPartyBox
+          party={playerTeam}
+          allDigimon={allDigimon}
+          onSwapDigimon={handleSwapDigimon}
+        />
+      </div>
+    )}
 
                 {showStats && (
                   <div className="stat-overlay">

@@ -126,6 +126,15 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
+
+  .pdigimon-card.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .pdigimon-card.disabled:hover {
+    transform: none;
+  }
   
   .add-icon {
     font-size: 2vw;
