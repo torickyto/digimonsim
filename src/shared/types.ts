@@ -1,7 +1,7 @@
 // types.ts
 
 // Enums and basic types
-export type DigimonType = 'NULL' | 'DATA' | 'VACCINE' | 'VIRUS';
+export type DigimonType = 'FREE' | 'DATA' | 'VACCINE' | 'VIRUS';
 export type CardEffectType = 'attack' | 'shield' | 'special' | 'healing';
 export type TargetType = 'self' | 'single_ally' | 'enemy' | 'all_enemies' | 'random_enemy' | 'all_allies' | 'random_ally' | 'none'| 'all';
 export type StatusEffectType = 'corruption' | 'bugged' | 'taunt';
@@ -314,7 +314,7 @@ export type CardCreationFunction = (
 
 // Utility constants
 export const TYPE_COLORS: Record<DigimonType, string> = {
-  NULL: 'white',
+  FREE: 'white',
   DATA: '#85daeb',
   VACCINE: '#f5daa7',
   VIRUS: '#ca60ae'

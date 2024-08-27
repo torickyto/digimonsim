@@ -3,6 +3,14 @@
   image-rendering: pixelated;
   transform-origin: center bottom;
 }
+
+.koromon {
+  background-image: url('../assets/images/koromon-sprite.png');
+}
+
+.pagumon {
+  background-image: url('../assets/images/pagumon-sprite.png');
+}
   
   .agumon {
     background-image: url('../assets/images/agumon-sprite.png');
@@ -39,6 +47,15 @@
   .wizardmon {
     background-image: url('../assets/images/wizardmon-sprite.png');
   }   
+
+  .revolmon {
+    background-image: url('../assets/images/revolmon-sprite.png');
+  }   
+  
+
+  .vilemon {
+    background-image: url('../assets/images/vilemon-sprite.png');
+  } 
   
   .gawappamon {
     background-image: url('../assets/images/gawappamon-sprite.png');
@@ -65,30 +82,23 @@
     transition: none !important;
   }
   /* small spritesheets */
-  .agumon, .gabumon, .impmon, .patamon, .tentomon {
+  .koromon, .pagumon, .agumon, .gabumon, .impmon, .patamon, .tentomon {
     width: 64px;
     height: 80px;
   }
 
-  .patamon.dead {
-    background-size: 192px 160px; 
-    background-position: 0 -80px; 
-    width: 96px; 
-    height: 80px;
-  }
-  
-  .agumon.breathing, .gabumon.breathing, .impmon.breathing, .patamon.breathing, .tentomon.breathing {
+  .koromon.breathing, .pagumon.breathing, .agumon.breathing, .gabumon.breathing, .impmon.breathing, .patamon.breathing, .tentomon.breathing {
     animation: breathe-small 1.5s steps(1, end) infinite;
   }
 
-  .agumon.attacking, .gabumon.attacking, .impmon.attacking, .patamon.attacking, .tentomon.attacking {
+  .koromon.breathing, .pagumon.breathing, .agumon.attacking, .gabumon.attacking, .impmon.attacking, .patamon.attacking, .tentomon.attacking {
     background-size: 192px 160px; /* spritesheet size */
     background-position: -96px -80px;
     width: 96px; 
     height: 80px;
   }
 
-  .agumon.onHit, .gabumon.onHit, .impmon.onHit, .patamon.onHit, .tentomon.onHit {
+  .koromon.onHit, .pagumon.onHit, .agumon.onHit, .gabumon.onHit, .impmon.onHit, .patamon.onHit, .tentomon.onHit {
     background-size: 192px 160px; 
     background-position: 0 -80px; 
     width: 96px; 
@@ -110,12 +120,12 @@
   }
 
   /* Medium sprite */
-.goblimon, .terriermon, .wizardmon, .gawappamon, .lucemon {
+.goblimon, .terriermon, .vilemon, .wizardmon, .revolmon, .gawappamon, .lucemon {
   width: 112px;
   height: 112px;
 }
 
-.goblimon.breathing, .terriermon.breathing, .wizardmon.breathing, .gawappamon.breathing, .lucemon.breathing {
+.goblimon.breathing, .terriermon.breathing, .vilemon.breathing, .wizardmon.breathing, .revolmon.breathing, .gawappamon.breathing, .lucemon.breathing {
   animation: breathe-medium 1.5s steps(1, end) infinite;
 }
 
@@ -125,14 +135,14 @@
   50% { background-position: -226px 0; }
 }
 
-.goblimon.attacking, .terriermon.attacking, .wizardmon.attacking, .gawappamon.attacking, .lucemon.attacking {
+.goblimon.attacking, .terriermon.attacking, .vilemon.attacking, .wizardmon.attacking, .revolmon.attacking, .gawappamon.attacking, .lucemon.attacking {
   background-size: 335px 256px; /* spritesheet size */
     background-position: -167.5px -112px;
     width: 167.5px; 
     height: 144px;
 }
 
-.goblimon.onHit, .terriermon.onHit, .wizardmon.onHit, .gawappamon.onHit, .lucemon.onHit {
+.goblimon.onHit, .terriermon.onHit, .vilemon.onHit, .wizardmon.onHit, .revolmon.onHit, .gawappamon.onHit, .lucemon.onHit {
   background-size: 335px 256px; /* spritesheet size */
     background-position: 0px -112px;
     width: 167.5px; 

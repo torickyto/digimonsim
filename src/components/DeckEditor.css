@@ -79,12 +79,92 @@
     flex-direction: column;
   }
   
+  .de-selected-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 2vh;
+    border-radius: 10px;
+    width: 100%;
+    max-height: 100%;
+    overflow-y: auto;
+  }
+  
+  .de-selected-card img {
+    width: 80%;
+    border-radius: 10px;
+    margin-bottom: 2vh;
+  }
+  
+  .de-selected-card h4 {
+    color: #ffd700;
+    font-size: 1.5vw;
+    margin: 1vh 0;
+  }
+  
+  .de-card-description {
+    font-size: 1vw;
+    text-align: center;
+    margin-bottom: 2vh;
+    color: #ffffff;
+  }
+  
+  .de-card-details {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 2vh;
+  }
+  
+  .de-card-details span {
+    font-size: 0.9vw;
+    color: #4ac8fa;
+    margin-bottom: 0.5vh;
+    flex-basis: 48%;
+  }
+  
+  .de-card-effects {
+    width: 100%;
+    margin-bottom: 2vh;
+  }
+  
+  .de-card-effects h5 {
+    color: #ffd700;
+    font-size: 1.2vw;
+    margin-bottom: 1vh;
+  }
+  
+  .de-card-effect {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 1vh;
+    border-radius: 5px;
+    margin-bottom: 1vh;
+  }
+  
+  .de-card-effect p {
+    font-size: 0.9vw;
+    color: #ffffff;
+    margin: 0.5vh 0;
+  }
+  
+  .de-card-selection-note {
+    font-size: 0.9vw;
+    color: #ff9900;
+    font-style: italic;
+    text-align: center;
+    margin-top: 1vh;
+  }
+  
   .de-card-preview {
     width: 40%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
+    overflow-y: auto;
+    padding-right: 1vw;
   }
   
   .de-deck-editor h3 {
@@ -148,47 +228,7 @@
     color: #ffd700;
   }
   
-  .de-selected-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background-color: rgba(0, 0, 0, 0.5);
-    padding: 2vh;
-    border-radius: 10px;
-    width: 100%;
-  }
-  
-  .de-selected-card img {
-    width: 80%;
-    border-radius: 10px;
-    margin-bottom: 2vh;
-  }
-  
-  .de-selected-card h4 {
-    color: #ffd700;
-    font-size: 1.5vw;
-    margin: 1vh 0;
-  }
-  
-  .de-selected-card p {
-    font-size: 1vw;
-    text-align: center;
-    margin-bottom: 2vh;
-  }
-  
-  .de-card-details {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    margin-bottom: 2vh;
-  }
-  
-  .de-card-details span {
-    font-size: 0.9vw;
-    color: #4ac8fa;
-    margin-bottom: 0.5vh;
-  }
-  
+
   .de-deck-editor-actions {
     display: flex;
     justify-content: center;

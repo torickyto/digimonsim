@@ -32,7 +32,7 @@ export const CardCollection: Record<string, Card> = {
     'Punch',
     'attack',
     1,
-    'NULL',
+    'FREE',
     '',
     'enemy',
     [{
@@ -49,7 +49,7 @@ export const CardCollection: Record<string, Card> = {
     'Block',
     'shield',
     1,
-    'NULL',
+    'FREE',
     '',
     'self',
     [{
@@ -66,7 +66,7 @@ export const CardCollection: Record<string, Card> = {
     'Snack Time',
     'special',
     0,
-    'NULL',
+    'FREE',
     '',
     'self',
     [{
@@ -666,6 +666,42 @@ DARK_MIND: createCard(
   {
     description: "PLACEHOLDER",
     gainRam: 10
+  }]
+),
+
+//revolmon
+QUICKSHOT: createCard(
+  'QUICKSHOT',
+  'Quickshot',
+  'attack',
+  1,
+  'VACCINE',
+  '',
+  'enemy',
+  [{
+    description: "",
+    damage: {
+      formula: 'BASIC',
+      target: 'enemy'
+    },
+    recompile: true
+  }]
+),
+
+RUSSIAN_ROULETTE: createCard(
+  'RUSSIAN_ROULETTE',
+  'Russian Roulette',
+  'attack',
+  1,
+  'VACCINE',
+  '',
+  'random_ally',
+  [{
+    description: "Shoot a random digimon (implement logic for random targeting except self).",
+    damage: {
+      formula: 'HEAVY',
+      target: 'enemy'
+    },
   }]
 ),
 
