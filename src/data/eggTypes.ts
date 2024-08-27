@@ -4,28 +4,249 @@ import { DigimonTemplates } from './DigimonTemplate';
 export interface EggType {
   id: number;
   name: string;
-  description: string;
   possibleOutcomes: string[]; 
 }
 
 export const EggTypes: EggType[] = [
   {
     id: 0,
-    name: "Dragon's Egg",
-    description: "A warm egg with a scaly pattern.",
-    possibleOutcomes: ['koromon', 'tsunomon', 'agumon', 'gabumon']
+    name: "Red Egg",
+    possibleOutcomes: ['koromon', 'tsunomon']
   },
   {
     id: 1,
-    name: "Beast's Egg",
-    description: "A furry egg that occasionally twitches.",
+    name: "Pyro Egg",
     possibleOutcomes: ['tsunomon', 'pagumon', 'gabumon', 'terriermon']
   },
   {
     id: 2,
-    name: "Bird's Egg",
-    description: "A lightweight egg with a feathery texture.",
+    name: "Magma Egg",
     possibleOutcomes: ['tokomon', 'patamon', 'tentomon']
+  },
+  {
+    id: 3,
+    name: "Nature Egg",
+    possibleOutcomes: ['gomamon', 'gabumon', 'elecmon']
+  },
+  {
+    id: 4,
+    name: "Striped Egg",
+    possibleOutcomes: ['wizardmon', 'salamon', 'gatomon']
+  },
+  {
+    id: 5,
+    name: "Orange Egg",
+    possibleOutcomes: ['palmon', 'tentomon', 'mushroomon']
+  },
+  {
+    id: 6,
+    name: "Terra Egg",
+    possibleOutcomes: ['elecmon', 'tapirmon', 'terriermon']
+  },
+  {
+    id: 7,
+    name: "Titan Egg",
+    possibleOutcomes: ['agumon', 'veemon', 'monodramon']
+  },
+  {
+    id: 8,
+    name: "Cloudy Egg",
+    possibleOutcomes: ['gomamon', 'betamon', 'syakomon']
+  },
+  {
+    id: 9,
+    name: "Striped Egg",
+    possibleOutcomes: ['hagurumon', 'guardromon', 'mekanorimon']
+  },
+  {
+    id: 10,
+    name: "Cursed Egg",
+    possibleOutcomes: ['devimon', 'impmon', 'keramon']
+  },
+  {
+    id: 11,
+    name: "Green Egg",
+    possibleOutcomes: ['gatomon', 'salamon', 'angewomon']
+  },
+  {
+    id: 12,
+    name: "Verdant Egg",
+    possibleOutcomes: ['agumon', 'coronamon', 'flamemon']
+  },
+  {
+    id: 13,
+    name: "Gaia Egg",
+    possibleOutcomes: ['patamon', 'biyomon', 'hawkmon']
+  },
+  {
+    id: 14,
+    name: "Lovely Egg",
+    possibleOutcomes: ['gotsumon', 'armadillomon', 'ogremon']
+  },
+  {
+    id: 15,
+    name: "Darkness Egg",
+    possibleOutcomes: ['demidevimon', 'devimon', 'myotismon']
+  },
+  {
+    id: 16,
+    name: "Striped Egg",
+    possibleOutcomes: ['bakemon', 'phantomon', 'wizardmon']
+  },
+  {
+    id: 17,
+    name: "Techno Egg",
+    possibleOutcomes: ['hagurumon', 'guardromon', 'andromon']
+  },
+  {
+    id: 18,
+    name: "Blue Egg",
+    possibleOutcomes: ['palmon', 'lalamon', 'veggimon']
+  },
+  {
+    id: 19,
+    name: "Sky Egg",
+    possibleOutcomes: ['gomamon', 'syakomon', 'whamon']
+  },
+  {
+    id: 20,
+    name: "Stratos Egg",
+    possibleOutcomes: ['elecmon', 'thundermon', 'veedramon']
+  },
+  {
+    id: 21,
+    name: "Nimbus Egg",
+    possibleOutcomes: ['gotsumon', 'ogremon', 'ankylomon']
+  },
+  {
+    id: 22,
+    name: "Striped Egg",
+    possibleOutcomes: ['keramon', 'tentomon', 'hagurumon']
+  },
+  {
+    id: 23,
+    name: "Rune Egg",
+    possibleOutcomes: ['flamedramon', 'agumon', 'greymon']
+  },
+  {
+    id: 24,
+    name: "Navy Egg",
+    possibleOutcomes: ['raidramon', 'garurumon', 'veedramon']
+  },
+  {
+    id: 25,
+    name: "Aqua Egg",
+    possibleOutcomes: ['garudamon', 'biyomon', 'birdramon']
+  },
+  {
+    id: 26,
+    name: "Deep Sea Egg",
+    possibleOutcomes: ['togemon', 'lillymon', 'palmon']
+  },
+  {
+    id: 27,
+    name: "Happy Egg",
+    possibleOutcomes: ['tentomon', 'kabuterimon', 'megakabuterimon']
+  },
+  {
+    id: 28,
+    name: "Golden Egg",
+    possibleOutcomes: ['submarimon', 'whamon', 'gomamon']
+  },
+  {
+    id: 29,
+    name: "Star Egg",
+    possibleOutcomes: ['magnamon', 'patamon', 'angemon']
+  },
+  {
+    id: 30,
+    name: "Purple Egg",
+    possibleOutcomes: ['nanimon', 'gatomon', 'magnadramon']
+  },
+  {
+    id: 31,
+    name: "Shadow Egg",
+    possibleOutcomes: ['mantaraymon', 'sylphymon', 'shakkoumon']
+  },
+  {
+    id: 32,
+    name: "Abyss Egg",
+    possibleOutcomes: ['magnamon', 'rapidmon', 'goldramon']
+  },
+  {
+    id: 33,
+    name: "Dragon Egg",
+    possibleOutcomes: ['icedevimon', 'crystalgatomon', 'crystalkabuterimon']
+  },
+  {
+    id: 34,
+    name: "Chrome Egg",
+    possibleOutcomes: ['skullgreymon', 'blackwargraymon', 'cresgarurumon']
+  },
+  {
+    id: 35,
+    name: "Stamped Egg",
+    possibleOutcomes: ['phoenixmon', 'garudamon', 'meramon']
+  },
+  {
+    id: 36,
+    name: "Pink Egg",
+    possibleOutcomes: ['seraphimon', 'cherubimon', 'ophanimon']
+  },
+  {
+    id: 37,
+    name: "Fae Egg",
+    possibleOutcomes: ['devimon', 'vamdemon', 'infermon']
+  },
+  {
+    id: 38,
+    name: "Void Egg",
+    possibleOutcomes: ['icedevimon', 'crystalgatomon', 'crystalkabuterimon']
+  },
+  {
+    id: 39,
+    name: "Ancient Egg",
+    possibleOutcomes: ['skullgreymon', 'blackwargraymon', 'cresgarurumon']
+  },
+  {
+    id: 40,
+    name: "Regal Egg",
+    possibleOutcomes: ['phoenixmon', 'garudamon', 'meramon']
+  },
+  {
+    id: 41,
+    name: "Spotted Egg",
+    possibleOutcomes: ['seraphimon', 'cherubimon', 'ophanimon']
+  },
+  {
+    id: 42,
+    name: "Grey Egg",
+    possibleOutcomes: ['devimon', 'vamdemon', 'infermon']
+  },
+  {
+    id: 43,
+    name: "Weathered Egg",
+    possibleOutcomes: ['icedevimon', 'crystalgatomon', 'crystalkabuterimon']
+  },
+  {
+    id: 44,
+    name: "Forgotten Egg",
+    possibleOutcomes: ['skullgreymon', 'blackwargraymon', 'cresgarurumon']
+  },
+  {
+    id: 45,
+    name: "Pandemonium Egg",
+    possibleOutcomes: ['phoenixmon', 'garudamon', 'meramon']
+  },
+  {
+    id: 46,
+    name: "Rainbow Egg",
+    possibleOutcomes: ['seraphimon', 'cherubimon', 'ophanimon']
+  },
+  {
+    id: 47,
+    name: "Celebration Egg",
+    possibleOutcomes: ['devimon', 'vamdemon', 'infermon']
   },
 ];
 

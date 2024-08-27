@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import DigimonSprite from './DigimonSprite';
 import DigimonStatScreen from './DigimonStatScreen';
 import CardDex from './CardDex';
-import { Digimon, DigimonEgg, Card } from '../shared/types';
+import { Digimon, DigimonEgg, Card, DigimonTemplate } from '../shared/types';
 import { CardCollection as AllCards } from '../shared/cardCollection';
 import './HomeScreen.css';
 import DeckEditor from './DeckEditor';
@@ -19,6 +19,7 @@ import DevDigimonPartyBox from './DevDigimonPartyBox';
 import DigimonPartyBox from './DigimonPartyBox';
 import Eggs from './Eggs';
 
+
 interface HomeScreenProps {
   playerTeam: Digimon[];
   eggs: DigimonEgg[];
@@ -28,6 +29,7 @@ interface HomeScreenProps {
   ownedDigimon: Digimon[];  
   onGenerateEgg: () => void;
   onHatchEgg: (eggId: number) => void;
+  onUpdateEggs?: (updatedEggs: DigimonEgg[]) => void; // Add this prop
 }
 
 const HomeScreen: React.FC<HomeScreenProps> = ({ 
@@ -38,7 +40,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   onUpdateOwnedDigimon,  
   ownedDigimon,  
   onGenerateEgg,
-  onHatchEgg
+  onHatchEgg,
+  onUpdateEggs
 }) => {
   const [showStats, setShowStats] = useState(false);
   const [showParty, setShowParty] = useState(false);
@@ -63,8 +66,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   const [showDevPartyBox, setShowDevPartyBox] = useState(false);
   const [allObtainedDigimon, setAllObtainedDigimon] = useState<Digimon[]>([]);
   const [localOwnedDigimon, setLocalOwnedDigimon] = useState<Digimon[]>(ownedDigimon);
-
-
+  const [showNewDigimonStats, setShowNewDigimonStats] = useState(false);
+  const [newlyHatchedDigimon, setNewlyHatchedDigimon] = useState<Digimon | null>(null);
 
   useEffect(() => {
     // Check for digivolution conditions
@@ -137,6 +140,37 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
 
   const addNewObtainedDigimon = (newDigimon: Digimon) => {
     setAllObtainedDigimon(prev => [...prev, newDigimon]);
+  };
+
+  const handleHatchEgg = (eggId: number, newDigimonTemplate: DigimonTemplate) => {
+    const newDigimon = createUniqueDigimon(newDigimonTemplate.name);
+    setNewlyHatchedDigimon(newDigimon);
+    
+    // Add the new Digimon to owned Digimon
+    const updatedOwnedDigimon = [...ownedDigimon, newDigimon];
+    onUpdateOwnedDigimon(updatedOwnedDigimon);
+    setShowNewDigimonStats(true);
+
+    // Update eggs
+    if (onUpdateEggs) {
+      const updatedEggs = eggs.filter(egg => egg.id !== eggId);
+      onUpdateEggs(updatedEggs);
+    }
+
+    // Call the onHatchEgg prop
+    onHatchEgg(eggId);
+  };
+
+
+  const handleCloseNewDigimonStats = () => {
+    setShowNewDigimonStats(false);
+    setNewlyHatchedDigimon(null);
+  };
+
+  const handleUpdateEggs = (updatedEggs: DigimonEgg[]) => {
+    if (onUpdateEggs) {
+      onUpdateEggs(updatedEggs);
+    }
   };
 
   const handleDigivolve = () => {
@@ -367,6 +401,26 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
                     </div>
                   </div>
                 )}
+                {showEggs && (
+      <div className="stat-overlay">
+<Eggs 
+            eggs={eggs} 
+            onHatchEgg={handleHatchEgg}
+            onUpdateEggs={onUpdateEggs || (() => {})}
+            onClose={() => setShowEggs(false)}
+          />
+      </div>
+    )}
+      {showNewDigimonStats && newlyHatchedDigimon && (
+        <div className="stat-overlay">
+          <h2>New Digimon Hatched!</h2>
+          <DigimonStatScreen 
+            digimon={newlyHatchedDigimon} 
+            isObtained={true}
+          />
+          <button className ="close-button" onClick={handleCloseNewDigimonStats}>Close</button>
+        </div>
+      )}
                 {showDeckEditor && (
   <div className="stat-overlay">
     <DeckEditor 
@@ -418,14 +472,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
           </div>
         </div>
       </div>
-
-      {showEggs && (
-        <div className="modal">
-          <Eggs eggs={eggs} />
-          <button onClick={() => eggs.length > 0 && onHatchEgg(eggs[0].id)}>Hatch First Egg</button>
-          <button onClick={toggleEggs}>Close</button>
-        </div>
-      )}
 
       {showDeckEditor && selectedDigimon && (
         <DeckEditor 

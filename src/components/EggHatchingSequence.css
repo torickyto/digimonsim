@@ -1,0 +1,75 @@
+.ehs-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    background-color: transparent;
+  }
+  
+  .ehs-egg-container {
+    position: relative;
+    z-index: 2;
+    transition: all 0.5s ease-in-out;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .ehs-egg-sprite {
+    transition: transform 0.3s ease-in-out;
+    transform: scale(2);
+  }
+  
+  .ehs-egg-sprite.ehs-shaking {
+    animation: ehs-shake 0.5s infinite;
+  }
+  
+  .ehs-stage-0 .ehs-egg-sprite {
+    transform: scale(2);
+  }
+  
+  .ehs-stage-1 .ehs-egg-sprite {
+    transform: scale(2.2);
+  }
+  
+  .ehs-stage-2 .ehs-egg-sprite,
+  .ehs-stage-3 .ehs-egg-sprite {
+    display: none;
+  }
+  
+  .ehs-hatching-effect {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 0;
+    height: 0;
+    background-color: white;
+    border-radius: 50%;
+    opacity: 0;
+    z-index: 1;
+    transition: all 1s ease-in-out;
+  }
+  
+  .ehs-hatching-effect.ehs-active {
+    width: 300vw;
+    height: 300vw;
+    opacity: 0.8;
+  }
+  
+  @keyframes ehs-shake {
+    0% { transform: translate(1px, 1px) rotate(0deg) scale(2.2); }
+    10% { transform: translate(-1px, -2px) rotate(-1deg) scale(2.2); }
+    20% { transform: translate(-3px, 0px) rotate(1deg) scale(2.2); }
+    30% { transform: translate(3px, 2px) rotate(0deg) scale(2.2); }
+    40% { transform: translate(1px, -1px) rotate(1deg) scale(2.2); }
+    50% { transform: translate(-1px, 2px) rotate(-1deg) scale(2.2); }
+    60% { transform: translate(-3px, 1px) rotate(0deg) scale(2.2); }
+    70% { transform: translate(3px, 1px) rotate(-1deg) scale(2.2); }
+    80% { transform: translate(-1px, -1px) rotate(1deg) scale(2.2); }
+    90% { transform: translate(1px, 2px) rotate(0deg) scale(2.2); }
+    100% { transform: translate(1px, -2px) rotate(-1deg) scale(2.2); }
+  }

@@ -1,36 +1,181 @@
 .eggs-container {
-    padding: 20px;
-    background-color: rgba(0, 0, 0, 0.8);
-    border-radius: 10px;
+  width: 100%;
+  height: 100%;
+  background-image: linear-gradient(to bottom, #67cfe2, #d4faff);
+  border-radius: 20px;
+  padding: 1px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: 'Comfortaa', sans-serif;
+  color: #3E2723;
+  position: relative;
+  overflow: hidden;
+}
+
+.eggs-container::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background-image: url('../assets/backgrounds/grass.png');
+  background-repeat: repeat-x;
+  background-position: bottom;
+  pointer-events: none;
+}
+
+.eggs-container h2 {
+  font-size: 2.8em;
+  margin-bottom: 30px;
+  color: #ffd700;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 2;
+}
+
+.eggs-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 30px;
+  width: 100%;
+  padding-top: 2%;
+  overflow-y: auto;
+  max-height: calc(100% - 150px);
+  z-index: 2;
+}
+
+.egg-container {
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 20px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  width: 15%;
+}
+
+.egg-container:hover {
+  transform: translateY(-10px) rotate(5deg);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+.egg-sprite {
+  background-image: url('../assets/images/digitama-sheet.png');
+  background-repeat: no-repeat;
+  background-size: 576px 256px;
+  width: 100%;
+  height: 100%;
+  margin-bottom: 20px;
+  transform: scale(2); /* Scale up by 6 times */
+  transform-origin: top left;
+  image-rendering: pixelated;
+  transition: transform 0.3s ease;
+  margin-right: 20%;
+}
+
+.egg-container:hover .egg-sprite {
+  transform: scale(2.5);
+  margin-bottom: 17%;
+}
+
+.egg-info {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.egg-name {
+  font-weight: bold;
+  font-size: 1.3em;
+  margin-bottom: 8px;
+  padding-top: 15px;
+  color: #4E342E;
+}
+
+.egg-hatch-time {
+  font-size: 1em;
+  color: #5D4037;
+}
+
+.hatch-button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Comfortaa', sans-serif;
+  font-weight: bold;
+  font-size: .75em;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.hatch-button:hover {
+  background-color: #ffd700;
+  transform: scale(1.05);
+}
+
+.no-eggs-message {
+  font-size: 1.4em;
+  text-align: center;
+  margin-top: 40px;
+  color: #5D4037;
+  background-color: rgba(255, 255, 255, 0.7);
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 2;
+}
+
+/* Scrollbar styles */
+.eggs-grid::-webkit-scrollbar {
+  width: 12px;
+}
+
+.eggs-grid::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 10px;
+}
+
+.eggs-grid::-webkit-scrollbar-thumb {
+  background: #ffd700;
+  border-radius: 10px;
+}
+
+.eggs-grid::-webkit-scrollbar-thumb:hover {
+  background: #ffd700;
+}
+
+@media (max-width: 768px) {
+  .eggs-container h2 {
+    font-size: 2.2em;
   }
-  
-  .eggs-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 20px;
-  }
-  
+
   .egg-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    width: 150px;
   }
-  
+
   .egg-sprite {
-    background-image: url('../assets/images/digitama-sheet.png');
-    background-repeat: no-repeat;
-    background-size: 576px 256px;
-    width: 32px;
-    height: 32px;
-    image-rendering: pixelated;
+    width: 72px;
+    height: 72px;
   }
-  
-  .egg-info {
-    font-size: 12px;
-    text-align: center;
-    margin-top: 10px;
+
+  .egg-name {
+    font-size: 1.1em;
   }
-  
-  .egg-info div {
-    margin-bottom: 5px;
+
+  .egg-hatch-time {
+    font-size: 0.9em;
   }
+
+  .hatch-button {
+    font-size: 0.9em;
+    padding: 8px 16px;
+  }
+}
