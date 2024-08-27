@@ -1,108 +1,524 @@
+:root {
+  --primary-color: #00bcd4;
+  --secondary-color: #ffd700;
+  --background-color: #121212;
+  --surface-color: #1e1e1e;
+  --text-color: #ffffff;
+  --accent-color: #64ffda;
+}
+
 .home-screen {
-    font-family: "Ubuntu Mono", monospace;
-    width: 100%;
-    height: 100vh;
-    background-image: url('/src/assets/backgrounds/palacelaboratory.png');
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: auto;
-    display: flex;
+  font-family: "Comfortaa", sans-serif;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(135deg, #f0f6f070, #222323);
+  color: var(--text-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.digivice {
+  width: 90vw;
+  height: 90vh;
+  max-width: 1600px;
+  max-height: 900px;
+  background-color: var(--background-color);
+  border-radius: 30px;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.digivice::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg 340deg,
+    #ffd700 360deg
+  );
+  animation: rotate 10s linear infinite;
+}
+
+@keyframes rotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.digivice-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 1;
+  gap: 20px;
+}
+
+.screen-wrapper {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--surface-color);
+  border-radius: 20px;
+  overflow: hidden;
+  padding: 3%;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+}
+
+.screen {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 16 / 9;
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+  box-shadow: 0 0 20px #f0f6f066;
+  border: 4px solid #ffd900cc;
+}
+
+.screen-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+.screen-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  image-rendering: pixelated;
+  background-image: url('/src/assets/backgrounds/thrillerruins.png');
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 1;
+  filter: brightness(0.7) contrast(1.2) saturate(1.2);
+  transform: scale(calc(1 / var(--sprite-scale)));
+  transform-origin: center;
+}
+
+.digimon-display {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  padding: 10% 20%;
+  top: 25%;
+  box-sizing: border-box;
+}
+
+.digimon-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.digimon-card .digimon-sprite {
+  width: 100%;
+  height: auto;
+  max-width: 150px;
+  max-height: 150px;
+  object-fit: contain;
+}
+
+.digimon-card:hover {
+  transform: translateY(-5px) ;
+}
+
+.digimon-card p {
+  margin-top: 10px;
+  font-weight: bold;
+  text-shadow: 0 0 10px #00000080;
+}
+
+.controls-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px;
+  background-color: var(--surface-color);
+  border-radius: 20px;
+  width: 220px;
+  box-shadow: 0 0 10px #ffd70033;
+}
+
+.hbutton-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.hbutton-container button {
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  padding: 15px;
+  border: none;
+  border-radius: 10px;
+  color: var(--text-color);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  font-weight: bold;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 6px #ffd7001a;
+  position: relative;
+  overflow: hidden;
+}
+
+.hbutton-container button::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(255, 255, 255, 0.15),
+    transparent
+  );
+  transform: rotate(45deg);
+  transition: all 0.3s ease;
+}
+
+.hbutton-container button:hover::before {
+  left: 100%;
+}
+
+.hbutton-container button:hover {
+  background-color: var(--secondary-color);
+  box-shadow: 0 6px 12px rgba(0, 188, 212, 0.3);
+}
+
+.deck-button, .digivolve-button {
+  padding: 1vh 2vw;
+  font-size: 1.2vw;
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.deck-button {
+  background-color: #0098db;
+}
+
+.digivolve-button {
+  background-color: #ffd700;
+  color: #000000;
+}
+
+.deck-button:hover, .digivolve-button:hover {
+  filter: brightness(1.2);
+}
+
+.deck-editor-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.deck-editor-overlay .deck-editor {
+  width: 90%;
+  height: 90%;
+  background-color: var(--surface-color);
+  border-radius: 15px;
+  padding: 2vh;
+  box-sizing: border-box;
+  overflow: auto;
+}
+
+/* Adjust the DeckEditor component styles to fit within the overlay */
+.deck-editor h2 {
+  font-size: 2vw;
+  color: #ffd700;
+  margin-bottom: 2vh;
+}
+
+.deck-editor .card-collection, 
+.deck-editor .current-deck {
+  height: 70vh;
+  overflow-y: auto;
+}
+
+.deck-editor .card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 1vh;
+}
+
+.deck-editor .card-item {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.deck-editor .card-item:hover {
+  transform: scale(1.05);
+}
+
+.deck-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 2vh;
+}
+
+.deck-editor-actions button {
+  padding: 1vh 2vw;
+  font-size: 1.2vw;
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-left: 1vw;
+}
+
+.deck-editor-actions button:first-child {
+  background-color: #4CAF50;
+}
+
+.deck-editor-actions button:last-child {
+  background-color: #f44336;
+}
+
+.deck-editor-actions button:hover {
+  filter: brightness(1.2);
+}
+
+.stat-actions {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 2vh;
+}
+
+.stat-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(18, 18, 18, 0.9);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 10;
+  padding: 2vh;
+  box-sizing: border-box;
+  backdrop-filter: blur(5px);
+}
+
+.stat-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 2vh;
+}
+
+.stat-navigation button {
+  
+  background-color: #0098db;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(255, 255, 255, 0.15),
+    transparent
+  );
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+  padding: 1vh 2vw;
+  font-size: 1.5vw;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.stat-navigation button:hover {
+  background-color: #ffd700;
+}
+
+.stat-navigation h2 {
+  color: #ffd700;
+  font-size: 2.5vw;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.edit-icon {
+  cursor: pointer;
+  font-size: 0.5em;
+  color: #ffd700;
+}
+
+.nickname-input {
+  font-family: "Comfortaa", sans-serif;
+  font-size: 2.5vw;
+  font-weight: bold;
+  color: #ffd700;
+  background-color: transparent;
+  border: none;
+  border-bottom: 2px solid #ffd700;
+  padding: 0.5vh;
+  text-align: center;
+  width: 60%;
+}
+
+.nickname-input:focus {
+  outline: none;
+  border-bottom: 2px solid #ffd700;
+}
+
+
+.stat-overlay .digimon-stat-screen {
+  width: 100%;
+  height: calc(100% - 10vh);
+  overflow: hidden;
+}
+
+.close-stats {
+  margin-top: 2vh;
+  padding: 1vh 2vw;
+  background-color: #0098db;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(255, 255, 255, 0.15),
+    transparent
+  );
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1.5vw;
+  transition: background-color 0.3s ease;
+}
+
+.close-stats:hover {
+  background-color: #ffd700;
+}
+
+.stats-button { background-color: #0098db; }
+.eggs-button { background-color: #0098db; }
+.party-button { background-color: #0098db; }
+.battle-button { background-color: #9c173b; }
+
+.dev-button, .test-arena-button {
+  background-color: #32313b;
+  font-size: 14px;
+}
+
+.digivolution-overlay {
+  z-index: 10;
+
+}
+
+.modal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(30, 30, 30, 0.9);
+  padding: 30px;
+  border-radius: 20px;
+  z-index: 3;
+  max-width: 80%;
+  max-height: 80%;
+  overflow-y: auto;
+  box-shadow: 0 0 40px rgba(0, 188, 212, 0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 188, 212, 0.2);
+}
+
+@media (max-width: 768px) {
+  .digivice-content {
     flex-direction: column;
-    background-color: #444774;
-    color: #f0f0f0;
-    position: relative;
-    overflow: hidden;
   }
 
-  
-  .top-bar, .bottom-bar1 {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px;
-    z-index: 1;
-  }
-  
-  .top-bar {
-    align-items: flex-start;
-  }
-  
-  .bottom-bar {
-    align-items: flex-end;
-  }
-  
   .digimon-display {
-    flex-grow: 1;
-    display: flex;
-    margin-top: 80px;
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .controls-container {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
     justify-content: center;
-    align-items: center;
+  }
+
+  .hbutton-container {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .hbutton-container button {
+    flex: 1 1 calc(50% - 10px);
+    min-width: 120px;
+  }
+}
+
+@media (max-height: 600px) {
+  .digivice {
+    flex-direction: row;
+  }
+
+  .controls-container {
+    width: auto;
+    max-width: 200px;
   }
   
-  .digimon-display .digimon-sprite {
-    width: 200px;
-    height: 200px;
-    image-rendering: pixelated;
-  }
-  
-  button {
-    font-family: "Ubuntu Mono", monospace;
-    font-size: 16px;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 20px;
-    background-color: rgba(255, 255, 255, 0.2);
-    color: #f0f0f0;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  button:hover {
-    background-color: rgba(255, 255, 255, 0.3);
-  }
-  
-  .stats-button, .eggs-button {
-    background-color: rgba(133, 218, 235, 0.7);
-  }
-  
-  .digimon-button {
-    background-color: rgba(245, 218, 167, 0.7);
-  }
-  
-  .battle-button {
-    background-color: rgba(202, 96, 174, 0.7);
-  }
-  
-  .modal {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    padding: 20px;
-    border-radius: 10px;
-    z-index: 2;
-  }
-  
-  .modal h2 {
-    margin-top: 0;
-  }
-  
-  .modal ul {
-    list-style-type: none;
-    padding: 0;
-  }
-  
-  .modal li {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-  }
-  
-  .modal .digimon-sprite {
-    width: 32px;
-    height: 32px;
-    margin-right: 10px;
-  }
-  
-  .modal button {
-    margin-top: 10px;
-  }
+}
+
+:root {
+  --sprite-scale: 1;
+}

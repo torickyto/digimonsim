@@ -8,10 +8,11 @@ import { v4 as uuidv4 } from 'uuid';
 
 export function createDigimon(template: DigimonTemplate, level: number = 1): Digimon {
   const digimonState: DigimonState = {
-    id: Date.now(),
+    id: uuidv4(),
     name: template.name,
     displayName: template.displayName,
     type: template.type,
+    digivolutionStage: template.digivolutionStage,
     level,
     exp: 0,
     
@@ -30,7 +31,9 @@ export function createDigimon(template: DigimonTemplate, level: number = 1): Dig
     shield: 0,
     statusEffects: [],
     
-    passiveSkill: template.passiveSkill
+    passiveSkill: template.passiveSkill,
+    nickname: undefined, 
+    dateObtained: new Date()  
   };
 
   const digimon: Digimon = {

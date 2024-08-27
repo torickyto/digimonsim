@@ -5,6 +5,7 @@ import './CompactCard.css';
 interface CompactCardProps {
   card: Card;
   onClick: () => void;
+  onDoubleClick?: () => void;
   isSelected: boolean;
   isPlayable: boolean;
   isTopCard: boolean;
@@ -16,6 +17,7 @@ interface CompactCardProps {
 const CompactCard: React.FC<CompactCardProps> = ({ 
   card, 
   onClick, 
+  onDoubleClick,
   isSelected, 
   isPlayable, 
   isTopCard,

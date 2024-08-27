@@ -1,7 +1,7 @@
 // types.ts
 
 // Enums and basic types
-export type DigimonType = 'NULL' | 'DATA' | 'VACCINE' | 'VIRUS';
+export type DigimonType = 'FREE' | 'DATA' | 'VACCINE' | 'VIRUS';
 export type CardEffectType = 'attack' | 'shield' | 'special' | 'healing';
 export type TargetType = 'self' | 'single_ally' | 'enemy' | 'all_enemies' | 'random_enemy' | 'all_allies' | 'random_ally' | 'none'| 'all';
 export type StatusEffectType = 'corruption' | 'bugged' | 'taunt';
@@ -9,6 +9,7 @@ export type ComboTrigger = 'attack' | 'shield' | 'special';
 export type StatType = 'attack' | 'defense' | 'speed' | 'evasion' | 'critChance' | 'critDamage';
 export type ScalingFactor = 'enemiesHit' | 'drawnCardsCost' | 'turnNumber' | 'cardsPlayedThisTurn' | 'damageTakenThisTurn' | 'cardsDiscardedThisTurn' | 'cardsDiscardedThisBattle' | 'userShield' | 'corruptionStacks' | 'enemyCorruptionStacks' | 'discardedCardCount';
 export type DamageFormulaKey = 'LIGHT' | 'LIGHT2' | 'WEAK' | 'WEAK2' | 'BASIC' | 'BASIC2' | 'STRONG' | 'STRONG2' | 'HEAVY' | 'HEAVY2' | 'MEGA' | 'MEGA2' | 'CRITICAL_ATTACK' | 'LIGHT_HEAL' | 'WEAK_HEAL' | 'BASIC_HEAL' | 'STRONG_HEAL' | 'HEAVY_HEAL' | 'MEGA_HEAL' | 'CUSTOM';
+export type DigivolutionStage = 'In-Training' | 'Rookie' | 'Champion' | 'Ultimate' | 'Armor' | 'Mega' | 'Ultra';
 export type EnemyAction = {
   type: 'ENEMY_ACTION';
   attackingEnemyIndex: number;
@@ -146,21 +147,6 @@ export interface StatusEffect {
   source?: number;
 }
 
-export interface DigimonState {
-  id: number;
-  name: string;
-  displayName: string;
-  type: DigimonType;
-  hp: number;
-  maxHp: number;
-  shield: number;
-  level: number;
-  exp: number;
-  statusEffects: StatusEffect[];
-  evasion: number;
-  critChance: number;
-}
-
 export interface GameState {
   player: {
     digimon: (Digimon | DigimonState)[];
@@ -210,12 +196,13 @@ export interface PassiveSkill {
 }
 
 export interface DigimonState {
-  id: number;
+  id: string;
   name: string;
   displayName: string;
   type: DigimonType;
   level: number;
   exp: number;
+  digivolutionStage: DigivolutionStage;
   
   // Base stats
   hp: number;
@@ -237,16 +224,19 @@ export interface DigimonState {
   
   // Passive skill (can be null)
   passiveSkill: PassiveSkill | null;
+  nickname?: string;
+  dateObtained: Date;
 }
 
 export interface DigimonTemplate {
   name: string;
   displayName: string;
   type: DigimonType;
+  digivolutionStage: DigivolutionStage;
   baseHp: number;
   baseAttack: number;
   baseHealing: number;
-  baseEvadeChance: number;  
+  baseEvadeChance: number;
   baseCritChance: number;
   baseAccuracy: number;
   baseCorruptionResistance: number;
@@ -257,6 +247,8 @@ export interface DigimonTemplate {
 
 export interface Digimon extends DigimonState {
   deck: Card[];
+  dateObtained: Date;
+  nickname?: string;
 }
 
 export interface DigimonEgg {
@@ -322,7 +314,7 @@ export type CardCreationFunction = (
 
 // Utility constants
 export const TYPE_COLORS: Record<DigimonType, string> = {
-  NULL: 'white',
+  FREE: 'white',
   DATA: '#85daeb',
   VACCINE: '#f5daa7',
   VIRUS: '#ca60ae'

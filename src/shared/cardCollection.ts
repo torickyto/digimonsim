@@ -32,7 +32,7 @@ export const CardCollection: Record<string, Card> = {
     'Punch',
     'attack',
     1,
-    'NULL',
+    'FREE',
     '',
     'enemy',
     [{
@@ -49,7 +49,7 @@ export const CardCollection: Record<string, Card> = {
     'Block',
     'shield',
     1,
-    'NULL',
+    'FREE',
     '',
     'self',
     [{
@@ -66,7 +66,7 @@ export const CardCollection: Record<string, Card> = {
     'Snack Time',
     'special',
     0,
-    'NULL',
+    'FREE',
     '',
     'self',
     [{
@@ -144,7 +144,7 @@ export const CardCollection: Record<string, Card> = {
     'Pepper Breath',
     'attack',
     2,
-    'DATA',
+    'VACCINE',
     '',
     'enemy',
     [{
@@ -161,7 +161,7 @@ export const CardCollection: Record<string, Card> = {
     'Spit Fire',
     'attack',
     3,
-    'DATA',
+    'VACCINE',
     '',
     'random_enemy',
     [{
@@ -178,7 +178,7 @@ export const CardCollection: Record<string, Card> = {
     'Baby Burner',
     'attack',
     4,
-    'DATA',
+    'VACCINE',
     '',
     'all_enemies',
     [{
@@ -196,7 +196,7 @@ export const CardCollection: Record<string, Card> = {
     'Blue Blaster',
     'attack',
     2,
-    'VACCINE',
+    'DATA',
     '',
     'enemy',
     [{
@@ -220,7 +220,7 @@ SKULL_CRACKER: createCard(
   'Skull Cracker',
   'attack',
   1,
-  'VACCINE',
+  'DATA',
   '',
   'enemy',
   [{
@@ -238,7 +238,7 @@ BLUE_CYCLONE: createCard(
   'Blue Cyclone',
   'attack',
   4,
-  'VACCINE',
+  'DATA',
   '',
   'all_enemies',
   [{
@@ -666,6 +666,42 @@ DARK_MIND: createCard(
   {
     description: "PLACEHOLDER",
     gainRam: 10
+  }]
+),
+
+//revolmon
+QUICKSHOT: createCard(
+  'QUICKSHOT',
+  'Quickshot',
+  'attack',
+  1,
+  'VACCINE',
+  '',
+  'enemy',
+  [{
+    description: "",
+    damage: {
+      formula: 'BASIC',
+      target: 'enemy'
+    },
+    recompile: true
+  }]
+),
+
+RUSSIAN_ROULETTE: createCard(
+  'RUSSIAN_ROULETTE',
+  'Russian Roulette',
+  'attack',
+  1,
+  'VACCINE',
+  '',
+  'random_ally',
+  [{
+    description: "Shoot a random digimon (implement logic for random targeting except self).",
+    damage: {
+      formula: 'HEAVY',
+      target: 'enemy'
+    },
   }]
 ),
 

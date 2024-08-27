@@ -787,7 +787,7 @@ useEffect(() => {
               <div className="bottom-bar">
                 {gameState.player.digimon.map((digimon, index) => (
                   <div key={index} className="digimon-info">
-                    <span className="digimon-name">{digimon.displayName}</span>
+                    <span className="digimon-name">{digimon.nickname ? digimon.nickname : digimon.displayName}</span>
                     <div className="hp-container">
                       <span className="hp-number">{digimon.hp}/{digimon.maxHp}</span>
                       <div className="hp-bar">
