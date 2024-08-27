@@ -40,11 +40,11 @@
 }
 
 .ssdigimon-name {
-  font-size: 2.5vw;
+  font-size: 1.25vw;
   font-weight: bold;
   margin: 0 0 1vh;
   color: #ffd700;
-  text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+  text-shadow: 0 0 2px rgba(255, 215, 0, 0.5);
 }
 
 .ssdigimon-type {

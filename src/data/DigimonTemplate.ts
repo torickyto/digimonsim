@@ -110,6 +110,22 @@ export const DigimonTemplates: Record<string, DigimonTemplate> = {
     startingCard: CardCollection.PEPPER_BREATH,
     passiveSkill: nullPassiveSkill
   },
+  tsumemon: {
+    name: 'tsumemon',
+    displayName: 'Tsumemon',
+    type: 'FREE' as DigimonType,
+    digivolutionStage: 'In-Training' as DigivolutionStage,
+    baseHp: 35,
+    baseAttack: 4,
+    baseHealing: 2,
+    baseEvadeChance: 0.05,
+    baseCritChance: 0.05,
+    baseAccuracy: 1,
+    baseCorruptionResistance: 0.2,
+    baseBuggedResistance: 0.2,
+    startingCard: CardCollection.PEPPER_BREATH,
+    passiveSkill: nullPassiveSkill
+  },
   agumon: {
     name: 'agumon',
     displayName: 'Agumon',
@@ -193,6 +209,22 @@ export const DigimonTemplates: Record<string, DigimonTemplate> = {
   goblimon: {
     name: 'goblimon',
     displayName: 'Goblimon',
+    type: 'VIRUS' as DigimonType,
+    digivolutionStage: 'Rookie' as DigivolutionStage,
+    baseHp: 53,
+    baseAttack: 8,
+    baseHealing: 2,
+    baseEvadeChance: 0.05,
+    baseCritChance: 0.05,
+    baseAccuracy: .9,
+    baseCorruptionResistance: 0.2,
+    baseBuggedResistance: 0.1,
+    startingCard: CardCollection.GOBLIN_STRIKE,
+    passiveSkill: nullPassiveSkill
+  },
+  keramon: {
+    name: 'keramon',
+    displayName: 'Keramon',
     type: 'VIRUS' as DigimonType,
     digivolutionStage: 'Rookie' as DigivolutionStage,
     baseHp: 53,
@@ -321,6 +353,22 @@ export const DigimonTemplates: Record<string, DigimonTemplate> = {
   devimon: {
     name: 'devimon',
     displayName: 'Devimon',
+    type: 'VIRUS' as DigimonType,
+    digivolutionStage: 'Champion' as DigivolutionStage,
+    baseHp: 70,
+    baseAttack: 13,
+    baseHealing: 6,
+    baseEvadeChance: 0.1,
+    baseCritChance: 0.1,
+    baseAccuracy: 1,
+    baseCorruptionResistance: 0.5,
+    baseBuggedResistance: 0.3,
+    startingCard: CardCollection.DEADLY_NAIL,
+    passiveSkill: nullPassiveSkill
+  },
+  chrysalimon: {
+    name: 'chrysalimon',
+    displayName: 'Chrysalimon',
     type: 'VIRUS' as DigimonType,
     digivolutionStage: 'Champion' as DigivolutionStage,
     baseHp: 70,

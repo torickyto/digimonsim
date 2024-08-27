@@ -28,6 +28,8 @@ export const getDigivolutionConnections = (): DigivolutionConnection[] => {
     { from: 'pagumon', to: 'impmon' },
     { from: 'pagumon', to: 'goblimon' },
 
+    { from: 'tsumemon', to: 'keramon' },
+
 
     { from: 'koromon', to: 'agumon' },
     { from: 'koromon', to: 'kamemon' },
@@ -54,6 +56,9 @@ export const getDigivolutionConnections = (): DigivolutionConnection[] => {
     { from: 'goblimon', to: 'vilemon' },
 
 
+    { from: 'keramon', to: 'chrysalimon' },
+
+
     { from: 'agumon', to: 'greymon' },
 
 
@@ -71,6 +76,7 @@ export const getDigivolutionConnections = (): DigivolutionConnection[] => {
 
     //champion
     { from: 'devimon', to: 'skullknightmon' },
+    { from: 'chrysalimon', to: 'skullknightmon' },
     { from: 'revolmon', to: 'superstarmon' },
 
     { from: 'greymon', to: 'metalgreymon' },

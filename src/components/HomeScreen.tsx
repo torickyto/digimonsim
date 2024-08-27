@@ -15,6 +15,7 @@ import { checkDigivolutionConditions } from '../data/digivolutionConditions';
 import { getDigimonTemplate } from '../data/DigimonTemplate';
 import { calculateBaseStat } from '../shared/statCalculations';
 import { v4 as uuidv4 } from 'uuid';
+import DevDigimonPartyBox from './DevDigimonPartyBox';
 import DigimonPartyBox from './DigimonPartyBox';
 
 interface HomeScreenProps {
@@ -45,6 +46,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
   const [newDigimonForm, setNewDigimonForm] = useState<string | null>(null);
   const [digivolutionStage, setDigivolutionStage] = useState(0);
   const [showPartyBox, setShowPartyBox] = useState(false);
+  const [showDevPartyBox, setShowDevPartyBox] = useState(false);
+  const [allObtainedDigimon, setAllObtainedDigimon] = useState<Digimon[]>([]);
+  const [ownedDigimon, setOwnedDigimon] = useState<Digimon[]>([]);
 
   useEffect(() => {
     // Check for digivolution conditions
@@ -58,14 +62,67 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
     });
   }, [playerTeam]);
 
+  useEffect(() => {
+    // Initialize allObtainedDigimon with playerTeam and some additional Digimon
+    const initialObtainedDigimon = [...playerTeam, ...allDigimon.slice(0, 5)];
+    setAllObtainedDigimon(initialObtainedDigimon);
+  }, []);
+
+  useEffect(() => {
+    // Update allObtainedDigimon whenever playerTeam changes
+    setAllObtainedDigimon(prev => {
+      const updatedObtainedDigimon = prev.map(digimon => {
+        const updatedTeamDigimon = playerTeam.find(d => d.id === digimon.id);
+        return updatedTeamDigimon || digimon;
+      });
+      return updatedObtainedDigimon;
+    });
+  }, [playerTeam]);
+
+  useEffect(() => {
+    // Update ownedDigimon whenever allObtainedDigimon or playerTeam changes
+    setOwnedDigimon(allObtainedDigimon.filter(d => !playerTeam.some(pd => pd.id === d.id)));
+  }, [allObtainedDigimon, playerTeam]);
+
   const handleSwapDigimon = (partyIndex: number, newDigimon: Digimon | null) => {
-    const updatedTeam = [...playerTeam];
+    let updatedTeam = [...playerTeam];
+    let updatedAllObtainedDigimon = [...allObtainedDigimon];
+
     if (newDigimon) {
-      updatedTeam[partyIndex] = newDigimon;
+      // Adding a Digimon to the party
+      if (updatedTeam[partyIndex]) {
+        // Swap
+        const oldDigimon = updatedTeam[partyIndex];
+        updatedTeam[partyIndex] = newDigimon;
+        updatedAllObtainedDigimon = updatedAllObtainedDigimon.map(d => 
+          d.id === newDigimon.id ? newDigimon :
+          d.id === oldDigimon.id ? oldDigimon : d
+        );
+      } else {
+        // Add to empty slot
+        updatedTeam[partyIndex] = newDigimon;
+        updatedAllObtainedDigimon = updatedAllObtainedDigimon.map(d => 
+          d.id === newDigimon.id ? newDigimon : d
+        );
+      }
     } else {
-      updatedTeam.splice(partyIndex, 1);
+      // Removing a Digimon from the party
+      if (updatedTeam[partyIndex]) {
+        const removedDigimon = updatedTeam[partyIndex];
+        updatedTeam = updatedTeam.filter((_, index) => index !== partyIndex);
+        updatedAllObtainedDigimon = updatedAllObtainedDigimon.map(d => 
+          d.id === removedDigimon.id ? removedDigimon : d
+        );
+      }
     }
+
     onUpdatePlayerTeam(updatedTeam);
+    setAllObtainedDigimon(updatedAllObtainedDigimon);
+  };
+
+
+  const addNewObtainedDigimon = (newDigimon: Digimon) => {
+    setAllObtainedDigimon(prev => [...prev, newDigimon]);
   };
 
   const handleDigivolve = () => {
@@ -127,6 +184,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
       }, 2000);
     }
   };
+
+  const toggleDevPartyBox = () => setShowDevPartyBox(!showDevPartyBox);
 
    useEffect(() => {
     if (showDigivolutionModal) {
@@ -243,6 +302,25 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
                     </div>
                   ))}
                 </div>
+                {showPartyBox && (
+      <div className="stat-overlay">
+        <DigimonPartyBox
+          party={playerTeam}
+          ownedDigimon={ownedDigimon}
+          onSwapDigimon={handleSwapDigimon}
+        />
+      </div>
+          )}
+                {showDevPartyBox && (
+            <div className="stat-overlay">
+              <DevDigimonPartyBox
+                party={playerTeam}
+                allDigimon={allDigimon}
+                onSwapDigimon={handleSwapDigimon}
+              />
+            </div>
+          )}
+
                 {showStats && (
                   <div className="stat-overlay">
                     <div className="stat-navigation">
@@ -275,15 +353,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
                     </div>
                   </div>
                 )}
-                {showPartyBox && (
-            <div className="stat-overlay">
-              <DigimonPartyBox
-                party={playerTeam}
-                allDigimon={allDigimon}
-                onSwapDigimon={handleSwapDigimon}
-              />
-            </div>
-          )}
                 {showDeckEditor && (
   <div className="stat-overlay">
     <DeckEditor 
@@ -321,31 +390,19 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
           </div>
           <div className="controls-container">
             <div className="hbutton-container">
-            <button className="stats-button" onClick={toggleStats}>Stats</button>
+              <button className="stats-button" onClick={toggleStats}>Stats</button>
               <button className="eggs-button" onClick={toggleEggs}>Eggs</button>
               <button className="party-button" onClick={toggleParty}>Party</button>
               <button className="battle-button" onClick={onStartBattle}>Battle</button>
             </div>
             <div className="hbutton-container">
               <button className="dev-button" onClick={toggleCardCollection}>DEV: Cards</button>
+              <button className="dev-button" onClick={toggleDevPartyBox}>DEV: Party Box</button>
               <button className="test-arena-button" onClick={toggleTestArena}>DEV: Test Battle</button>
             </div>
           </div>
         </div>
       </div>
-
-      {showParty && (
-        <div className="modal">
-          <h2>Your Party</h2>
-          {playerTeam.map(digimon => (
-            <div key={digimon.id} className="party-member">
-              <DigimonSprite name={digimon.name} />
-              <p>{digimon.displayName} Lv.{digimon.level}</p>
-            </div>
-          ))}
-          <button onClick={toggleParty}>Close</button>
-        </div>
-      )}
 
       {showEggs && (
         <div className="modal">
@@ -376,6 +433,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
           <button onClick={toggleCardCollection}>Close</button>
         </div>
       )}
+      
+      
 
 {showDigivolutionTree && (
   <div className="digivolution-overlay">

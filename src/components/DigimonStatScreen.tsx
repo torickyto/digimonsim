@@ -97,7 +97,7 @@ const DigimonStatScreen: React.FC<DigimonStatScreenProps> = ({ digimon, isObtain
             </div>
             <span className="ssresistance-value">{(digimon.corruptionResistance * 100).toFixed(1)}%</span>
           </div>
-          <div className="resistance-bar">
+          <div className="ssresistance-bar">
             <span className="ssresistance-label">Bugged</span>
             <div className="ssbar-container">
               <div className="ssbar-fill" style={{ width: `${digimon.buggedResistance * 100}%` }}></div>
