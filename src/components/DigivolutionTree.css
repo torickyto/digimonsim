@@ -1,94 +1,140 @@
 .digivolution-tree {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.9);
-    overflow: hidden;
-    cursor: move;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 1);
+  overflow: hidden;
+  cursor: move;
+}
+
+.digivolution-tree canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+.digimon-node {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 2;
+  transition: all 0.3s ease;
+}
+
+.digimon-node span {
+  color: #fff;
+  font-size: 12px;
+  margin-top: 5px;
+  text-align: center;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
+}
+
+.digimon-node:hover {
+  transform: scale(1.1);
+}
+
+.digimon-node.current {
+  transform: scale(1.2);
+}
+
+.digimon-node.current::after {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  right: -5px;
+  bottom: -5px;
+  border: 5px solid #ffffff50;
+  border-radius: 30%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
   }
-  
-  .digivolution-tree canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 1;
-  }
-  
-  .digimon-node {
-    position: absolute;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    z-index: 2;
-    transition: all 0.3s ease;
-  }
-  
-  .digimon-node span {
-    color: #fff;
-    font-size: 12px;
-    margin-top: 5px;
-    text-align: center;
-    text-shadow: 0 0 5px rgba(255, 215, 0, 0.7);
-  }
-  
-  .digimon-node:hover {
+  50% {
     transform: scale(1.1);
+    opacity: 0.7;
   }
-  
-  .digimon-node.current {
-    transform: scale(1.2);
+  100% {
+    transform: scale(1);
+    opacity: 1;
   }
-  
-  .digimon-node.current::after {
-    content: '';
-    position: absolute;
-    top: -5px;
-    left: -5px;
-    right: -5px;
-    bottom: -5px;
-    border: 2px solid #ffd700;
-    border-radius: 50%;
-    animation: pulse 2s infinite;
+}
+
+.digimon-node::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  background: radial-gradient(circle, rgba(0, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 40%);
+  border-radius: 50%;
+  z-index: -1;
+}
+
+.close-button {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  padding: 10px 20px;
+  background-color: #ffd700;
+  color: #000;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  z-index: 3;
+}
+
+.stage-labels {
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-around;
+  z-index: 2;
+}
+
+.stage-label {
+  color: #f0f6f0;
+  font-size: 16px;
+  font-weight: bold;
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes glow {
+  0% {
+    filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.2));
   }
-  
-  @keyframes pulse {
-    0% {
-      transform: scale(1);
-      opacity: 1;
-    }
-    50% {
-      transform: scale(1.1);
-      opacity: 0.7;
-    }
-    100% {
-      transform: scale(1);
-      opacity: 1;
-    }
+  50% {
+    filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4));
   }
-  
-  .digimon-node::before {
-    content: '';
-    position: absolute;
-    top: -10px;
-    left: -10px;
-    right: -10px;
-    bottom: -10px;
-    background: radial-gradient(circle, rgba(255, 215, 0, 0.2) 0%, rgba(255, 215, 0, 0) 70%);
-    border-radius: 50%;
-    z-index: -1;
+  100% {
+    filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.2));
   }
-  
-  .close-button {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    padding: 10px 20px;
-    background-color: #ffd700;
-    color: #000;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    z-index: 3;
-  }
+}
+
+.digimon-node {
+  animation: glow 2s infinite;
+}
+
+.digivolution-tree::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('/src/assets/backgrounds/network.jpg') no-repeat center center;
+  background-size: cover;
+  opacity: 0.25;
+  z-index: 0;
+}

@@ -24,21 +24,16 @@ const DigivolutionTree: React.FC<DigivolutionTreeProps> = ({ currentDigimon, all
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [startDragPosition, setStartDragPosition] = useState({ x: 0, y: 0 });
-
-  console.log('DigivolutionTree rendered', { currentDigimon, allDigimon, connections });
+  const [scale, setScale] = useState(1);
 
   useEffect(() => {
-    console.log('Creating nodes');
     const digimonNames = Array.from(new Set(connections.flatMap(c => [c.from, c.to])));
-    console.log('Digimon names:', digimonNames);
-    
     const digimonByStage = stageOrder.map(stage => 
       digimonNames.filter(name => {
         const digimon = allDigimon.find(d => d.name === name);
         return digimon && digimon.digivolutionStage === stage;
       })
     );
-    console.log('Digimon by stage:', digimonByStage);
 
     const totalWidth = window.innerWidth * 0.8;
     const totalHeight = window.innerHeight * 0.8;
@@ -56,12 +51,10 @@ const DigivolutionTree: React.FC<DigivolutionTreeProps> = ({ currentDigimon, all
       })
     );
 
-    console.log('New nodes:', newNodes);
     setNodes(newNodes);
   }, [allDigimon, connections]);
 
   useEffect(() => {
-    console.log('Drawing connections');
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -74,30 +67,42 @@ const DigivolutionTree: React.FC<DigivolutionTreeProps> = ({ currentDigimon, all
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
     ctx.translate(offset.x, offset.y);
+    ctx.scale(scale, scale);
 
     // Draw connections
-    ctx.strokeStyle = 'rgba(255, 215, 0, 0.4)';
-    ctx.lineWidth = 2;
-
     connections.forEach(connection => {
       const startNode = nodes.find(node => node.digimon.name === connection.from);
       const endNode = nodes.find(node => node.digimon.name === connection.to);
 
       if (startNode && endNode) {
+        const gradient = ctx.createLinearGradient(startNode.x, startNode.y, endNode.x, endNode.y);
+        gradient.addColorStop(0, 'rgba(244, 244, 244, 0.8)');
+        gradient.addColorStop(1, 'rgba(111, 111, 111, 0.8)');
+
         ctx.beginPath();
         ctx.moveTo(startNode.x, startNode.y);
         ctx.lineTo(endNode.x, endNode.y);
+        ctx.strokeStyle = gradient;
+        ctx.lineWidth = 3;
         ctx.stroke();
 
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = 'rgba(255, 215, 0, 0.5)';
-        ctx.stroke();
-        ctx.shadowBlur = 0;
+        // Draw arrow
+        const angle = Math.atan2(endNode.y - startNode.y, endNode.x - startNode.x);
+        ctx.save();
+        ctx.translate(endNode.x, endNode.y);
+        ctx.rotate(angle);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(-10, -5);
+        ctx.lineTo(-10, 5);
+        ctx.fillStyle = 'rgba(100, 100, 100, 0.8)';
+        ctx.fill();
+        ctx.restore();
       }
     });
 
     ctx.restore();
-  }, [nodes, connections, offset]);
+  }, [nodes, connections, offset, scale]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
@@ -117,7 +122,10 @@ const DigivolutionTree: React.FC<DigivolutionTreeProps> = ({ currentDigimon, all
     setIsDragging(false);
   };
 
-  console.log('Rendering nodes:', nodes);
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    setScale(prevScale => Math.max(0.5, Math.min(2, prevScale - e.deltaY * 0.001)));
+  };
 
   return (
     <div 
@@ -126,6 +134,7 @@ const DigivolutionTree: React.FC<DigivolutionTreeProps> = ({ currentDigimon, all
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
+      onWheel={handleWheel}
     >
       <canvas ref={canvasRef} />
       {nodes.map((node) => (
@@ -133,14 +142,26 @@ const DigivolutionTree: React.FC<DigivolutionTreeProps> = ({ currentDigimon, all
           key={`${node.digimon.id}-${node.digimon.name}`}
           className={`digimon-node ${node.digimon.name === currentDigimon.name ? 'current' : ''}`}
           style={{ 
-            left: node.x + offset.x - 32, 
-            top: node.y + offset.y - 32 
+            left: (node.x + offset.x) * scale - 32, 
+            top: (node.y + offset.y) * scale - 32,
+            transform: `scale(${scale})`
           }}
         >
           <DigimonSprite name={node.digimon.name} scale={1} />
           <span>{node.digimon.displayName}</span>
         </div>
       ))}
+      <div className="stage-labels">
+        {stageOrder.map((stage, index) => (
+          <div 
+            key={stage} 
+            className="stage-label"
+            style={{left: `${(index + 0.5) * 20}%`}}
+          >
+            {stage}
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

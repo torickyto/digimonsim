@@ -158,6 +158,22 @@ export const DigimonTemplates: Record<string, DigimonTemplate> = {
     startingCard: CardCollection.BOOM_BUBBLE,
     passiveSkill: nullPassiveSkill
   },
+  greymon: {
+    name: 'greymon',
+    displayName: 'Greymon',
+    type: 'VACCINE' as DigimonType,
+    digivolutionStage: 'Champion' as DigivolutionStage,
+    baseHp: 73,
+    baseAttack: 15,
+    baseHealing: 7,
+    baseEvadeChance: 0.1,
+    baseCritChance: 0.1,
+    baseAccuracy: 0.95,
+    baseCorruptionResistance: 0.2,
+    baseBuggedResistance: 0.2,
+    startingCard: CardCollection.DEADLY_NAIL,
+    passiveSkill: nullPassiveSkill
+  },
   sangloupmon: {
     name: 'sangloupmon',
     displayName: 'Sangloupmon',
