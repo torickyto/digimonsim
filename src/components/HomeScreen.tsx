@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import DigimonSprite from './DigimonSprite';
 import DigimonStatScreen from './DigimonStatScreen';
 import CardDex from './CardDex';
-import { Digimon, DigimonEgg } from '../shared/types';
+import { Digimon, DigimonEgg, Card } from '../shared/types';
 import { CardCollection as AllCards } from '../shared/cardCollection';
 import './HomeScreen.css';
 import DeckEditor from './DeckEditor';
@@ -11,6 +11,10 @@ import { FaPencilAlt } from 'react-icons/fa';
 import DigivolutionTree from './DigivolutionTree';
 import { createUniqueDigimon } from '../data/digimon';
 import { getDigivolutionConnections } from './DigivolutionWeb'
+import { checkDigivolutionConditions } from '../data/digivolutionConditions';
+import { getDigimonTemplate } from '../data/DigimonTemplate';
+import { calculateBaseStat } from '../shared/statCalculations';
+import { v4 as uuidv4 } from 'uuid';
 
 interface HomeScreenProps {
   playerTeam: Digimon[];
@@ -35,6 +39,82 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
   const nicknameInputRef = useRef<HTMLInputElement>(null);
   const [showDigivolutionTree, setShowDigivolutionTree] = useState(false);
   const [allDigimon, setAllDigimon] = useState<Digimon[]>([]);
+  const [showDigivolutionModal, setShowDigivolutionModal] = useState(false);
+  const [digivolvingDigimon, setDigivolvingDigimon] = useState<Digimon | null>(null);
+  const [newDigimonForm, setNewDigimonForm] = useState<string | null>(null);
+  const [digivolutionStage, setDigivolutionStage] = useState(0);
+
+  useEffect(() => {
+    // Check for digivolution conditions
+    playerTeam.forEach((digimon, index) => {
+      const digivolveTarget = checkDigivolutionConditions(digimon);
+      if (digivolveTarget) {
+        setDigivolvingDigimon(digimon);
+        setNewDigimonForm(digivolveTarget);
+        setShowDigivolutionModal(true);
+      }
+    });
+  }, [playerTeam]);
+
+  const handleDigivolve = () => {
+    if (digivolvingDigimon && newDigimonForm) {
+      setDigivolutionStage(1);
+      setTimeout(() => {
+        setDigivolutionStage(2);
+        setTimeout(() => {
+          setDigivolutionStage(3);
+          setTimeout(() => {
+            const newTemplate = getDigimonTemplate(newDigimonForm);
+            if (!newTemplate) {
+              console.error(`No template found for ${newDigimonForm}`);
+              return;
+            }
+
+            const newStartingCard: Card = {
+              ...newTemplate.startingCard,
+              instanceId: uuidv4(),
+              ownerDigimonIndex: playerTeam.findIndex(d => d.id === digivolvingDigimon.id)
+            };
+
+            const evolvedDigimon: Digimon = {
+              ...digivolvingDigimon,
+              name: newTemplate.name,
+              displayName: newTemplate.displayName,
+              type: newTemplate.type,
+              digivolutionStage: newTemplate.digivolutionStage,
+              hp: calculateBaseStat(newTemplate.baseHp, digivolvingDigimon.level),
+              maxHp: calculateBaseStat(newTemplate.baseHp, digivolvingDigimon.level),
+              attack: calculateBaseStat(newTemplate.baseAttack, digivolvingDigimon.level),
+              healing: calculateBaseStat(newTemplate.baseHealing, digivolvingDigimon.level),
+              evasion: newTemplate.baseEvadeChance,
+              critChance: newTemplate.baseCritChance,
+              accuracy: newTemplate.baseAccuracy,
+              corruptionResistance: newTemplate.baseCorruptionResistance,
+              buggedResistance: newTemplate.baseBuggedResistance,
+              passiveSkill: newTemplate.passiveSkill,
+              deck: [
+                ...digivolvingDigimon.deck,
+                newStartingCard
+              ]
+            };
+
+            const updatedTeam = playerTeam.map(d => 
+              d.id === digivolvingDigimon.id ? evolvedDigimon : d
+            );
+            setDigivolutionStage(4);
+            setTimeout(() => {
+            
+            onUpdatePlayerTeam(updatedTeam);
+            setShowDigivolutionModal(false);
+            setDigivolvingDigimon(null);
+            setNewDigimonForm(null);
+            setDigivolutionStage(0);
+          }, 2000);
+          }, 2000);
+        }, 2000);
+      }, 2000);
+    }
+  };
 
   useEffect(() => {
     const connections = getDigivolutionConnections();
@@ -121,11 +201,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
     );
     onUpdatePlayerTeam(updatedTeam);
     setShowDeckEditor(false);
-  };
-
-  const handleDigivolve = () => {
-    // Placeholder for digivolve functionality
-    console.log("Digivolve functionality to be implemented");
   };
 
   if (showTestArena) {
@@ -237,6 +312,29 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
         </div>
       )}
 
+{showDigivolutionModal && digivolvingDigimon && newDigimonForm && (
+        <div className="digivolution-modal">
+          <div className="digivolution-content">
+            <h2>{digivolvingDigimon.nickname || digivolvingDigimon.displayName} is digivolving!</h2>
+            <div className={`digivolution-animation stage-${digivolutionStage}`}>
+              <div className="digimon-container original">
+                <DigimonSprite name={digivolvingDigimon.name} scale={2} />
+              </div>
+              <div className="digivolution-effect"></div>
+              <div className="digimon-container target">
+                <DigimonSprite 
+                  name={newDigimonForm} 
+                  scale={2} 
+                  isAttacking={digivolutionStage === 4}
+                />
+              </div>
+            </div>
+            {digivolutionStage === 0 && (
+              <button onClick={handleDigivolve}>Start Digivolution</button>
+            )}
+          </div>
+        </div>
+      )}
       {showDeckEditor && selectedDigimon && (
         <DeckEditor 
           digimon={selectedDigimon} 

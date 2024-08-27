@@ -1,27 +1,26 @@
 import React from 'react';
 import { Digimon } from '../shared/types';
 
-interface DigivolutionConnection {
-  from: string;
-  to: string;
-}
+export interface DigivolutionConnection {
+    from: string;
+    to: string;
+  }
 
 interface DigivolutionWebProps {
   connections: DigivolutionConnection[];
 }
 
 export const DigivolutionWeb: React.FC<DigivolutionWebProps> = ({ connections }) => {
-  return (
-    <div className="digivolution-web">
-      {connections.map((connection, index) => (
-        <div key={index} className="digivolution-connection">
-          {connection.from} → {connection.to}
-        </div>
-      ))}
-    </div>
-  );
-};
-
+    return (
+      <div className="digivolution-web">
+        {connections.map((connection, index) => (
+          <div key={index} className="digivolution-connection">
+            {connection.from} → {connection.to}
+          </div>
+        ))}
+      </div>
+    );
+  };
 export const getDigivolutionConnections = (): DigivolutionConnection[] => {
   return [
 
