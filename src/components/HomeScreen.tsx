@@ -8,6 +8,9 @@ import './HomeScreen.css';
 import DeckEditor from './DeckEditor';
 import DevTestBattleScreen from './DevTestBattleScreen';
 import { FaPencilAlt } from 'react-icons/fa';
+import DigivolutionTree from './DigivolutionTree';
+import { createUniqueDigimon } from '../data/digimon';
+import { getDigivolutionConnections } from './DigivolutionWeb'
 
 interface HomeScreenProps {
   playerTeam: Digimon[];
@@ -30,6 +33,20 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
   const [isEditingNickname, setIsEditingNickname] = useState(false);
   const [newNickname, setNewNickname] = useState('');
   const nicknameInputRef = useRef<HTMLInputElement>(null);
+  const [showDigivolutionTree, setShowDigivolutionTree] = useState(false);
+  const [allDigimon, setAllDigimon] = useState<Digimon[]>([]);
+
+  useEffect(() => {
+    const connections = getDigivolutionConnections();
+    const digimonNames = Array.from(new Set(connections.flatMap(c => [c.from, c.to])));
+    
+    const allDigimonArray = digimonNames.map(name => {
+      const existingDigimon = playerTeam.find(d => d.name === name);
+      return existingDigimon || createUniqueDigimon(name);
+    });
+  
+    setAllDigimon(allDigimonArray);
+  }, [playerTeam]);
 
   useEffect(() => {
     const updateSpriteScale = () => {
@@ -161,7 +178,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
                     />
                     <div className="stat-actions">
                       <button className="deck-button" onClick={handleOpenDeckEditor}>Deck</button>
-                      <button className="digivolve-button" onClick={handleDigivolve}>Digivolve</button>
+                      <button className="digivolve-button" onClick={() => setShowDigivolutionTree(true)}>Digivolution</button>
                     </div>
                   </div>
                 )}
@@ -237,6 +254,17 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
           <button onClick={toggleCardCollection}>Close</button>
         </div>
       )}
+
+{showDigivolutionTree && (
+  <div className="digivolution-overlay">
+    <DigivolutionTree 
+      currentDigimon={playerTeam[currentDigimonIndex]} 
+      allDigimon={allDigimon} 
+    />
+    <button className="close-button" onClick={() => setShowDigivolutionTree(false)}>Close</button>
+  </div>
+)}
+
     </div>
   );
 };

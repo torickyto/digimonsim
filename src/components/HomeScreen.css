@@ -457,6 +457,11 @@
   font-size: 14px;
 }
 
+.digivolution-overlay {
+  z-index: 10;
+
+}
+
 .modal {
   position: absolute;
   top: 50%;

@@ -50,6 +50,10 @@
 
   .revolmon {
     background-image: url('../assets/images/revolmon-sprite.png');
+  }  
+  
+  .sangloupmon {
+    background-image: url('../assets/images/sangloupmon-sprite.png');
   }   
   
 
@@ -67,6 +71,10 @@
 
   .superstarmon {
     background-image: url('../assets/images/superstarmon-sprite.png');
+  }
+
+  .matadormon {
+    background-image: url('../assets/images/matadormon-sprite.png');
   }
   
   .beelzemon {
@@ -159,12 +167,12 @@
 
 
 /* Large sprite */
-.beelzemon, .devimon {
+.beelzemon, .devimon, .sangloupmon {
   width: 160px;
   height: 176px;
 }
 
-.beelzemon.breathing, .devimon.breathing {
+.beelzemon.breathing, .devimon.breathing, .sangloupmon.breathing {
   animation: breathe-large 1.5s steps(1, end) infinite;
 }
 
@@ -174,14 +182,14 @@
   50% { background-position: -320px 0; }
 }
 
-.beelzemon.attacking, .devimon.attacking {
+.beelzemon.attacking, .devimon.attacking, .sangloupmon.attacking {
   background-size: 480px 368px; 
     background-position: -240px -176px;
     width: 240px; 
     height: 192px;
 }
 
-.beelzemon.onHit, .devimon.onHit {
+.beelzemon.onHit, .devimon.onHit, .sangloupmon.onHit {
   background-size: 480px 368px; 
     background-position: 0px -176px;
     width: 240px; 
@@ -194,10 +202,10 @@
 }
 
 .matadormon.breathing, .kimeramon.breathing {
-  animation: breathe-large 1.5s steps(1, end) infinite;
+  animation: breathe-huge 1.5s steps(1, end) infinite;
 }
 
-@keyframes breathe-large {
+@keyframes breathe-huge {
   0% { background-position: 0 0; }
   25%, 75% { background-position: -208px 0; }
   50% { background-position: -416px 0; }
