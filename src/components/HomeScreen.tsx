@@ -68,6 +68,11 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   const [localOwnedDigimon, setLocalOwnedDigimon] = useState<Digimon[]>(ownedDigimon);
   const [showNewDigimonStats, setShowNewDigimonStats] = useState(false);
   const [newlyHatchedDigimon, setNewlyHatchedDigimon] = useState<Digimon | null>(null);
+  const [currentScreen, setCurrentScreen] = useState<string | null>(null);
+  
+  const toggleScreen = (screenName: string) => {
+    setCurrentScreen(currentScreen === screenName ? null : screenName);
+  };
 
   useEffect(() => {
     // Check for digivolution conditions
@@ -145,22 +150,19 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   const handleHatchEgg = (eggId: number, newDigimonTemplate: DigimonTemplate) => {
     const newDigimon = createUniqueDigimon(newDigimonTemplate.name);
     setNewlyHatchedDigimon(newDigimon);
-    
-    setShowNewDigimonStats(true);
+    setCurrentScreen('newDigimonStats');
 
-    // Update eggs
     if (onUpdateEggs) {
       const updatedEggs = eggs.filter(egg => egg.id !== eggId);
       onUpdateEggs(updatedEggs);
     }
 
-    // Call the onHatchEgg prop
     onHatchEgg(eggId);
   };
 
 
   const handleCloseNewDigimonStats = () => {
-    setShowNewDigimonStats(false);
+    setCurrentScreen(null);
     setNewlyHatchedDigimon(null);
   };
 
@@ -325,8 +327,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
     setShowDeckEditor(false);
   };
 
-  if (showTestArena) {
-    return <DevTestBattleScreen onExit={() => setShowTestArena(false)} />;
+  if (currentScreen === 'testArena') {
+    return <DevTestBattleScreen onExit={() => setCurrentScreen(null)} />;
   }
 
   return (
@@ -347,26 +349,26 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
                     </div>
                   ))}
                 </div>
-                {showPartyBox && (
-      <div className="stat-overlay">
-        <DigimonPartyBox
-          party={playerTeam}
-          ownedDigimon={localOwnedDigimon}
-          onSwapDigimon={handleSwapDigimon}
-        />
-      </div>
-          )}
-                 {showDevPartyBox && (
-      <div className="stat-overlay">
-        <DevDigimonPartyBox
-          party={playerTeam}
-          allDigimon={allDigimon}
-          onSwapDigimon={handleSwapDigimon}
-        />
-      </div>
-    )}
+                {currentScreen === 'party' && (
+                  <div className="stat-overlay">
+                    <DigimonPartyBox
+                      party={playerTeam}
+                      ownedDigimon={localOwnedDigimon}
+                      onSwapDigimon={handleSwapDigimon}
+                    />
+                  </div>
+                )}
+          {currentScreen === 'devPartyBox' && (
+                  <div className="stat-overlay">
+                    <DevDigimonPartyBox
+                      party={playerTeam}
+                      allDigimon={allDigimon}
+                      onSwapDigimon={handleSwapDigimon}
+                    />
+                  </div>
+                )}
 
-                {showStats && (
+{currentScreen === 'stats' && (
                   <div className="stat-overlay">
                     <div className="stat-navigation">
                       <button onClick={() => cycleDigimon('prev')}>&lt; Prev</button>
@@ -393,43 +395,42 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
                       isObtained={true}
                     />
                     <div className="stat-actions">
-                      <button className="deck-button" onClick={handleOpenDeckEditor}>Deck</button>
-                      <button className="digivolve-button" onClick={() => setShowDigivolutionTree(true)}>Digivolution</button>
+                      <button className="deck-button" onClick={() => setCurrentScreen('deckEditor')}>Deck</button>
+                      <button className="digivolve-button" onClick={() => setCurrentScreen('digivolutionTree')}>Digivolution</button>
                     </div>
                   </div>
+                )}  {currentScreen === 'eggs' && (
+                  <div className="stat-overlay">
+                    <Eggs 
+                      eggs={eggs} 
+                      onHatchEgg={handleHatchEgg}
+                      onUpdateEggs={onUpdateEggs || (() => {})}
+                      onClose={() => setCurrentScreen(null)}
+                    />
+                  </div>
                 )}
-                {showEggs && (
-      <div className="stat-overlay">
-<Eggs 
-            eggs={eggs} 
-            onHatchEgg={handleHatchEgg}
-            onUpdateEggs={onUpdateEggs || (() => {})}
-            onClose={() => setShowEggs(false)}
-          />
-      </div>
-    )}
-      {showNewDigimonStats && newlyHatchedDigimon && (
-        <div className="stat-overlay">
-          <h2>New Digimon Hatched!</h2>
-          <DigimonStatScreen 
-            digimon={newlyHatchedDigimon} 
-            isObtained={true}
-          />
-          <button className ="close-button" onClick={handleCloseNewDigimonStats}>Close</button>
-        </div>
-      )}
-                {showDeckEditor && (
-  <div className="stat-overlay">
-    <DeckEditor 
-      digimon={playerTeam[currentDigimonIndex]}
-      onSave={handleSaveDeck}
-      onClose={handleCloseDeckEditor}
-      onPrev={() => cycleDigimon('prev')}
-      onNext={() => cycleDigimon('next')}
-      onUpdateNickname={handleUpdateNickname}
-    />
-  </div>
-)}
+       {currentScreen === 'newDigimonStats' && newlyHatchedDigimon && (
+                  <div className="stat-overlay">
+                    <h2>New Digimon Hatched!</h2>
+                    <DigimonStatScreen 
+                      digimon={newlyHatchedDigimon} 
+                      isObtained={true}
+                    />
+                    <button className="close-button" onClick={handleCloseNewDigimonStats}>Close</button>
+                  </div>
+                )}
+                {currentScreen === 'deckEditor' && (
+                  <div className="stat-overlay">
+                    <DeckEditor 
+                      digimon={playerTeam[currentDigimonIndex]}
+                      onSave={handleSaveDeck}
+                      onClose={() => setCurrentScreen(null)}
+                      onPrev={() => cycleDigimon('prev')}
+                      onNext={() => cycleDigimon('next')}
+                      onUpdateNickname={handleUpdateNickname}
+                    />
+                  </div>
+                )}
        {showDigivolutionModal && digivolvingDigimon && newDigimonForm && (
         <div className="digivolution-overlay">
           <div className="digivolution-content">
@@ -455,50 +456,39 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
           </div>
           <div className="controls-container">
             <div className="hbutton-container">
-              <button className="stats-button" onClick={toggleStats}>Stats</button>
-              <button className="eggs-button" onClick={toggleEggs}>Eggs</button>
-            <button onClick={onGenerateEgg}>DEV Generate Egg</button>
-              <button className="party-button" onClick={toggleParty}>Party</button>
+              <button className="stats-button" onClick={() => toggleScreen('stats')}>Stats</button>
+              <button className="eggs-button" onClick={() => toggleScreen('eggs')}>Eggs</button>
+              <button onClick={onGenerateEgg}>DEV Generate Egg</button>
+              <button className="party-button" onClick={() => toggleScreen('party')}>Party</button>
               <button className="battle-button" onClick={onStartBattle}>Battle</button>
             </div>
             <div className="hbutton-container">
-              <button className="dev-button" onClick={toggleCardCollection}>DEV: Cards</button>
-              <button className="dev-button" onClick={toggleDevPartyBox}>DEV: Party Box</button>
-              <button className="test-arena-button" onClick={toggleTestArena}>DEV: Test Battle</button>
+              <button className="dev-button" onClick={() => toggleScreen('cardCollection')}>DEV: Cards</button>
+              <button className="dev-button" onClick={() => toggleScreen('devPartyBox')}>DEV: Party Box</button>
+              <button className="test-arena-button" onClick={() => toggleScreen('testArena')}>DEV: Test Battle</button>
             </div>
           </div>
         </div>
       </div>
 
-      {showDeckEditor && selectedDigimon && (
-        <DeckEditor 
-          digimon={selectedDigimon} 
-          onSave={handleSaveDeck} 
-          onClose={() => setShowDeckEditor(false)} 
-          onPrev={() => cycleDigimon('prev')}
-           onNext={() => cycleDigimon('next')}
-           onUpdateNickname={handleUpdateNickname}
-        />
-      )}
-
-      {showCardCollection && (
+{currentScreen === 'cardCollection' && (
         <div className="modal card-collection-modal">
           <CardDex cards={Object.values(AllCards)} />
-          <button onClick={toggleCardCollection}>Close</button>
+          <button onClick={() => setCurrentScreen(null)}>Close</button>
         </div>
       )}
       
       
 
-{showDigivolutionTree && (
-  <div className="digivolution-overlay">
-    <DigivolutionTree 
-      currentDigimon={playerTeam[currentDigimonIndex]} 
-      allDigimon={allDigimon} 
-    />
-    <button className="close-button" onClick={() => setShowDigivolutionTree(false)}>Close</button>
-  </div>
-)}
+      {currentScreen === 'digivolutionTree' && (
+        <div className="digivolution-overlay">
+          <DigivolutionTree 
+            currentDigimon={playerTeam[currentDigimonIndex]} 
+            allDigimon={allDigimon} 
+          />
+          <button className="close-button" onClick={() => setCurrentScreen(null)}>Close</button>
+        </div>
+      )}
 
     </div>
   );
