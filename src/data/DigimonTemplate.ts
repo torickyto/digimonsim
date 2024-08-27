@@ -398,6 +398,22 @@ export const DigimonTemplates: Record<string, DigimonTemplate> = {
     startingCard: CardCollection.DJ_SHOOTER,
     passiveSkill: nullPassiveSkill
   },
+  metalgreymon: {
+    name: 'metalgreymon',
+    displayName: 'Metalgreymon',
+    type: 'VACCINE' as DigimonType,
+    digivolutionStage: 'Ultimate' as DigivolutionStage,
+    baseHp: 82,
+    baseAttack: 24,
+    baseHealing: 13,
+    baseEvadeChance: 0.05,
+    baseCritChance: 0.05,
+    baseAccuracy: 0.95,
+    baseCorruptionResistance: 0.3,
+    baseBuggedResistance: 0.3,
+    startingCard: CardCollection.DJ_SHOOTER,
+    passiveSkill: nullPassiveSkill //DEAL 1.5 DAMAGE TO SHIELDS. BASE RAM VALUE + 1
+  },
   skullknightmon: {
     name: 'skullknightmon',
     displayName: 'Skullknightmon',
@@ -412,7 +428,7 @@ export const DigimonTemplates: Record<string, DigimonTemplate> = {
     baseCorruptionResistance: 1,
     baseBuggedResistance: 0.3,
     startingCard: CardCollection.DJ_SHOOTER,
-    passiveSkill: nullPassiveSkill //start each battle with 25 shield
+    passiveSkill: nullPassiveSkill //start each battle with 40 shield
   },
   shawujingmon: {
     name: 'shawujingmon',
@@ -461,6 +477,22 @@ export const DigimonTemplates: Record<string, DigimonTemplate> = {
     baseBuggedResistance: 0.3,
     startingCard: CardCollection.DJ_SHOOTER,
     passiveSkill: nullPassiveSkill //DODGING AN ATTACK ADDS +1 RAM TO THE START OF NEXT TURN. BASE RAM VALUE + 1
+  },
+  wargreymon: {
+    name: 'wargreymon',
+    displayName: 'Wargreymon',
+    type: 'VACCINE' as DigimonType,
+    digivolutionStage: 'Mega' as DigivolutionStage,
+    baseHp: 100,
+    baseAttack: 35,
+    baseHealing: 15,
+    baseEvadeChance: 0.1,
+    baseCritChance: 0.1,
+    baseAccuracy: 1,
+    baseCorruptionResistance: 0.5,
+    baseBuggedResistance: 0.5,
+    startingCard: CardCollection.CORONA_DESTROYER,
+    passiveSkill: nullPassiveSkill //DEAL X2 DAMAGE ON DIGIMON WITH DRA OR GREY IN THEIR NAME. BASE RAM VALUE + 2
   },
   beelzemon: {
     name: 'beelzemon',
