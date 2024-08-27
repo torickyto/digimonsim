@@ -137,6 +137,10 @@
     background-image: url('../assets/images/beelzemon-sprite.png');
   }    
 
+  .kimeramon {
+    background-image: url('../assets/images/kimeramon-sprite.png');
+  }   
+
   .lucemon {
     background-image: url('../assets/images/lucemon-sprite.png');
   }
@@ -248,7 +252,7 @@
 
 .garurumon.onHit, .greymon.onHit, .angemon.onHit, .devimon.onHit, .wargreymon.onHit {
   background-size: 336px 336px; 
-    background-position: 0px --144;
+    background-position: 0px -144px;
     width: 168px; 
     height: 192px;
 }

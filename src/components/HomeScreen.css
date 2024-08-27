@@ -349,7 +349,7 @@
   justify-content: space-between;
   align-items: center;
   z-index: 10;
-  padding: 2vh;
+  padding: .5vh;
   box-sizing: border-box;
   backdrop-filter: blur(5px);
 }

@@ -83,6 +83,7 @@ export const getDigivolutionConnections = (): DigivolutionConnection[] => {
 
     { from: 'matadormon', to: 'beelzemon' },
 
+    { from: 'metalgreymon', to: 'kimeramon' },
     { from: 'metalgreymon', to: 'wargreymon' },
 
     { from: 'shawujingmon', to: 'jumbogamemon' },

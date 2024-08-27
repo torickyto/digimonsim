@@ -35,19 +35,19 @@ const DigimonStatScreen: React.FC<DigimonStatScreenProps> = ({ digimon, isObtain
   
   return (
     <div className="digimon-stat-screen" ref={containerRef}>
-      <div className="top-section">
-        <div className="digimon-image">
+      <div className="sstop-section">
+        <div className="ssdigimon-image">
           <DigimonSprite name={digimon.name} scale={spriteScale} />
         </div>
-        <div className="sdigimon-info">
-          <h2 className="digimon-name">{digimon.displayName} </h2>
-          <span className="date-obtained">
+        <div className="ssdigimon-info">
+          <h2 className="ssdigimon-name">{digimon.displayName} </h2>
+          <span className="ssdate-obtained">
           Obtained: {formatDate(digimon.dateObtained)}
         </span>
-          <div className="digimon-type" style={{ backgroundColor: typeColor }}>{digimon.type}</div>
-          <div className="digimon-details">
-          <span className="digimon-level">Level: {digimon.level}</span>
-          <span className="digimon-stage">Stage: {digimon.digivolutionStage}</span>
+          <div className="ssdigimon-type" style={{ backgroundColor: typeColor }}>{digimon.type}</div>
+          <div className="ssdigimon-details">
+          <span className="ssdigimon-level">Level: {digimon.level}</span>
+          <span className="ssdigimon-stage">Stage: {digimon.digivolutionStage}</span>
             
           </div>
         </div>
@@ -87,28 +87,28 @@ const DigimonStatScreen: React.FC<DigimonStatScreenProps> = ({ digimon, isObtain
           </div>
         </div>
       </div>
-      <div className="resistance-section">
+      <div className="ssresistance-section">
         <h3>Resistances</h3>
-        <div className="resistance-bars">
-          <div className="resistance-bar">
-            <span className="resistance-label">Corruption</span>
-            <div className="bar-container">
-              <div className="bar-fill" style={{ width: `${digimon.corruptionResistance * 100}%` }}></div>
+        <div className="ssresistance-bars">
+          <div className="ssresistance-bar">
+            <span className="ssresistance-label">Corruption</span>
+            <div className="ssbar-container">
+              <div className="ssbar-fill" style={{ width: `${digimon.corruptionResistance * 100}%` }}></div>
             </div>
-            <span className="resistance-value">{(digimon.corruptionResistance * 100).toFixed(1)}%</span>
+            <span className="ssresistance-value">{(digimon.corruptionResistance * 100).toFixed(1)}%</span>
           </div>
           <div className="resistance-bar">
-            <span className="resistance-label">Bugged</span>
-            <div className="bar-container">
-              <div className="bar-fill" style={{ width: `${digimon.buggedResistance * 100}%` }}></div>
+            <span className="ssresistance-label">Bugged</span>
+            <div className="ssbar-container">
+              <div className="ssbar-fill" style={{ width: `${digimon.buggedResistance * 100}%` }}></div>
             </div>
-            <span className="resistance-value">{(digimon.buggedResistance * 100).toFixed(1)}%</span>
+            <span className="ssresistance-value">{(digimon.buggedResistance * 100).toFixed(1)}%</span>
           </div>
         </div>
       </div>
-      <div className="passive-section">
+      <div className="sspassive-section">
         <h3>Passive Skill</h3>
-        <div className="passive-skill">
+        <div className="sspassive-skill">
           <span>{digimon.passiveSkill?.name || 'No Passive'}</span>
         </div>
       </div>

@@ -15,6 +15,7 @@ import { checkDigivolutionConditions } from '../data/digivolutionConditions';
 import { getDigimonTemplate } from '../data/DigimonTemplate';
 import { calculateBaseStat } from '../shared/statCalculations';
 import { v4 as uuidv4 } from 'uuid';
+import DigimonPartyBox from './DigimonPartyBox';
 
 interface HomeScreenProps {
   playerTeam: Digimon[];
@@ -43,6 +44,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
   const [digivolvingDigimon, setDigivolvingDigimon] = useState<Digimon | null>(null);
   const [newDigimonForm, setNewDigimonForm] = useState<string | null>(null);
   const [digivolutionStage, setDigivolutionStage] = useState(0);
+  const [showPartyBox, setShowPartyBox] = useState(false);
 
   useEffect(() => {
     // Check for digivolution conditions
@@ -55,6 +57,16 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
       }
     });
   }, [playerTeam]);
+
+  const handleSwapDigimon = (partyIndex: number, newDigimon: Digimon | null) => {
+    const updatedTeam = [...playerTeam];
+    if (newDigimon) {
+      updatedTeam[partyIndex] = newDigimon;
+    } else {
+      updatedTeam.splice(partyIndex, 1);
+    }
+    onUpdatePlayerTeam(updatedTeam);
+  };
 
   const handleDigivolve = () => {
     if (digivolvingDigimon && newDigimonForm) {
@@ -182,7 +194,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
     setIsEditingNickname(false);
   };
 
-  const toggleParty = () => setShowParty(!showParty);
+  const toggleParty = () => setShowPartyBox(!showPartyBox);
   const toggleEggs = () => setShowEggs(!showEggs);
   const toggleCardCollection = () => setShowCardCollection(!showCardCollection);
   const toggleTestArena = () => setShowTestArena(!showTestArena);
@@ -263,6 +275,15 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ playerTeam, eggs, onStartBattle
                     </div>
                   </div>
                 )}
+                {showPartyBox && (
+            <div className="stat-overlay">
+              <DigimonPartyBox
+                party={playerTeam}
+                allDigimon={allDigimon}
+                onSwapDigimon={handleSwapDigimon}
+              />
+            </div>
+          )}
                 {showDeckEditor && (
   <div className="stat-overlay">
     <DeckEditor 
