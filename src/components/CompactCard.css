@@ -11,9 +11,9 @@
   border-radius: calc(0.6 * var(--battle-vh));
   cursor: pointer;
   position: relative;
-  padding: calc(0.05 * var(--battle-vh));
+  padding: calc(0.5 * var(--battle-vw));
   margin-bottom: calc(0.5 * var(--battle-vh));
-  border: calc(0.2 * var(--battle-vh)) solid transparent;
+  border: calc(0.3 * var(--battle-vh)) solid transparent;
   transition: transform 0.2s ease-in-out, border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, left 0.2s ease-in-out;
   overflow: hidden;
 }
@@ -21,12 +21,12 @@
 .card-background {
   position: absolute;
   top: 0;
-  left: 0;
-  width: 100%;
+  right: calc(2.5 * var(--battle-vh)); /* Adjust this value to match the width of the cost area */
+  width: calc(50% - 2.5 * var(--battle-vh)); /* Adjust the 50% if needed */
   height: 100%;
   background-size: cover;
-  background-position: center;
-  opacity: 0.5;
+  background-position: right center;
+  opacity: 1;
   z-index: 1;
 }
 
@@ -38,7 +38,7 @@
   position: relative;
   z-index: 2;
   margin-right: calc(0.5 * var(--battle-vh));
-  transform: scale(4);  /* Adjust scale as needed */
+  transform: scale(3);  /* Adjust scale as needed */
   transform-origin: left center;
   image-rendering: pixelated;  /* Keep the pixel art sharp */
 }
@@ -89,35 +89,35 @@
   z-index: 2;
 }
 
-.card-name {
-  color: white;
+.ccard-name {
+  color: #f0f6f0;
   font-size: calc(1.5 * var(--battle-vh));
   font-weight: bold;
+  margin-left: 7.5%;
   text-shadow: 0 0 calc(0.2 * var(--battle-vh)) rgba(0, 0, 0, 0.5);
 }
 
-.card-cost {
+.ccard-cost {
   position: absolute;
-  top: calc(0.2 * var(--battle-vh));
-  right: calc(0.2 * var(--battle-vh));
-  color: #000;
-  font-size: calc(1.2 * var(--battle-vh));
-  font-weight: bold;
-  border-radius: 10%;
-  width: calc(2.5 * var(--battle-vh));
-  height: calc(2.5 * var(--battle-vh));
+  top: -50%;
+  right: -3%;
+  width: calc(2.75 * var(--battle-vh)); /* Adjust this value as needed */
+  height: 3.5vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 0 0 calc(0.3 * var(--battle-vh)) rgba(0, 0, 0, 0.3);
+  color: #000;
+  font-size: calc(1.5 * var(--battle-vh));
+  font-weight: bolder;
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5);
   transition: background-color 0.2s ease-in-out;
-  z-index: 3;
+  z-index: 5;
 }
-.card-cost.playable {
+.ccard-cost.playable {
   background-color: #ffd700;
 }
 
-.card-cost.not-playable {
+.ccard-cost.not-playable {
   background-color: #808080;
 }
 
