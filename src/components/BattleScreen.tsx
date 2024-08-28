@@ -52,8 +52,22 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   const [isProcessingAction, setIsProcessingAction] = useState(false);
   const [attackingEnemyDigimon, setAttackingEnemyDigimon] = useState<number | null>(null);
   const [removedCards, setRemovedCards] = useState<{ [digimonIndex: number]: Card[] }>({});
-  
-  
+  const [scale, setScale] = useState(1);
+  const battleBackgroundRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const updateScale = () => {
+      if (battleBackgroundRef.current) {
+        const { width, height } = battleBackgroundRef.current.getBoundingClientRect();
+        const scale = Math.min(width / 1280, height / 720); // Assuming 1280x720 is your base size
+        setScale(scale);
+        document.documentElement.style.setProperty('--battle-scale', scale.toString());
+      }
+    };
+
+    updateScale();
+    window.addEventListener('resize', updateScale);
+    return () => window.removeEventListener('resize', updateScale);
+  }, []);
 
 
   useEffect(() => {
@@ -743,40 +757,56 @@ useEffect(() => {
                   ))}
                 </div>
                 <div className="player-digimon">
-  {gameState.player.digimon.map((digimon, index) => (
-    <div key={`player-${index}`} className="player-digimon-container" onClick={() => handlePlayerDigimonClick(index)}>
-      <DigimonSprite 
-        name={digimon.name} 
-        scale={spriteScale * 1.6}
-        isAttacking={attackingDigimon === index}
-        isOnHit={hitDigimon?.isEnemy === false && hitDigimon.index === index}
-        isDead={digimon.hp <= 0}
-        style={{
-          position: 'absolute',
-          left: `${16.67 + index * 33.33}%`,
-          bottom: '0',
-          transform: 'translateX(-50%)',
-        }}
-      />
-    </div>
-  ))}
+  {gameState.player.digimon.map((digimon, index) => {
+    let positionStyle: React.CSSProperties = {
+      position: 'absolute',
+      bottom: '0',
+      transform: 'translateX(-50%)',
+    };
+
+    if (gameState.player.digimon.length === 1) {
+      positionStyle.left = '50%';
+    } else if (gameState.player.digimon.length === 2) {
+      positionStyle.left = index === 0 ? '33.33%' : '66.67%';
+    } else {
+      positionStyle.left = `${16.67 + index * 33.33}%`;
+    }
+
+    return (
+      <div 
+        key={`player-${index}`} 
+        className="player-digimon-container" 
+        onClick={() => handlePlayerDigimonClick(index)}
+        style={positionStyle}
+      >
+        <DigimonSprite 
+          name={digimon.name} 
+          scale={spriteScale * 1.6}
+          isAttacking={attackingDigimon === index}
+          isOnHit={hitDigimon?.isEnemy === false && hitDigimon.index === index}
+          isDead={digimon.hp <= 0}
+        />
+      </div>
+    );
+  })}
 </div>
               </div>
               <div className="hand-area">
-      {gameState.player.hand.map((card, index) => (
-        <CompactCard 
-          key={card.instanceId ?? index}
-          card={card} 
-          onClick={() => handleCardClick(card)}
-          isSelected={selectedCard?.instanceId === card.instanceId}
-          isPlayable={gameState.player.ram >= card.cost && !isEnemyTurn}
-          isTopCard={index === 0 && isDiscardHovered}
-          isNewlyDrawn={card.instanceId ? newlyDrawnCards.includes(card.instanceId) : false}
-          onMouseEnter={handleCardHover}
-          onMouseLeave={handleCardHoverEnd}
-        />
-      ))}
-    </div>
+  {gameState.player.hand.map((card, index) => (
+    <CompactCard 
+      key={card.instanceId ?? index}
+      card={card} 
+      ownerDigimon={gameState.player.digimon[card.ownerDigimonIndex]}
+      onClick={() => handleCardClick(card)}
+      isSelected={selectedCard?.instanceId === card.instanceId}
+      isPlayable={gameState.player.ram >= card.cost && !isEnemyTurn}
+      isTopCard={index === 0 && isDiscardHovered}
+      isNewlyDrawn={card.instanceId ? newlyDrawnCards.includes(card.instanceId) : false}
+      onMouseEnter={handleCardHover}
+      onMouseLeave={handleCardHoverEnd}
+    />
+  ))}
+</div>
               {hoveredCard && (
                 <FullCardDisplay 
                   card={hoveredCard} 
@@ -785,43 +815,61 @@ useEffect(() => {
                 />
               )}
               <div className="bottom-bar">
-                {gameState.player.digimon.map((digimon, index) => (
-                  <div key={index} className="digimon-info">
-                    <span className="digimon-name">{digimon.nickname ? digimon.nickname : digimon.displayName}</span>
-                    <div className="hp-container">
-                      <span className="hp-number">{digimon.hp}/{digimon.maxHp}</span>
-                      <div className="hp-bar">
-                        <div 
-                          className="hp-fill" 
-                          style={{ width: `${(digimon.hp / digimon.maxHp) * 100}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                    <div className="shield-container">
-                      <span className="shield-icon">🛡️</span>
-                      <span className="shield-number">{digimon.shield || 0}</span>
-                      <div className="shield-bar">
-                        <div 
-                          className="shield-fill" 
-                          style={{ width: `${((digimon.shield || 0) / digimon.maxHp) * 100}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+  {gameState.player.digimon.map((digimon, index) => {
+    let infoStyle: React.CSSProperties = {
+      position: 'absolute',
+      bottom: '0',
+      transform: 'translateX(-50%)',
+    };
+
+    if (gameState.player.digimon.length === 1) {
+      infoStyle.left = '50%';
+    } else if (gameState.player.digimon.length === 2) {
+      infoStyle.left = index === 0 ? '33.33%' : '66.67%';
+    } else {
+      infoStyle.left = `${16.67 + index * 33.33}%`;
+    }
+
+    return (
+      <div key={index} className="digimon-info" style={infoStyle}>
+        <span className="digimon-name">{digimon.nickname ? digimon.nickname : digimon.displayName}</span>
+        <div className="hp-container">
+          <span className="hp-number">{digimon.hp}/{digimon.maxHp}</span>
+          <div className="hp-bar">
+            <div 
+              className="hp-fill" 
+              style={{ width: `${(digimon.hp / digimon.maxHp) * 100}%` }}
+            ></div>
+          </div>
+        </div>
+        <div className="shield-container">
+          <span className="shield-icon">🛡️</span>
+          <span className="shield-number">{digimon.shield || 0}</span>
+          <div className="shield-bar">
+            <div 
+              className="shield-fill" 
+              style={{ width: `${((digimon.shield || 0) / digimon.maxHp) * 100}%` }}
+            ></div>
+          </div>
+        </div>
+      </div>
+    );
+  })}
+</div>
               <CardPileModal
-                isOpen={isDeckModalOpen}
-                onClose={() => setIsDeckModalOpen(false)}
-                cards={shuffledDeckForDisplay}
-                title="Draw Pile"
-              />
-              <CardPileModal
-                isOpen={isDiscardModalOpen}
-                onClose={() => setIsDiscardModalOpen(false)}
-                cards={gameState.player.discardPile}
-                title="Discard Pile"
-              />
+  isOpen={isDeckModalOpen}
+  onClose={() => setIsDeckModalOpen(false)}
+  cards={shuffledDeckForDisplay}
+  title="Draw Pile"
+  playerDigimon={gameState.player.digimon}
+/>
+<CardPileModal
+  isOpen={isDiscardModalOpen}
+  onClose={() => setIsDiscardModalOpen(false)}
+  cards={gameState.player.discardPile}
+  title="Discard Pile"
+  playerDigimon={gameState.player.digimon}
+/>
             </>
           )}
         </div>

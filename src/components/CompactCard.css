@@ -12,9 +12,35 @@
   cursor: pointer;
   position: relative;
   padding: calc(0.05 * var(--battle-vh));
-  margin-bottom: calc(0. * var(--battle-vh));
+  margin-bottom: calc(0.5 * var(--battle-vh));
   border: calc(0.2 * var(--battle-vh)) solid transparent;
   transition: transform 0.2s ease-in-out, border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, left 0.2s ease-in-out;
+  overflow: hidden;
+}
+
+.card-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.5;
+  z-index: 1;
+}
+
+.vpet-sprite {
+  width: 16px;
+  height: 16px;
+  background-size: 48px 64px;  /* Full sprite sheet size */
+  background-repeat: no-repeat;
+  position: relative;
+  z-index: 2;
+  margin-right: calc(0.5 * var(--battle-vh));
+  transform: scale(4);  /* Adjust scale as needed */
+  transform-origin: left center;
+  image-rendering: pixelated;  /* Keep the pixel art sharp */
 }
 
 .compact-card:hover {
@@ -59,6 +85,8 @@
   flex-direction: column;
   margin-left: calc(0.5 * var(--battle-vh));
   flex-grow: 1;
+  position: relative;
+  z-index: 2;
 }
 
 .card-name {
@@ -83,8 +111,8 @@
   align-items: center;
   box-shadow: 0 0 calc(0.3 * var(--battle-vh)) rgba(0, 0, 0, 0.3);
   transition: background-color 0.2s ease-in-out;
+  z-index: 3;
 }
-
 .card-cost.playable {
   background-color: #ffd700;
 }
