@@ -125,7 +125,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(145deg, #dbbd0f, #ffd700);
+  background: linear-gradient(145deg, #e6c019, #ffe448);
   z-index: -1;
   transition: all 0.3s ease-in-out;
   transform: translateX(-100%);

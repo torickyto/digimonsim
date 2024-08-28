@@ -8,6 +8,8 @@ import RamDisplay from './RamDisplay';
 import './BattleScreen.css';
 import './BattleScreenAnimations.css';
 import CardPileModal from './CardPileModal';
+import BattleLog from './BattleLog';
+
 
 
 interface BattleScreenProps {
@@ -53,6 +55,21 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   const [attackingEnemyDigimon, setAttackingEnemyDigimon] = useState<number | null>(null);
   const [removedCards, setRemovedCards] = useState<{ [digimonIndex: number]: Card[] }>({});
   const [scale, setScale] = useState(1);
+  const [logEntries, setLogEntries] = useState<{ id: number; message: string }[]>([]);
+  const [logEntryId, setLogEntryId] = useState(0);
+  const [battleStartLogged, setBattleStartLogged] = useState(false);
+
+  const addLogEntry = useCallback((message: string) => {
+    setLogEntries(prevEntries => [...prevEntries, { id: logEntryId, message }]);
+    setLogEntryId(prevId => prevId + 1);
+  }, [logEntryId]);
+
+  const addDetailedLogEntry = useCallback((message: string) => {
+    setLogEntries(prevEntries => [...prevEntries, { id: logEntryId, message }]);
+    setLogEntryId(prevId => prevId + 1);
+  }, [logEntryId]);
+  
+
   const battleBackgroundRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const updateScale = () => {
@@ -259,7 +276,6 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
 
   const handleEndTurn = () => {
     if (isEnemyTurn) return;
-    
     deselectCard();
     const updatedState = endPlayerTurn(gameState);
     setGameState(updatedState);
@@ -354,6 +370,8 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
 
   const handleDigimonClick = (isEnemy: boolean, index: number) => {
     if (targetingDigimon && selectedCard) {
+      const targetDigimon = isEnemy ? gameState.enemy.digimon[index] : gameState.player.digimon[index];
+      addLogEntry(`${gameState.player.digimon[selectedCard.ownerDigimonIndex].displayName} used ${selectedCard.name} on ${targetDigimon.displayName}`);
       const cardIndex = gameState.player.hand.findIndex(card => card.instanceId === selectedCard.instanceId);
       if (cardIndex !== -1) {
         let targetInfo: TargetInfo = {
@@ -483,6 +501,17 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
 }, []);
 
 
+useEffect(() => {
+  if (!battleStartLogged && openingAttacksComplete) {
+    addLogEntry(`Battle Start`);
+    setBattleStartLogged(true);
+  }
+}, [gameState.turn, addLogEntry, battleStartLogged, openingAttacksComplete]);
+
+const handleStartNewTurn = useCallback((newTurn: number) => {
+  addLogEntry(`---START TURN ${newTurn}---`);
+}, [addLogEntry]);
+
   useEffect(() => {
     console.log('Hand changed. New hand size:', gameState.player.hand.length);
   }, [gameState.player.hand]);
@@ -535,8 +564,9 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     switch (action.type) {
       case 'ENEMY_ACTION':
         const enemyAction = action as EnemyAction;
-        console.log('Processing enemy action:', enemyAction);
-        console.log(`Enemy ${enemyAction.attackingEnemyIndex} attacking player Digimon ${enemyAction.targetPlayerIndex}`);
+        const attackingEnemy = state.enemy.digimon[enemyAction.attackingEnemyIndex];
+        const targetPlayer = state.player.digimon[enemyAction.targetPlayerIndex];
+        addLogEntry(`${attackingEnemy.displayName} attacks ${targetPlayer.displayName}`);
         
         setAttackingEnemyDigimon(enemyAction.attackingEnemyIndex);
         setHitDigimon({ isEnemy: false, index: enemyAction.targetPlayerIndex });
@@ -593,6 +623,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
             if (drawnCard) {
               setNewlyDrawnCards([drawnCard.instanceId ?? '']);
             }
+            handleStartNewTurn(updatedState.turn);
             processNextAction();
             break;
       default:
@@ -644,7 +675,9 @@ useEffect(() => {
 
   return (
     <div className="battle-screen-container">
+      
     <div className={`battle-screen ${isEnemyTurn ? 'enemy-turn' : ''}`} ref={battleScreenRef} onClick={handleBackgroundClick}>
+    <BattleLog entries={logEntries} />
       {isEnemyTurn && (
         <>
           <div className="enemy-turn-overlay"></div>
