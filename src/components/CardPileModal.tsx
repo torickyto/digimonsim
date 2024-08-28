@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card } from '../shared/types';
+import { Card, Digimon, DigimonState } from '../shared/types';
 import CompactCard from './CompactCard';
 import FullCardDisplay from './FullCardDisplay';
 import './CardPileModal.css';
@@ -9,15 +9,14 @@ interface CardPileModalProps {
   onClose: () => void;
   cards: Card[];
   title: string;
+  playerDigimon: (Digimon | DigimonState)[];
 }
 
-const CardPileModal: React.FC<CardPileModalProps> = ({ isOpen, onClose, cards, title }) => {
+const CardPileModal: React.FC<CardPileModalProps> = ({ isOpen, onClose, cards, title, playerDigimon }) => {
     const [hoveredCard, setHoveredCard] = useState<Card | null>(null);
     const [hoverPosition, setHoverPosition] = useState({ x: 0, y: 0 });
   
     if (!isOpen) return null;
-
-
 
   const handleCardHover = (card: Card, event: React.MouseEvent) => {
     setHoveredCard(card);
@@ -40,6 +39,7 @@ const CardPileModal: React.FC<CardPileModalProps> = ({ isOpen, onClose, cards, t
             <CompactCard
               key={`${card.instanceId}-${index}`}
               card={card}
+              ownerDigimon={playerDigimon[card.ownerDigimonIndex]}
               onClick={() => {}}
               isSelected={false}
               isPlayable={false}

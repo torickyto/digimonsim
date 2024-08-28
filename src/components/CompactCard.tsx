@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Card } from '../shared/types';
+import { Card, Digimon, DigimonState } from '../shared/types';
 import './CompactCard.css';
 
 interface CompactCardProps {
   card: Card;
+  ownerDigimon: Digimon | DigimonState;
   onClick: () => void;
   onDoubleClick?: () => void;
   isSelected: boolean;
@@ -16,6 +17,7 @@ interface CompactCardProps {
 
 const CompactCard: React.FC<CompactCardProps> = ({ 
   card, 
+  ownerDigimon,
   onClick, 
   onDoubleClick,
   isSelected, 
@@ -26,6 +28,20 @@ const CompactCard: React.FC<CompactCardProps> = ({
   onMouseLeave
 }) => {
   const isAnimating = isNewlyDrawn;
+  const [vpetFrame, setVpetFrame] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setVpetFrame((prevFrame) => (prevFrame === 0 ? 1 : 0));
+    }, 500); // Change frame every 500ms
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const vpetStyle = {
+    backgroundImage: `url(${require(`../assets/vpet/${ownerDigimon.name.toLowerCase()}.png`)})`,
+    backgroundPosition: `${-16 * vpetFrame}px 0`,
+  };
 
   return (
     <div 
@@ -34,12 +50,13 @@ const CompactCard: React.FC<CompactCardProps> = ({
       onMouseEnter={(e) => onMouseEnter(card, e)}
       onMouseLeave={onMouseLeave}
     >
-      <img src={require(`../assets/cards/${card.name.toLowerCase().replace(/\s+/g, '')}.png`)} alt={card.name} className="card-image" />
+      <div className="card-background" style={{backgroundImage: `url(${require(`../assets/cards/${card.name.toLowerCase().replace(/\s+/g, '')}.png`)})`}}></div>
+      <div className="vpet-sprite" style={vpetStyle}></div>
       <div className="card-info">
-        <span className="card-name">{card.name}</span>
-        <span className={`card-cost ${isPlayable ? 'playable' : 'not-playable'}`}>{card.cost}</span>
+  <span className="ccard-name">{card.name}</span>
+</div>
+<span className={`ccard-cost ${isPlayable ? 'playable' : 'not-playable'}`}>{card.cost}</span>
       </div>
-    </div>
   );
 };
 
