@@ -288,13 +288,9 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
           cardElement.style.top = `${rect.top}px`;
           cardElement.style.width = `${rect.width}px`;
           cardElement.style.height = `${rect.height}px`;
-  
-          const cardImage = firstCard.querySelector('.card-image') as HTMLImageElement;
-          if (cardImage) {
-            cardElement.style.backgroundImage = `url(${cardImage.src})`;
-            cardElement.style.backgroundSize = 'cover';
-            cardElement.style.backgroundPosition = 'center';
-          }
+          cardElement.style.backgroundImage = `url(${require(`../assets/cards/${discardedCard.name.toLowerCase().replace(/\s+/g, '')}.png`)})`;
+          cardElement.style.backgroundSize = 'cover';
+          cardElement.style.backgroundPosition = 'center';
         }
       }
       
