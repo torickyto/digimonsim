@@ -1,0 +1,16 @@
+.vpet-sprite {
+    width: 16px;
+    height: 16px;
+    background-repeat: no-repeat;
+    image-rendering: pixelated;
+  }
+  
+  /* Add background images for each Digimon's VPet sprite */
+  .vpet-sprite.agumon {
+    background-image: url('../assets/vpet/agumon-vpet.png');
+  }
+  
+  .vpet-sprite.gabumon {
+    background-image: url('../assets/vpet/gabumon-vpet.png');
+  }
+  

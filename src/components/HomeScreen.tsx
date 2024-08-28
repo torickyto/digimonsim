@@ -328,7 +328,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   };
 
   if (currentScreen === 'testArena') {
-    return <DevTestBattleScreen onExit={() => setCurrentScreen(null)} />;
+    return <DevTestBattleScreen 
+      onExit={() => setCurrentScreen(null)} 
+      playerTeam={playerTeam}  // Pass the current player team
+    />;
   }
 
   return (
