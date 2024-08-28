@@ -1,0 +1,158 @@
+.adventure-map {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    z-index: 1000;
+    overflow: auto;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  
+  .adventure-map h2 {
+    color: #ffd700;
+    font-size: 3em;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  }
+  
+  .adventure-map svg {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 20px;
+  }
+  
+  .close-button {
+    margin-top: 20px;
+    padding: 15px 30px;
+    font-size: 1.5em;
+    background-color: #ffd700;
+    color: #000;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  }
+  
+  .close-button:hover {
+    background-color: #ffea00;
+    transform: scale(1.05);
+  }
+  
+  .adventure-map circle {
+    transition: all 0.3s ease;
+  }
+  
+  .adventure-map g:hover circle {
+    transform: scale(1.1);
+  }
+  
+  .adventure-map path {
+    transition: all 0.3s ease;
+  }
+  
+  .adventure-map text {
+    user-select: none;
+    font-family: 'Arial', sans-serif;
+  }
+  
+  @keyframes pathAnimation {
+    0% {
+      stroke-dashoffset: 20;
+    }
+    100% {
+      stroke-dashoffset: 0;
+    }
+  }
+  
+  .path-animation {
+    animation: pathAnimation 1s linear infinite;
+  }
+  
+  @keyframes nodeAnimation {
+    0% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-5px);
+    }
+    100% {
+      transform: translateY(0);
+    }
+  }
+  
+  .node-animation {
+    animation: nodeAnimation 3s ease-in-out infinite;
+  }
+  
+  @keyframes pulseAnimation {
+    0% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.2);
+      opacity: 0.7;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  
+  .pulse-animation {
+    animation: pulseAnimation 2s ease-in-out infinite;
+  }
+  
+  #battleGradient {
+    --color-stop-1: #ff9999;
+    --color-stop-2: #ff6666;
+  }
+  
+  #eventGradient {
+    --color-stop-1: #99ff99;
+    --color-stop-2: #66ff66;
+  }
+  
+  #eliteGradient {
+    --color-stop-1: #9999ff;
+    --color-stop-2: #6666ff;
+  }
+  
+  #bossGradient {
+    --color-stop-1: #ff99ff;
+    --color-stop-2: #ff66ff;
+  }
+  
+  #restGradient {
+    --color-stop-1: #ffff99;
+    --color-stop-2: #ffff66;
+  }
+  
+  @media (max-width: 768px) {
+    .adventure-map h2 {
+      font-size: 2em;
+    }
+  
+    .adventure-map svg {
+      max-height: 70vh;
+    }
+  
+    .close-button {
+      font-size: 1.2em;
+      padding: 10px 20px;
+    }
+  }

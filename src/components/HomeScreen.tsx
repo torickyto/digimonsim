@@ -18,6 +18,7 @@ import { v4 as uuidv4 } from 'uuid';
 import DevDigimonPartyBox from './DevDigimonPartyBox';
 import DigimonPartyBox from './DigimonPartyBox';
 import Eggs from './Eggs';
+import AdventureMap from './AdventureMap';
 
 
 interface HomeScreenProps {
@@ -29,7 +30,8 @@ interface HomeScreenProps {
   ownedDigimon: Digimon[];  
   onGenerateEgg: () => void;
   onHatchEgg: (eggId: number) => void;
-  onUpdateEggs?: (updatedEggs: DigimonEgg[]) => void; // Add this prop
+  onUpdateEggs?: (updatedEggs: DigimonEgg[]) => void; 
+  onStartAdventure: (zone: string) => void;
 }
 
 const HomeScreen: React.FC<HomeScreenProps> = ({ 
@@ -41,6 +43,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   ownedDigimon,  
   onGenerateEgg,
   onHatchEgg,
+  onStartAdventure,
   onUpdateEggs
 }) => {
   const [showStats, setShowStats] = useState(false);
@@ -69,6 +72,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   const [showNewDigimonStats, setShowNewDigimonStats] = useState(false);
   const [newlyHatchedDigimon, setNewlyHatchedDigimon] = useState<Digimon | null>(null);
   const [currentScreen, setCurrentScreen] = useState<string | null>(null);
+  const [showZoneModal, setShowZoneModal] = useState(false);
+  const [selectedZone, setSelectedZone] = useState<string | null>(null);
+  
   
   const toggleScreen = (screenName: string) => {
     setCurrentScreen(currentScreen === screenName ? null : screenName);
@@ -142,6 +148,15 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
     onUpdateOwnedDigimon(updatedOwnedDigimon);
   };
 
+  const handleAdventureClick = () => {
+    setShowZoneModal(true);
+  };
+
+  const handleZoneSelect = (zone: string) => {
+    setSelectedZone(zone);
+    setShowZoneModal(false);
+    onStartAdventure(zone);
+  };
 
   const addNewObtainedDigimon = (newDigimon: Digimon) => {
     setAllObtainedDigimon(prev => [...prev, newDigimon]);
@@ -462,8 +477,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
               <button className="stats-button" onClick={() => toggleScreen('stats')}>Stats</button>
               <button className="eggs-button" onClick={() => toggleScreen('eggs')}>Eggs</button>
               <button onClick={onGenerateEgg}>DEV Generate Egg</button>
-              <button className="party-button" onClick={() => toggleScreen('party')}>Party</button>
-              <button className="battle-button" onClick={onStartBattle}>Battle</button>
+              <button className="battle-button" onClick={handleAdventureClick}>Adventure</button>
             </div>
             <div className="hbutton-container">
               <button className="dev-button" onClick={() => toggleScreen('cardCollection')}>DEV: Cards</button>
@@ -473,6 +487,14 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
           </div>
         </div>
       </div>
+
+      {showZoneModal && (
+        <div className="zone-modal">
+          <h2>Select a Zone</h2>
+          <button onClick={() => handleZoneSelect('labelForest')}>Label Forest</button>
+          <button onClick={() => setShowZoneModal(false)}>Cancel</button>
+        </div>
+      )}
 
 {currentScreen === 'cardCollection' && (
         <div className="modal card-collection-modal">
