@@ -137,6 +137,8 @@
     rgba(255, 255, 255, 0.15),
     transparent
   );
+  border: calc(0.2 * var(--battle-vh)) solid #ffd700;
+  border-radius: calc(0.5 * var(--battle-vh));
   background-color: rgba(0, 0, 0, 0.9);
   border-radius: calc(0.5 * var(--battle-vh));
   padding: calc(0.5 * var(--battle-vh));
