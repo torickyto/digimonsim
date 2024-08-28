@@ -10,7 +10,7 @@
     justify-content: flex-start;
     align-items: center;
     z-index: 1000;
-    overflow: auto;
+    overflow: hidden;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -26,12 +26,17 @@
   }
   
   .adventure-map svg {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.05);
     border-radius: 10px;
     box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
     max-width: 100%;
     height: auto;
     margin-bottom: 20px;
+    cursor: grab;
+  }
+  
+  .adventure-map svg:active {
+    cursor: grabbing;
   }
   
   .close-button {
@@ -71,7 +76,7 @@
   
   @keyframes pathAnimation {
     0% {
-      stroke-dashoffset: 20;
+      stroke-dashoffset: 10;
     }
     100% {
       stroke-dashoffset: 0;
@@ -82,64 +87,33 @@
     animation: pathAnimation 1s linear infinite;
   }
   
-  @keyframes nodeAnimation {
-    0% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(-5px);
-    }
-    100% {
-      transform: translateY(0);
-    }
+  .node-active {
+    opacity: 1;
+    transition: opacity 0.3s ease;
   }
   
-  .node-animation {
-    animation: nodeAnimation 3s ease-in-out infinite;
+  .node-inactive {
+    opacity: 0.5;
+    transition: opacity 0.3s ease;
   }
   
   @keyframes pulseAnimation {
     0% {
       transform: scale(1);
-      opacity: 1;
+      opacity: 0.5;
     }
     50% {
-      transform: scale(1.2);
+      transform: scale(1.001);
       opacity: 0.7;
     }
     100% {
       transform: scale(1);
-      opacity: 1;
+      opacity: 0.5;
     }
   }
   
   .pulse-animation {
     animation: pulseAnimation 2s ease-in-out infinite;
-  }
-  
-  #battleGradient {
-    --color-stop-1: #ff9999;
-    --color-stop-2: #ff6666;
-  }
-  
-  #eventGradient {
-    --color-stop-1: #99ff99;
-    --color-stop-2: #66ff66;
-  }
-  
-  #eliteGradient {
-    --color-stop-1: #9999ff;
-    --color-stop-2: #6666ff;
-  }
-  
-  #bossGradient {
-    --color-stop-1: #ff99ff;
-    --color-stop-2: #ff66ff;
-  }
-  
-  #restGradient {
-    --color-stop-1: #ffff99;
-    --color-stop-2: #ffff66;
   }
   
   @media (max-width: 768px) {
