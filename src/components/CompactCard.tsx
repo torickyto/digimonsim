@@ -53,10 +53,10 @@ const CompactCard: React.FC<CompactCardProps> = ({
       <div className="card-background" style={{backgroundImage: `url(${require(`../assets/cards/${card.name.toLowerCase().replace(/\s+/g, '')}.png`)})`}}></div>
       <div className="vpet-sprite" style={vpetStyle}></div>
       <div className="card-info">
-        <span className="ccard-name">{card.name}</span>
-        <span className={`ccard-cost ${isPlayable ? 'playable' : 'not-playable'}`}>{card.cost}</span>
+  <span className="ccard-name">{card.name}</span>
+</div>
+<span className={`ccard-cost ${isPlayable ? 'playable' : 'not-playable'}`}>{card.cost}</span>
       </div>
-    </div>
   );
 };
 

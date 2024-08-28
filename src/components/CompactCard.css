@@ -1,4 +1,14 @@
+:root {
+  --card-width: 43vh;
+  --card-height: calc(var(--card-width) * .075);
+  --card-border-radius: calc(var(--card-width) * 0.02);
+  --card-border-width: calc(var(--card-width) * 0.005);
+  --cost-width: calc(var(--card-width) * 0.2);
+}
+
 .compact-card {
+  width: var(--card-width);
+  height: var(--card-height);
   display: flex;
   align-items: center;
   background: linear-gradient(
@@ -8,12 +18,11 @@
     transparent
   );
   background-color: rgba(0, 0, 0, 0.9);
-  border-radius: calc(0.6 * var(--battle-vh));
+  border-radius: var(--card-border-radius);
   cursor: pointer;
   position: relative;
-  padding: calc(0.5 * var(--battle-vw));
-  margin-bottom: calc(0.5 * var(--battle-vh));
-  border: calc(0.3 * var(--battle-vh)) solid transparent;
+  margin-bottom: calc(var(--card-height) * 0.1);
+  border: var(--card-border-width) solid transparent;
   transition: transform 0.2s ease-in-out, border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, left 0.2s ease-in-out;
   overflow: hidden;
 }
@@ -21,8 +30,8 @@
 .card-background {
   position: absolute;
   top: 0;
-  right: calc(2.5 * var(--battle-vh)); /* Adjust this value to match the width of the cost area */
-  width: calc(50% - 2.5 * var(--battle-vh)); /* Adjust the 50% if needed */
+  right: calc(30% - var(--cost-width));
+  width: calc(50% - var(--cost-width));
   height: 100%;
   background-size: cover;
   background-position: right center;
@@ -33,57 +42,20 @@
 .vpet-sprite {
   width: 16px;
   height: 16px;
-  background-size: 48px 64px;  /* Full sprite sheet size */
+  background-size: 48px 64px; 
   background-repeat: no-repeat;
   position: relative;
   z-index: 2;
   margin-right: calc(0.5 * var(--battle-vh));
-  transform: scale(3);  /* Adjust scale as needed */
+  transform: scale(3);  
   transform-origin: left center;
-  image-rendering: pixelated;  /* Keep the pixel art sharp */
-}
-
-.compact-card:hover {
-  transform: translateY(calc(-0.3 * var(--battle-vh)));
-}
-
-.compact-card.playable {
-  border-color: #ffd700;
-  box-shadow: 0 0 calc(0.5 * var(--battle-vh)) rgba(229, 255, 0, 0.5);
-}
-
-.compact-card.selected {
-  box-shadow: 0 0 calc(1 * var(--battle-vh)) #5efdf7;
-  transform: translateY(calc(-0.3 * var(--battle-vh)));
-  border: calc(0.4 * var(--battle-vh)) solid #5efdf7;
-  animation: selectCard 0.2s ease-in-out forwards;
-}
-
-@keyframes selectCard {
-  0% {
-    left: 0;
-  }
-  100% {
-    left: calc(2 * var(--battle-vh));
-  }
-}
-
-.compact-card.disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.card-image {
-  width: calc(6 * var(--battle-vh) * 1.2);
-  height: calc(3.82 * var(--battle-vh) * 1.2);
-  border-radius: calc(0.3 * var(--battle-vh));
-  object-fit: cover;
+  image-rendering: pixelated;  
 }
 
 .card-info {
   display: flex;
   flex-direction: column;
-  margin-left: calc(0.5 * var(--battle-vh));
+  margin-left: calc(var(--card-width) * 0.075);
   flex-grow: 1;
   position: relative;
   z-index: 2;
@@ -91,28 +63,27 @@
 
 .ccard-name {
   color: #f0f6f0;
-  font-size: calc(1.5 * var(--battle-vh));
+  font-size: calc(var(--card-width) * 0.035);
   font-weight: bold;
-  margin-left: 7.5%;
-  text-shadow: 0 0 calc(0.2 * var(--battle-vh)) rgba(0, 0, 0, 0.5);
+  text-shadow: 0 0 calc(var(--card-width) * 0.02) rgba(0, 0, 0, 0.5);
 }
 
 .ccard-cost {
   position: absolute;
-  top: -50%;
-  right: -3%;
-  width: calc(2.75 * var(--battle-vh)); /* Adjust this value as needed */
-  height: 3.5vh;
+  top: 0;
+  right: 0;
+  width: calc(var(--cost-width) * .5);
+  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
   color: #000;
-  font-size: calc(1.5 * var(--battle-vh));
+  font-size: calc(var(--card-width) * 0.05);
   font-weight: bolder;
-  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5);
   transition: background-color 0.2s ease-in-out;
   z-index: 5;
 }
+
 .ccard-cost.playable {
   background-color: #ffd700;
 }
@@ -121,52 +92,50 @@
   background-color: #808080;
 }
 
+.compact-card:hover {
+  transform: translateY(calc(var(--card-height) * -0.05));
+}
+
+.compact-card.playable {
+  border-color: #ffd700;
+  box-shadow: 0 0 calc(var(--card-width) * 0.05) rgba(229, 255, 0, 0.5);
+}
+
+.compact-card.selected {
+  box-shadow: 0 0 calc(var(--card-width) * 0.1) #5efdf7;
+  transform: translateY(calc(var(--card-height) * -0.05));
+  border: calc(var(--card-border-width) * 1.5) solid #5efdf7;
+  animation: selectCard 0.2s ease-in-out forwards;
+}
+
+@keyframes selectCard {
+  0% { left: 0; }
+  100% { left: calc(var(--card-width) * 0.1); }
+}
+
+.compact-card.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .compact-card.top-card {
-  box-shadow: 0 0 calc(1 * var(--battle-vh)) rgba(255, 0, 0, 0.7);
+  box-shadow: 0 0 calc(var(--card-width) * 0.1) rgba(255, 0, 0, 0.7);
   animation: pulse 1s infinite alternate;
 }
 
-.discard-button.hovered {
-  background-color: rgba(255, 0, 0, 0.2);
-}
-
 @keyframes pulse {
-  0% { box-shadow: 0 0 10px 3px rgba(255, 0, 0, 0.3); }
-  100% { box-shadow: 0 0 20px 8px rgba(255, 0, 0, 0.6); }
-}
-
-@keyframes burnCard {
-  0% {
-    transform: translate(0, 0) rotate(0deg);
-    opacity: 1;
-  }
-  50% {
-    transform: translate(50px, -50px) rotate(45deg);
-    opacity: 0.5;
-  }
-  100% {
-    transform: translate(100px, -100px) rotate(90deg);
-    opacity: 0;
-  }
-}
-
-@keyframes drawCard {
-  0% {
-    transform: translateX(-100%) translateY(10%);
-    opacity: 0;
-  }
-  33% {
-    transform: translateX(-50%) translateY(10%);
-    opacity: 0;
-  }
-  100% {
-    transform: translateX(0) translateY(0);
-    opacity: 1;
-  }
+  0% { box-shadow: 0 0 calc(var(--card-width) * 0.05) rgba(255, 0, 0, 0.3); }
+  100% { box-shadow: 0 0 calc(var(--card-width) * 0.1) rgba(255, 0, 0, 0.6); }
 }
 
 .compact-card.draw-animation {
   animation: drawCard 0.4s ease-out;
+}
+
+@keyframes drawCard {
+  0% { transform: translateX(-100%) translateY(10%); opacity: 0; }
+  33% { transform: translateX(-50%) translateY(10%); opacity: 0; }
+  100% { transform: translateX(0) translateY(0); opacity: 1; }
 }
 
 .card-animation.burn {
@@ -177,5 +146,11 @@
   animation: burnCard 1s forwards;
   z-index: 9999;
   pointer-events: none;
-  border: 3px solid red;
+  border: calc(var(--card-border-width) * 0.5) solid red;
+}
+
+@keyframes burnCard {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+  50% { transform: translate(50px, -50px) rotate(45deg); opacity: 0.5; }
+  100% { transform: translate(100px, -100px) rotate(90deg); opacity: 0; }
 }
