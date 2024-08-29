@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import HomeScreen from './components/HomeScreen';
 import BattleScreen from './components/BattleScreen';
-import AdventureMap from './components/AdventureMap';
+import ZoneMap from './components/ZoneMap';
 import { Digimon, DigimonEgg } from './shared/types';
 import { createUniqueDigimon } from './data/digimon';
 import './App.css';
@@ -13,8 +13,7 @@ const App: React.FC = () => {
   const [ownedDigimon, setOwnedDigimon] = useState<Digimon[]>([]);
   const [enemyTeam, setEnemyTeam] = useState<Digimon[]>([]);
   const [eggs, setEggs] = useState<DigimonEgg[]>([]);
-  const [currentZone, setCurrentZone] = useState<string | null>(null);
-  const [currentNode, setCurrentNode] = useState<number | null>(null);
+  const [selectedZone, setSelectedZone] = useState<string | null>(null);
 
   useEffect(() => {
     // Initialize with some starter Digimon
@@ -26,6 +25,17 @@ const App: React.FC = () => {
     setOwnedDigimon(starterDigimon);
     setPlayerTeam(starterDigimon.slice(0, 3)); // Set the first three as the player's team
   }, []);
+
+  const getZoneDifficulty = (zoneName: string): number => {
+    switch (zoneName) {
+      case 'Label Forest':
+        return 1;
+      // Add more zones here as they are implemented
+      default:
+        return 1;
+    }
+  };
+
 
   const handleStartBattle = () => {
     const testEnemy = createUniqueDigimon('goblimon');
@@ -55,12 +65,6 @@ const App: React.FC = () => {
     setGameState('home');
   };
 
-  const handleNodeSelect = (nodeId: number) => {
-    setCurrentNode(nodeId);
-    // node event logic
-    setGameState('battle'); // for now make it a battle for any node
-  };
-
   const generateNewEgg = () => {
     const newEgg: DigimonEgg = {
       id: Date.now(), // Use timestamp as a simple unique id
@@ -86,14 +90,13 @@ const App: React.FC = () => {
   };
 
   const handleStartAdventure = (zone: string) => {
-    setCurrentZone(zone);
+    setSelectedZone(zone);
     setGameState('adventure');
   };
 
-  const handleAdventureEnd = () => {
+  const handleExitZone = () => {
+    setSelectedZone(null);
     setGameState('home');
-    setCurrentZone(null);
-    setCurrentNode(null);
   };
 
   switch (gameState) {
@@ -119,14 +122,16 @@ const App: React.FC = () => {
           onBattleEnd={handleBattleEnd}
         />
       );
-      case 'adventure':
-        return currentZone ? (
-          <AdventureMap 
-            zone={currentZone} 
-            onClose={handleAdventureEnd}
-            onNodeSelect={handleNodeSelect}
-          />
-      ) : null;
+    case 'adventure':
+      return (
+        <ZoneMap
+  playerTeam={playerTeam}
+  onExitZone={handleExitZone}
+  onStartBattle={handleStartBattle}
+  zoneName={selectedZone || ""}
+  zoneDifficulty={getZoneDifficulty(selectedZone || "")}
+/>
+      );
     default:
       return null;
   }

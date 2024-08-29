@@ -462,6 +462,41 @@
 
 }
 
+.zone-selection-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(30, 30, 30, 0.9);
+  padding: 30px;
+  border-radius: 20px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.zone-selection-modal h2 {
+  color: #ffd700;
+  margin-bottom: 20px;
+}
+
+.zone-selection-modal button {
+  margin: 10px;
+  padding: 10px 20px;
+  font-size: 1.2em;
+  background-color: #0098db;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.zone-selection-modal button:hover {
+  background-color: #00b0ff;
+}
+
 .modal {
   position: absolute;
   top: 50%;
