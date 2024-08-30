@@ -6,6 +6,7 @@ import { Digimon, DigimonEgg } from './shared/types';
 import { createUniqueDigimon } from './data/digimon';
 import './App.css';
 import { EggTypes, getRandomOutcome } from './data/eggTypes';
+import { generateEnemyTeam } from './data/enemyManager';
 
 type MapNode = {
   type: 'start' | 'monster' | 'chest' | 'event' | 'boss' | 'empty';
@@ -23,6 +24,7 @@ const App: React.FC = () => {
   const [currentNode, setCurrentNode] = useState<number | null>(null);
   const [zoneMap, setZoneMap] = useState<MapNode[][]>([]);
   const [availableNodes, setAvailableNodes] = useState<number[]>([]);
+  const [dayCount, setDayCount] = useState(1);
 
   useEffect(() => {
     // Initialize with some starter Digimon
@@ -45,9 +47,8 @@ const App: React.FC = () => {
     }
   };
 
-  const handleStartBattle = (nodeIndex: number) => {
-    const testEnemy = createUniqueDigimon('goblimon');
-    setEnemyTeam([testEnemy]);
+  const handleStartBattle = (nodeIndex: number, enemyTeam: Digimon[]) => {
+    setEnemyTeam(enemyTeam);
     setCurrentNode(nodeIndex);
     setGameState('battle');
   };
@@ -60,14 +61,11 @@ const App: React.FC = () => {
     setOwnedDigimon(updatedOwnedDigimon);
   };
 
-  const handleBattleEnd = (result: 'win' | 'lose') => {
+  const handleBattleEnd = (result: 'win' | 'lose', updatedPlayerTeam: Digimon[]) => {
     if (result === 'win') {
-      setPlayerTeam(prevTeam =>
-        prevTeam.map(digimon => ({
-          ...digimon,
-          exp: digimon.exp + 50,
-        }))
-      );
+      // Update the player team with the new health values
+      setPlayerTeam(updatedPlayerTeam);
+
       // Mark the current node as completed
       if (currentNode !== null) {
         setZoneMap(prevMap => {
@@ -79,7 +77,20 @@ const App: React.FC = () => {
           return newMap;
         });
       }
+
+      // Add experience to the Digimon
+      setPlayerTeam(prevTeam =>
+        prevTeam.map(digimon => ({
+          ...digimon,
+          exp: digimon.exp + 50, // You can adjust this value as needed
+        }))
+      );
+    } else {
+      // Handle lose condition (e.g., return to home screen or retry)
+      setGameState('home');
     }
+
+    // Return to the adventure map
     setGameState('adventure');
   };
 
@@ -122,6 +133,35 @@ const App: React.FC = () => {
   const handleStartAdventure = (zone: string) => {
     setSelectedZone(zone);
     setGameState('adventure');
+    setZoneMap([]);
+    setCurrentNode(null);
+    setAvailableNodes([]);
+  };
+
+  const handleEndDay = () => {
+    setSelectedZone(null);
+    setCurrentNode(null);
+    setGameState('home');
+    setDayCount(prevDay => prevDay + 1);
+    
+    //end-of-day actions here
+    setPlayerTeam(prevTeam => prevTeam.map(digimon => ({
+      ...digimon,
+      hp: digimon.maxHp,  // Fully heal Digimon
+      // Reset any daily stats or buffs here
+    })));
+
+          //temporary egg hatching logic
+    setEggs(prevEggs => prevEggs.map(egg => ({
+      ...egg,
+      hatchTime: Math.max(0, egg.hatchTime - 1)
+    })));
+
+    eggs.forEach(egg => {
+      if (egg.hatchTime <= 0) {
+        hatchEgg(egg.id);
+      }
+    });
   };
 
   const handleExitZone = () => {
@@ -143,35 +183,36 @@ const App: React.FC = () => {
           onGenerateEgg={generateNewEgg}
           onHatchEgg={hatchEgg}
           onStartAdventure={handleStartAdventure}
+          dayCount={dayCount}
         />
       );
     case 'battle':
-      return (
-        <BattleScreen
-          playerTeam={playerTeam}
-          enemyTeam={enemyTeam}
-          onBattleEnd={handleBattleEnd}
-        />
-      );
-      case 'adventure':
         return (
-          <ZoneMap
+          <BattleScreen
             playerTeam={playerTeam}
-            onExitZone={handleExitZone}
-            onStartBattle={handleStartBattle}
-            zoneName={selectedZone || ""}
-            zoneDifficulty={getZoneDifficulty(selectedZone || "")}
-            currentNode={currentNode}
-            map={zoneMap}
-            availableNodes={availableNodes}
-            onUpdateMap={handleUpdateMap}
-            onUpdateAvailableNodes={handleUpdateAvailableNodes}
-            onUpdateCurrentNode={handleUpdateCurrentNode}
+            enemyTeam={enemyTeam}
+            onBattleEnd={handleBattleEnd}
           />
         );
-      default:
-        return null;
-    }
-  };
-  
-  export default App;
+        case 'adventure':
+          return (
+            <ZoneMap
+              playerTeam={playerTeam}
+              onEndDay={handleEndDay}
+              onStartBattle={handleStartBattle}
+              zoneName={selectedZone || ""}
+              zoneDifficulty={getZoneDifficulty(selectedZone || "")}
+              currentNode={currentNode}
+              map={zoneMap}
+              availableNodes={availableNodes}
+              onUpdateMap={handleUpdateMap}
+              onUpdateAvailableNodes={handleUpdateAvailableNodes}
+              onUpdateCurrentNode={handleUpdateCurrentNode}
+            />
+          );
+        default:
+          return null;
+  }
+};
+
+export default App;

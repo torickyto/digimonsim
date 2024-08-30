@@ -25,7 +25,7 @@ import ZoneMap from './ZoneMap';
 interface HomeScreenProps {
   playerTeam: Digimon[];
   eggs: DigimonEgg[];
-  onStartBattle: (nodeIndex: number) => void;
+  onStartBattle: (nodeIndex: number, enemyTeam: Digimon[]) => void;
   onUpdatePlayerTeam: (updatedTeam: Digimon[]) => void;
   onUpdateOwnedDigimon: (updatedOwnedDigimon: Digimon[]) => void; 
   ownedDigimon: Digimon[];  
@@ -33,6 +33,7 @@ interface HomeScreenProps {
   onHatchEgg: (eggId: number) => void;
   onUpdateEggs?: (updatedEggs: DigimonEgg[]) => void; 
   onStartAdventure: (zone: string) => void;
+  dayCount: number;
 }
 
 const HomeScreen: React.FC<HomeScreenProps> = ({ 
@@ -45,7 +46,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   onGenerateEgg,
   onHatchEgg,
   onStartAdventure,
-  onUpdateEggs
+  onUpdateEggs,
+  dayCount 
 }) => {
   const [showStats, setShowStats] = useState(false);
   const [showParty, setShowParty] = useState(false);
@@ -364,6 +366,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
       <div className="digivice">
         <div className="digivice-content">
           <div className="screen-wrapper">
+          <p>Day: {dayCount}</p>
             <div className="screen" ref={screenRef}>
               <div className="screen-content">
                 <div className="digimon-display">
@@ -489,6 +492,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
           <button className="stats-button" onClick={() => toggleScreen('stats')}>Stats</button>
           <button className="eggs-button" onClick={() => toggleScreen('eggs')}>Eggs</button>
           <button onClick={onGenerateEgg}>DEV Generate Egg</button>
+          <button className="stats-button" onClick={() => toggleScreen('party')}>Party</button>
           <button className="battle-button" onClick={handleAdventureClick}>Adventure</button>
         </div>
         <div className="hbutton-container">

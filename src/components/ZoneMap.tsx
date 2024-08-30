@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Digimon } from '../shared/types';
 import DigimonSprite from './DigimonSprite';
 import './ZoneMap.css';
+import { generateEnemyTeam } from '../data/enemyManager';
 
 type NodeType = 'start' | 'monster' | 'chest' | 'event' | 'boss' | 'empty';
 
@@ -13,8 +14,8 @@ interface MapNode {
 
 interface ZoneMapProps {
   playerTeam: Digimon[];
-  onExitZone: () => void;
-  onStartBattle: (nodeIndex: number) => void;
+  onEndDay: () => void;
+  onStartBattle: (nodeIndex: number, enemyTeam: Digimon[]) => void;
   zoneName: string;
   zoneDifficulty: number;
   currentNode: number | null;
@@ -25,9 +26,10 @@ interface ZoneMapProps {
   onUpdateCurrentNode: (newCurrentNode: number) => void;
 }
 
+
 const ZoneMap: React.FC<ZoneMapProps> = ({
   playerTeam,
-  onExitZone,
+  onEndDay,
   onStartBattle,
   zoneName,
   zoneDifficulty,
@@ -185,7 +187,10 @@ const ZoneMap: React.FC<ZoneMapProps> = ({
     const nodeIndex = row * COLS + col;
     if (availableNodes.includes(nodeIndex) && !map[row][col].completed) {
       if (map[row][col].type === 'monster' || map[row][col].type === 'boss') {
-        onStartBattle(nodeIndex);
+        const nodeType = map[row][col].type === 'boss' ? 'boss' : 'monster';
+        const playerLevel = Math.max(...playerTeam.map(d => d.level));
+        const enemyTeam = generateEnemyTeam(zoneName, nodeType, playerLevel, nodeType === 'boss' ? 1 : 2);
+        onStartBattle(nodeIndex, enemyTeam);
       } else {
         // Handle other node types (chest, event) here
         const newMap = map.map(r => r.map(node => ({ ...node })));
@@ -264,7 +269,7 @@ const ZoneMap: React.FC<ZoneMapProps> = ({
     <div className="zm-zone-map">
       <div className="zm-zone-header">
         <h2 className="zm-zone-title">{zoneName}</h2>
-        <button className="zm-exit-button" onClick={onExitZone}>Exit Zone</button>
+        <button className="zm-end-day-button" onClick={onEndDay}>End Day</button>
       </div>
       <div className="zm-zone-content">
         <div className="zm-player-team">

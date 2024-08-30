@@ -7,6 +7,7 @@ import { applyStatusEffects } from './statusEffects';
 import { resolveCardEffects } from './cardEffects';
 
 
+
 export const initializeBattle = (playerTeam: Digimon[], enemyTeam: Digimon[]): GameState => {
   console.log('Initializing battle');
   const initialState: GameState = {
