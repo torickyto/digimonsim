@@ -32,7 +32,7 @@ const ZoneMap: React.FC<ZoneMapProps> = ({
   zoneName,
   zoneDifficulty,
   currentNode,
-  map,
+  map = [],
   availableNodes,
   onUpdateMap,
   onUpdateAvailableNodes,
@@ -43,7 +43,7 @@ const ZoneMap: React.FC<ZoneMapProps> = ({
   const NUM_PATHS = 3;
 
   useEffect(() => {
-    if (map.length === 0) {
+    if (!map || map.length === 0) {
       generateMap();
     } else if (currentNode !== null) {
       updateAvailableNodes(currentNode);
@@ -58,15 +58,19 @@ const ZoneMap: React.FC<ZoneMapProps> = ({
     for (let i = 0; i < ROWS; i++) {
       const row: MapNode[] = [];
       for (let j = 0; j < COLS; j++) {
-        row.push({ type: 'empty', connections: [], completed: false });
+        if (i === ROWS - 1) {
+          // Make the entire last row boss nodes
+          row.push({ type: 'boss', connections: [], completed: false });
+        } else {
+          row.push({ type: 'empty', connections: [], completed: false });
+        }
       }
       newMap.push(row);
     }
 
-    // Set start and boss nodes
+    // Set start node
     const startCol = Math.floor(COLS / 2);
     newMap[0][startCol] = { type: 'start', connections: [], completed: true };
-    newMap[ROWS - 1][startCol] = { type: 'boss', connections: [], completed: false };
 
     // Generate multiple main paths
     for (let i = 0; i < NUM_PATHS; i++) {
@@ -85,19 +89,15 @@ const ZoneMap: React.FC<ZoneMapProps> = ({
     let currentRow = 0;
     let currentCol = Math.floor(COLS / 2);
 
-    while (currentRow < ROWS - 1) {
+    while (currentRow < ROWS - 2) { // Stop one row before the boss row
       const nextRow = currentRow + 1;
       let nextCol: number;
 
-      if (nextRow === ROWS - 1) {
-        nextCol = Math.floor(COLS / 2);
-      } else {
-        const direction = Math.floor(Math.random() * 3) - 1;
-        nextCol = Math.max(0, Math.min(COLS - 1, currentCol + direction));
-      }
+      const direction = Math.floor(Math.random() * 3) - 1;
+      nextCol = Math.max(0, Math.min(COLS - 1, currentCol + direction));
 
       if (map[nextRow][nextCol].type === 'empty') {
-        map[nextRow][nextCol].type = chooseNodeType(nextRow, ROWS);
+        map[nextRow][nextCol].type = chooseNodeType(nextRow, ROWS - 1); // Adjust for boss row
       }
 
       const currentIndex = currentRow * COLS + currentCol;
@@ -114,8 +114,22 @@ const ZoneMap: React.FC<ZoneMapProps> = ({
       currentCol = nextCol;
     }
 
+    // Connect the last non-boss row to all boss nodes
+    const lastNonBossRow = ROWS - 2;
+    for (let col = 0; col < COLS; col++) {
+      if (map[lastNonBossRow][col].type !== 'empty') {
+        for (let bossCol = 0; bossCol < COLS; bossCol++) {
+          const currentIndex = lastNonBossRow * COLS + col;
+          const bossIndex = (ROWS - 1) * COLS + bossCol;
+          map[lastNonBossRow][col].connections.push(bossIndex);
+          map[ROWS - 1][bossCol].connections.push(currentIndex);
+        }
+      }
+    }
+
     return map;
   };
+
 
   const addAdditionalConnections = (map: MapNode[][]): MapNode[][] => {
     for (let row = 0; row < ROWS - 1; row++) {
@@ -184,18 +198,18 @@ const ZoneMap: React.FC<ZoneMapProps> = ({
   };
 
   const renderNode = (node: MapNode, rowIndex: number, colIndex: number) => {
-    const nodeIndex = rowIndex * COLS + colIndex;
+    if (!map || !map[0]) return null;
+    const nodeIndex = rowIndex * map[0].length + colIndex;
     const isAvailable = availableNodes.includes(nodeIndex);
     const isCurrent = currentNode === nodeIndex;
-
-    let nodeClass = 'map-node';
+    let nodeClass = 'zm-map-node';
     if (node.type !== 'empty') {
-      nodeClass += ` ${node.type}`;
-      if (node.completed) nodeClass += ' completed';
-      if (isAvailable) nodeClass += ' available';
-      if (isCurrent) nodeClass += ' current';
+      nodeClass += ` zm-${node.type}`;
+      if (node.completed) nodeClass += ' zm-completed';
+      if (isAvailable) nodeClass += ' zm-available';
+      if (isCurrent) nodeClass += ' zm-current';
     } else {
-      nodeClass += ' empty';
+      nodeClass += ' zm-empty';
     }
 
     const getNodeIcon = (type: NodeType) => {
@@ -209,6 +223,10 @@ const ZoneMap: React.FC<ZoneMapProps> = ({
       }
     };
 
+    if (!map || map.length === 0) {
+      return <div>Loading map...</div>;
+    }
+
     return (
       <div
         key={colIndex}
@@ -216,7 +234,7 @@ const ZoneMap: React.FC<ZoneMapProps> = ({
         data-index={nodeIndex}
         onClick={() => node.type !== 'empty' && handleNodeClick(rowIndex, colIndex)}
       >
-        <span className="node-icon">{getNodeIcon(node.type)}</span>
+        <span className="zm-node-icon">{getNodeIcon(node.type)}</span>
       </div>
     );
   };
@@ -224,16 +242,16 @@ const ZoneMap: React.FC<ZoneMapProps> = ({
   const renderDigimonInfo = (digimon: Digimon) => {
     const healthPercentage = (digimon.hp / digimon.maxHp) * 100;
     return (
-      <div className="digimon-container" key={digimon.id}>
-        <div className="digimon-sprite">
-          <DigimonSprite name={digimon.name} scale={1} />
+      <div className="zm-digimon-container" key={digimon.id}>
+        <div className="zm-digimon-sprite">
+          <DigimonSprite name={digimon.name} scale={0.8} />
         </div>
-        <div className="digimon-info">
-          <div className="digimon-name">{digimon.name}</div>
-          <div className="digimon-level">Lv. {digimon.level}</div>
-          <div className="health-bar">
+        <div className="zm-digimon-info">
+          <div className="zm-digimon-name">{digimon.nickname ? digimon.nickname : digimon.displayName}</div>
+          <div className="zm-digimon-level">Lv. {digimon.level}</div>
+          <div className="zm-health-bar">
             <div 
-              className="health-bar-fill" 
+              className="zm-health-bar-fill" 
               style={{ width: `${healthPercentage}%` }}
             ></div>
           </div>
@@ -242,28 +260,23 @@ const ZoneMap: React.FC<ZoneMapProps> = ({
     );
   };
 
-  return (
-    <div className="zone-map">
-      <div className="zone-header">
-        <h2>{zoneName}</h2>
-        <button className="exit-button" onClick={onExitZone}>Exit Zone</button>
+ return (
+    <div className="zm-zone-map">
+      <div className="zm-zone-header">
+        <h2 className="zm-zone-title">{zoneName}</h2>
+        <button className="zm-exit-button" onClick={onExitZone}>Exit Zone</button>
       </div>
-      <div className="zone-content">
-        <div className="player-team">
+      <div className="zm-zone-content">
+        <div className="zm-player-team">
           {playerTeam.map(renderDigimonInfo)}
         </div>
-        <div className="map-container">
-          <div className="map-grid">
-            {map.slice(0, -1).map((row, rowIndex) => (
-              <div key={rowIndex} className="map-row">
+        <div className="zm-map-container">
+          <div className="zm-map-grid">
+            {map.map((row, rowIndex) => (
+              <div key={rowIndex} className="zm-map-row">
                 {row.map((node, colIndex) => renderNode(node, rowIndex, colIndex))}
               </div>
             ))}
-            <div className="map-row boss-row">
-              <div className="map-node boss" data-index={(ROWS - 1) * COLS}>
-                <span className="node-icon" role="img" aria-label="skull">💀</span>
-              </div>
-            </div>
           </div>
         </div>
       </div>
