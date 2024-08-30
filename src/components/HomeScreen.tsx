@@ -234,6 +234,11 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
     setNewlyHatchedDigimon(newDigimon);
     setCurrentScreen('newDigimonStats');
 
+    setLocalOwnedDigimon(prev => [...prev, newDigimon]);
+
+    onUpdateOwnedDigimon([...localOwnedDigimon, newDigimon]);
+
+
     if (onUpdateEggs) {
       const updatedEggs = eggs.filter(egg => egg.id !== eggId);
       onUpdateEggs(updatedEggs);
