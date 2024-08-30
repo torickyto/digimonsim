@@ -25,7 +25,7 @@ import ZoneMap from './ZoneMap';
 interface HomeScreenProps {
   playerTeam: Digimon[];
   eggs: DigimonEgg[];
-  onStartBattle: () => void;
+  onStartBattle: (nodeIndex: number) => void;
   onUpdatePlayerTeam: (updatedTeam: Digimon[]) => void;
   onUpdateOwnedDigimon: (updatedOwnedDigimon: Digimon[]) => void; 
   ownedDigimon: Digimon[];  
