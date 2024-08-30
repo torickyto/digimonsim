@@ -18,18 +18,22 @@ import { v4 as uuidv4 } from 'uuid';
 import DevDigimonPartyBox from './DevDigimonPartyBox';
 import DigimonPartyBox from './DigimonPartyBox';
 import Eggs from './Eggs';
+import AdventureMap from './ZoneMap';
+import ZoneMap from './ZoneMap';
 
 
 interface HomeScreenProps {
   playerTeam: Digimon[];
   eggs: DigimonEgg[];
-  onStartBattle: () => void;
+  onStartBattle: (nodeIndex: number, enemyTeam: Digimon[]) => void;
   onUpdatePlayerTeam: (updatedTeam: Digimon[]) => void;
   onUpdateOwnedDigimon: (updatedOwnedDigimon: Digimon[]) => void; 
   ownedDigimon: Digimon[];  
   onGenerateEgg: () => void;
   onHatchEgg: (eggId: number) => void;
-  onUpdateEggs?: (updatedEggs: DigimonEgg[]) => void; // Add this prop
+  onUpdateEggs?: (updatedEggs: DigimonEgg[]) => void; 
+  onStartAdventure: (zone: string) => void;
+  dayCount: number;
 }
 
 const HomeScreen: React.FC<HomeScreenProps> = ({ 
@@ -41,7 +45,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   ownedDigimon,  
   onGenerateEgg,
   onHatchEgg,
-  onUpdateEggs
+  onStartAdventure,
+  onUpdateEggs,
+  dayCount 
 }) => {
   const [showStats, setShowStats] = useState(false);
   const [showParty, setShowParty] = useState(false);
@@ -69,11 +75,11 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   const [showNewDigimonStats, setShowNewDigimonStats] = useState(false);
   const [newlyHatchedDigimon, setNewlyHatchedDigimon] = useState<Digimon | null>(null);
   const [currentScreen, setCurrentScreen] = useState<string | null>(null);
+  const [showZoneMap, setShowZoneMap] = useState(false);
+  const [selectedZone, setSelectedZone] = useState<string | null>(null);
+  const [showZoneModal, setShowZoneModal] = useState(false);
   
-  const toggleScreen = (screenName: string) => {
-    setCurrentScreen(currentScreen === screenName ? null : screenName);
-  };
-
+  
   useEffect(() => {
     // Check for digivolution conditions
     playerTeam.forEach((digimon, index) => {
@@ -106,6 +112,82 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
     useEffect(() => {
     setLocalOwnedDigimon(ownedDigimon);
   }, [ownedDigimon]);
+
+
+
+   useEffect(() => {
+    if (showDigivolutionModal) {
+      handleDigivolve();
+    }
+  }, [showDigivolutionModal]);
+
+  useEffect(() => {
+    const connections = getDigivolutionConnections();
+    const digimonNames = Array.from(new Set(connections.flatMap(c => [c.from, c.to])));
+    
+    const allDigimonArray = digimonNames.map(name => {
+      const existingDigimon = playerTeam.find(d => d.name === name);
+      return existingDigimon || createUniqueDigimon(name);
+    });
+  
+    setAllDigimon(allDigimonArray);
+  }, [playerTeam]);
+
+  useEffect(() => {
+    const updateSpriteScale = () => {
+      if (screenRef.current) {
+        const { width, height } = screenRef.current.getBoundingClientRect();
+        const scale = Math.min(width / 1280, height / 720);
+        setSpriteScale(scale);
+      }
+    };
+
+    updateSpriteScale();
+    window.addEventListener('resize', updateSpriteScale);
+    return () => window.removeEventListener('resize', updateSpriteScale);
+  }, []);
+
+  useEffect(() => {
+    if (isEditingNickname && nicknameInputRef.current) {
+      nicknameInputRef.current.focus();
+    }
+  }, [isEditingNickname]);
+
+  const toggleScreen = (screenName: string) => {
+    setCurrentScreen(currentScreen === screenName ? null : screenName);
+  };
+
+  const handleAdventureClick = () => {
+    setShowZoneModal(true);
+  };
+
+  const handleStartAdventure = (zone: string) => {
+    setSelectedZone(zone);
+    setShowZoneModal(false);
+    onStartAdventure(zone);
+  };
+
+  const handleExitZone = () => {
+    setShowZoneMap(false);
+    setSelectedZone(null);
+  };
+
+
+  const toggleStats = () => {
+    setShowStats(!showStats);
+    setCurrentDigimonIndex(0);
+  };
+
+  const handleCloseNewDigimonStats = () => {
+    setCurrentScreen(null);
+    setNewlyHatchedDigimon(null);
+  };
+
+  const handleUpdateEggs = (updatedEggs: DigimonEgg[]) => {
+    if (onUpdateEggs) {
+      onUpdateEggs(updatedEggs);
+    }
+  };
 
   const handleSwapDigimon = (partyIndex: number, newDigimon: Digimon | null) => {
     let updatedTeam = [...playerTeam];
@@ -152,24 +234,17 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
     setNewlyHatchedDigimon(newDigimon);
     setCurrentScreen('newDigimonStats');
 
+    setLocalOwnedDigimon(prev => [...prev, newDigimon]);
+
+    onUpdateOwnedDigimon([...localOwnedDigimon, newDigimon]);
+
+
     if (onUpdateEggs) {
       const updatedEggs = eggs.filter(egg => egg.id !== eggId);
       onUpdateEggs(updatedEggs);
     }
 
     onHatchEgg(eggId);
-  };
-
-
-  const handleCloseNewDigimonStats = () => {
-    setCurrentScreen(null);
-    setNewlyHatchedDigimon(null);
-  };
-
-  const handleUpdateEggs = (updatedEggs: DigimonEgg[]) => {
-    if (onUpdateEggs) {
-      onUpdateEggs(updatedEggs);
-    }
   };
 
   const handleDigivolve = () => {
@@ -234,49 +309,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
 
   const toggleDevPartyBox = () => setShowDevPartyBox(!showDevPartyBox);
 
-   useEffect(() => {
-    if (showDigivolutionModal) {
-      handleDigivolve();
-    }
-  }, [showDigivolutionModal]);
-
-  useEffect(() => {
-    const connections = getDigivolutionConnections();
-    const digimonNames = Array.from(new Set(connections.flatMap(c => [c.from, c.to])));
-    
-    const allDigimonArray = digimonNames.map(name => {
-      const existingDigimon = playerTeam.find(d => d.name === name);
-      return existingDigimon || createUniqueDigimon(name);
-    });
-  
-    setAllDigimon(allDigimonArray);
-  }, [playerTeam]);
-
-  useEffect(() => {
-    const updateSpriteScale = () => {
-      if (screenRef.current) {
-        const { width, height } = screenRef.current.getBoundingClientRect();
-        const scale = Math.min(width / 1280, height / 720);
-        setSpriteScale(scale);
-      }
-    };
-
-    updateSpriteScale();
-    window.addEventListener('resize', updateSpriteScale);
-    return () => window.removeEventListener('resize', updateSpriteScale);
-  }, []);
-
-  useEffect(() => {
-    if (isEditingNickname && nicknameInputRef.current) {
-      nicknameInputRef.current.focus();
-    }
-  }, [isEditingNickname]);
-
-  const toggleStats = () => {
-    setShowStats(!showStats);
-    setCurrentDigimonIndex(0);
-  };
-
   const cycleDigimon = (direction: 'next' | 'prev') => {
     setCurrentDigimonIndex((prevIndex) => {
       if (direction === 'next') {
@@ -339,6 +371,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
       <div className="digivice">
         <div className="digivice-content">
           <div className="screen-wrapper">
+          <p>Day: {dayCount}</p>
             <div className="screen" ref={screenRef}>
               <div className="screen-content">
                 <div className="digimon-display">
@@ -434,6 +467,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
                     />
                   </div>
                 )}
+                      
+
        {showDigivolutionModal && digivolvingDigimon && newDigimonForm && (
         <div className="digivolution-overlay">
           <div className="digivolution-content">
@@ -458,21 +493,30 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
             </div>
           </div>
           <div className="controls-container">
-            <div className="hbutton-container">
-              <button className="stats-button" onClick={() => toggleScreen('stats')}>Stats</button>
-              <button className="eggs-button" onClick={() => toggleScreen('eggs')}>Eggs</button>
-              <button onClick={onGenerateEgg}>DEV Generate Egg</button>
-              <button className="party-button" onClick={() => toggleScreen('party')}>Party</button>
-              <button className="battle-button" onClick={onStartBattle}>Battle</button>
-            </div>
-            <div className="hbutton-container">
-              <button className="dev-button" onClick={() => toggleScreen('cardCollection')}>DEV: Cards</button>
-              <button className="dev-button" onClick={() => toggleScreen('devPartyBox')}>DEV: Party Box</button>
-              <button className="test-arena-button" onClick={() => toggleScreen('testArena')}>DEV: Test Battle</button>
-            </div>
-          </div>
+        <div className="hbutton-container">
+          <button className="stats-button" onClick={() => toggleScreen('stats')}>Stats</button>
+          <button className="eggs-button" onClick={() => toggleScreen('eggs')}>Eggs</button>
+          <button onClick={onGenerateEgg}>DEV Generate Egg</button>
+          <button className="stats-button" onClick={() => toggleScreen('party')}>Party</button>
+          <button className="battle-button" onClick={handleAdventureClick}>Adventure</button>
+        </div>
+        <div className="hbutton-container">
+          <button className="dev-button" onClick={() => toggleScreen('cardCollection')}>DEV: Cards</button>
+          <button className="dev-button" onClick={() => toggleScreen('devPartyBox')}>DEV: Party Box</button>
+          <button className="test-arena-button" onClick={() => toggleScreen('testArena')}>DEV: Test Battle</button>
         </div>
       </div>
+        </div>
+      </div>
+
+      {showZoneModal && (
+        <div className="modal zone-selection-modal">
+          <h2>Select a Zone</h2>
+          <button onClick={() => handleStartAdventure('Label Forest')}>Label Forest</button>
+          {/* Add more zone buttons here as needed */}
+          <button onClick={() => setShowZoneModal(false)}>Cancel</button>
+        </div>
+      )}
 
 {currentScreen === 'cardCollection' && (
         <div className="modal card-collection-modal">
@@ -481,8 +525,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
         </div>
       )}
       
-      
-
       {currentScreen === 'digivolutionTree' && (
         <div className="digivolution-overlay">
           <DigivolutionTree 

@@ -15,7 +15,7 @@ import BattleLog from './BattleLog';
 interface BattleScreenProps {
   playerTeam: Digimon[];
   enemyTeam: Digimon[];
-  onBattleEnd: (result: 'win' | 'lose') => void;
+  onBattleEnd: (result: 'win' | 'lose', updatedPlayerTeam: Digimon[]) => void;
   backgroundImage?: string; 
 }
 
@@ -629,25 +629,32 @@ const handleStartNewTurn = useCallback((newTurn: number) => {
       default:
         processNextAction();
     }
-  
 
-    // Check if the battle has ended
-    const battleStatus = checkBattleEnd(updatedState);
-    if (battleStatus !== 'ongoing') {
-      onBattleEnd(battleStatus);
-    }
   }, [setGameState, startPlayerTurn, battleApplyDamage, onBattleEnd, isEnemyTurn, isProcessingAction, handleDigimonDeath, animateCardBurn]);
 
   
-useEffect(() => {
-  if (gameState.actionQueue.length > 0) {
-    console.log('Action queue changed, processing...');
-    processActionQueue(gameState);
-  } else if (isEnemyTurn) {
-    console.log('Enemy turn, executing actions...');
-    processEnemyTurn(gameState);
-  }
-}, [gameState, isEnemyTurn, processActionQueue, processEnemyTurn]);
+  useEffect(() => {
+    if (gameState.actionQueue.length > 0) {
+      console.log('Action queue changed, processing...');
+      processActionQueue(gameState);
+    } else if (isEnemyTurn) {
+      console.log('Enemy turn, executing actions...');
+      processEnemyTurn(gameState);
+    } else {
+      // Check for battle end when no actions are pending
+      const battleStatus = checkBattleEnd(gameState);
+      if (battleStatus !== 'ongoing') {
+        const updatedPlayerTeam = gameState.player.digimon.map(digimon => {
+          const originalDigimon = playerTeam.find(d => d.id === digimon.id);
+          return {
+            ...digimon,
+            deck: originalDigimon ? originalDigimon.deck : [],
+          } as Digimon;
+        });
+        onBattleEnd(battleStatus, updatedPlayerTeam);
+      }
+    }
+  }, [gameState, isEnemyTurn, processActionQueue, processEnemyTurn, checkBattleEnd, onBattleEnd, playerTeam]);
 
 
   const handlePlayerDigimonClick = (index: number) => {
