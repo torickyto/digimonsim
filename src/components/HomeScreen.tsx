@@ -20,6 +20,7 @@ import DigimonPartyBox from './DigimonPartyBox';
 import Eggs from './Eggs';
 import AdventureMap from './ZoneMap';
 import ZoneMap from './ZoneMap';
+import ArenaScreen from './ArenaScreen';
 
 
 interface HomeScreenProps {
@@ -78,6 +79,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   const [showZoneMap, setShowZoneMap] = useState(false);
   const [selectedZone, setSelectedZone] = useState<string | null>(null);
   const [showZoneModal, setShowZoneModal] = useState(false);
+  const [isArenaAvailable, setIsArenaAvailable] = useState(false);
+  const [daysUntilArena, setDaysUntilArena] = useState(0);
+
   
   
   useEffect(() => {
@@ -91,6 +95,18 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
       }
     });
   }, [playerTeam]);
+
+  useEffect(() => {
+    // Check if arena is available (every 10 days)
+    const isAvailable = dayCount % 10 === 0 && dayCount > 0;
+    setIsArenaAvailable(isAvailable);
+
+    // Calculate days until next arena
+    if (!isAvailable) {
+      const nextArenaDay = Math.ceil(dayCount / 10) * 10;
+      setDaysUntilArena(nextArenaDay - dayCount);
+    }
+  }, [dayCount]);
 
   useEffect(() => {
     // Initialize allObtainedDigimon with playerTeam and some additional Digimon
@@ -152,6 +168,23 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
       nicknameInputRef.current.focus();
     }
   }, [isEditingNickname]);
+
+  
+
+  const handleArenaClick = () => {
+    if (isArenaAvailable) {
+      setCurrentScreen('arena');
+    }
+  };
+
+  const handleCloseArena = () => {
+    setCurrentScreen(null);
+  };
+
+  const handleSelectTournament = (rank: string) => {
+    console.log(`Selected Rank ${rank} Tournament`);
+    // TODO: Implement tournament logic
+  };
 
   const toggleScreen = (screenName: string) => {
     setCurrentScreen(currentScreen === screenName ? null : screenName);
@@ -394,6 +427,14 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
                     />
                   </div>
                 )}
+                {currentScreen === 'arena' && (
+                  <div className="stat-overlay">
+                    <ArenaScreen
+                      onClose={handleCloseArena}
+                      onSelectTournament={handleSelectTournament}
+                    />
+                  </div>
+                )}
           {currentScreen === 'devPartyBox' && (
                   <div className="stat-overlay">
                     <DevDigimonPartyBox
@@ -499,6 +540,13 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
           <button onClick={onGenerateEgg}>DEV Generate Egg</button>
           <button className="stats-button" onClick={() => toggleScreen('party')}>Party</button>
           <button className="battle-button" onClick={handleAdventureClick}>Adventure</button>
+          <button 
+            className={`arena-button ${isArenaAvailable ? 'available' : ''}`} 
+            onClick={handleArenaClick}
+            disabled={!isArenaAvailable}
+          >
+            {isArenaAvailable ? 'ENTER ARENA' : `ARENA: ${daysUntilArena} day${daysUntilArena !== 1 ? 's' : ''}`}
+          </button>
         </div>
         <div className="hbutton-container">
           <button className="dev-button" onClick={() => toggleScreen('cardCollection')}>DEV: Cards</button>
