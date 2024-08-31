@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import HomeScreen from './components/HomeScreen';
 import BattleScreen from './components/BattleScreen';
 import ZoneMap from './components/ZoneMap';
-import { Digimon, DigimonEgg } from './shared/types';
+import { Digimon, DigimonEgg, DigimonTemplate } from './shared/types';
 import { createUniqueDigimon } from './data/digimon';
 import './App.css';
 import { EggTypes, getRandomOutcome } from './data/eggTypes';
@@ -117,7 +117,7 @@ const App: React.FC = () => {
     setEggs(prevEggs => [...prevEggs, newEgg]);
   };
 
-  const hatchEgg = (eggId: number) => {
+  const hatchEgg = (eggId: number): Digimon | null => {
     const eggToHatch = eggs.find(egg => egg.id === eggId);
     if (eggToHatch) {
       const eggType = EggTypes.find(type => type.id === eggToHatch.typeId);
@@ -126,9 +126,18 @@ const App: React.FC = () => {
         if (newDigimonTemplate) {
           const newDigimon = createUniqueDigimon(newDigimonTemplate.name);
           setOwnedDigimon(prevOwned => [...prevOwned, newDigimon]);
+          setEggs(prevEggs => prevEggs.filter(egg => egg.id !== eggId));
+          return newDigimon;
         }
       }
-      setEggs(prevEggs => prevEggs.filter(egg => egg.id !== eggId));
+    }
+    return null;
+  };
+
+  const handleHatchEgg = (eggId: number, newDigimonTemplate: DigimonTemplate) => {
+    const newDigimon = hatchEgg(eggId);
+    if (newDigimon) {
+      console.log(`New Digimon hatched: ${newDigimon.displayName}`);
     }
   };
 
@@ -183,7 +192,7 @@ const App: React.FC = () => {
           onUpdateOwnedDigimon={handleUpdateOwnedDigimon}
           ownedDigimon={ownedDigimon}
           onGenerateEgg={generateNewEgg}
-          onHatchEgg={hatchEgg}
+          onHatchEgg={handleHatchEgg}
           onStartAdventure={handleStartAdventure}
           dayCount={dayCount}
         />

@@ -31,7 +31,7 @@ interface HomeScreenProps {
   onUpdateOwnedDigimon: (updatedOwnedDigimon: Digimon[]) => void; 
   ownedDigimon: Digimon[];  
   onGenerateEgg: () => void;
-  onHatchEgg: (eggId: number) => void;
+  onHatchEgg: (eggId: number, newDigimonTemplate: DigimonTemplate) => void;
   onUpdateEggs?: (updatedEggs: DigimonEgg[]) => void; 
   onStartAdventure: (zone: string) => void;
   dayCount: number;
@@ -263,21 +263,18 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   };
 
   const handleHatchEgg = (eggId: number, newDigimonTemplate: DigimonTemplate) => {
-    const newDigimon = createUniqueDigimon(newDigimonTemplate.name);
-    setNewlyHatchedDigimon(newDigimon);
-    setCurrentScreen('newDigimonStats');
-
-    setLocalOwnedDigimon(prev => [...prev, newDigimon]);
-
-    onUpdateOwnedDigimon([...localOwnedDigimon, newDigimon]);
-
-
+    onHatchEgg(eggId, newDigimonTemplate);
+    
+    // Update the eggs state
     if (onUpdateEggs) {
       const updatedEggs = eggs.filter(egg => egg.id !== eggId);
       onUpdateEggs(updatedEggs);
     }
 
-    onHatchEgg(eggId);
+    // Set the newly hatched Digimon for display
+    const newDigimon = createUniqueDigimon(newDigimonTemplate.name);
+    setNewlyHatchedDigimon(newDigimon);
+    setCurrentScreen('newDigimonStats');
   };
 
   const handleDigivolve = () => {
