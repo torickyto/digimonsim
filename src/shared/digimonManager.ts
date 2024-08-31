@@ -2,6 +2,8 @@ import { Digimon, DigimonTemplate, DigimonState, Card } from '../shared/types';
 import { getStarterDeck, getCardById } from './cardCollection';
 import { DAMAGE_MULTIPLIERS } from '../game/gameConstants';
 import { v4 as uuidv4 } from 'uuid';
+import { calculateExpRequirement } from '../game/expSystem';
+import { calculateBaseStat } from '../shared/statCalculations';
 
 
 
@@ -16,10 +18,10 @@ export function createDigimon(template: DigimonTemplate, level: number = 1): Dig
     level,
     exp: 0,
     
-    hp: calculateStat(template.baseHp, level),
-    maxHp: calculateStat(template.baseHp, level),
-    attack: calculateStat(template.baseAttack, level),
-    healing: calculateStat(template.baseHealing, level),
+    hp: calculateBaseStat(template.baseHp, level),
+    maxHp: calculateBaseStat(template.baseHp, level),
+    attack: calculateBaseStat(template.baseAttack, level),
+    healing: calculateBaseStat(template.baseHealing, level),
     
     evasion: template.baseEvadeChance,
     critChance: template.baseCritChance,
@@ -38,6 +40,7 @@ export function createDigimon(template: DigimonTemplate, level: number = 1): Dig
 
   const digimon: Digimon = {
     ...digimonState,
+    expToNextLevel: calculateExpRequirement(level),
     deck: [
       { ...template.startingCard, instanceId: uuidv4(), ownerDigimonIndex: 0 },
       ...getStarterDeck(template.name).map(card => ({ ...card, ownerDigimonIndex: 0 }))
@@ -45,10 +48,6 @@ export function createDigimon(template: DigimonTemplate, level: number = 1): Dig
   };
 
   return digimon;
-}
-function calculateStat(baseStat: number, level: number): number {
-  // simple linear scaling placeholder
-  return Math.round(baseStat * (1 + (level - 1) * 0.1));
 }
 
 export const addCardToDigimon = (digimon: Digimon, cardId: string): Digimon => {
@@ -66,16 +65,4 @@ export const upgradeDigimonCard = (digimon: Digimon, cardInstanceId: string, upg
     card.instanceId === cardInstanceId ? { ...card, ...upgrades } : card
   );
   return { ...digimon, deck: updatedDeck };
-};
-
-export const levelUpDigimon = (digimon: Digimon): Digimon => {
-  return {
-    ...digimon,
-    level: digimon.level + 1,
-    maxHp: calculateStat(digimon.maxHp, digimon.level + 1),
-    hp: calculateStat(digimon.maxHp, digimon.level + 1),  // heal on level up
-    attack: calculateStat(digimon.attack, digimon.level + 1),
-    healing: calculateStat(digimon.healing, digimon.level + 1),
-    exp: digimon.exp - 100  // placeholder - 100 exp per level
-  };
 };

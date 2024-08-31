@@ -5,6 +5,8 @@ import { createDigimon } from '../shared/digimonManager';
 import { calculateDamage, DamageCalculations } from '../shared/damageCalculations';
 import { applyStatusEffects } from './statusEffects';
 import { resolveCardEffects } from './cardEffects';
+import { calculateEnemyExpReward } from '../game/expSystem';
+import { gainExperience } from '../data/digimon';
 
 
 
@@ -371,9 +373,28 @@ export const drawCard = (state: GameState): { newState: GameState; drawnCard: Ca
 
   return { newState, drawnCard };
 };
+export function endBattle(state: GameState): GameState {
+  const updatedState = { ...state };
+  const aliveDigimon = updatedState.player.digimon.filter(d => d.hp > 0);
+  const defeatedEnemies = updatedState.enemy.digimon.filter(d => d.hp <= 0);
 
+  if (aliveDigimon.length > 0 && defeatedEnemies.length > 0) {
+    const totalExpReward = defeatedEnemies.reduce((total, enemy) => {
+      return total + calculateEnemyExpReward(enemy.level);
+    }, 0);
 
+    const expPerDigimon = Math.floor(totalExpReward / aliveDigimon.length);
 
+    updatedState.player.digimon = updatedState.player.digimon.map(digimon => {
+      if (digimon.hp > 0 && 'deck' in digimon && 'expToNextLevel' in digimon) {
+        return gainExperience(digimon, expPerDigimon);
+      }
+      return digimon;
+    });
+  }
+
+  return updatedState;
+}
 
 export const applyDamage = (damage: number, target: Digimon | DigimonState, gameState: GameState, targetInfo: TargetInfo): GameState => {
   console.log('Applying damage:', damage, 'to target:', target, 'at index:', targetInfo.targetDigimonIndex);

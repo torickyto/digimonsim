@@ -126,6 +126,33 @@
   transition: width 0.3s ease;
 }
 
+.exp-section {
+  margin-top: 1vh;
+  margin-bottom: 2vh;
+}
+
+.exp-bar-container {
+  width: 100%;
+  height: 1vh;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.exp-bar {
+  height: 100%;
+  background-color: #4ac8fa;
+  transition: width 0.3s ease;
+}
+
+.exp-text {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9vw;
+  color: #c2c2c2;
+  margin-top: 0.5vh;
+}
+
 .ssresistance-section {
   margin-bottom: 2vh;
 }

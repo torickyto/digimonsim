@@ -13,6 +13,7 @@ const DigimonStatScreen: React.FC<DigimonStatScreenProps> = ({ digimon, isObtain
   const typeColor = TYPE_COLORS[digimon.type] || '#ffffff';
   const containerRef = useRef<HTMLDivElement>(null);
   const [spriteScale, setSpriteScale] = useState(1);
+  const expPercentage = (digimon.exp / digimon.expToNextLevel) * 100;
 
   useEffect(() => {
     const updateSpriteScale = () => {
@@ -47,6 +48,15 @@ const DigimonStatScreen: React.FC<DigimonStatScreenProps> = ({ digimon, isObtain
           <div className="ssdigimon-type" style={{ backgroundColor: typeColor }}>{digimon.type}</div>
           <div className="ssdigimon-details">
           <span className="ssdigimon-level">Level: {digimon.level}</span>
+          <div className="exp-section">
+        <div className="exp-bar-container">
+          <div className="exp-bar" style={{width: `${expPercentage}%`}}></div>
+        </div>
+        <div className="exp-text">
+          <span>EXP: {digimon.exp}</span>
+          <span>Next: {digimon.expToNextLevel}</span>
+        </div>
+      </div>
           <span className="ssdigimon-stage">Stage: {digimon.digivolutionStage}</span>
             
           </div>

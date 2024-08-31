@@ -249,6 +249,9 @@ export interface Digimon extends DigimonState {
   deck: Card[];
   dateObtained: Date;
   nickname?: string;
+  level: number;
+  exp: number;
+  expToNextLevel: number;
 }
 
 export interface DigimonEgg {
