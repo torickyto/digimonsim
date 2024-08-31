@@ -3,8 +3,9 @@ import { Digimon } from '../shared/types';
 import DigimonSprite from './DigimonSprite';
 import './ZoneMap.css';
 import { generateEnemyTeam } from '../data/enemyManager';
+import NodeEvent from './NodeEvent';
 
-type NodeType = 'start' | 'monster' | 'chest' | 'event' | 'boss' | 'empty';
+type NodeType = 'start' | 'monster' | 'chest' | 'event' | 'boss' | 'empty' | 'rest';
 
 interface MapNode {
   type: NodeType;
@@ -24,8 +25,9 @@ interface ZoneMapProps {
   onUpdateMap: (newMap: MapNode[][]) => void;
   onUpdateAvailableNodes: (newAvailableNodes: number[]) => void;
   onUpdateCurrentNode: (newCurrentNode: number) => void;
+  onUpdatePlayerTeam: (updatedTeam: Digimon[]) => void;
+  onAddEgg: (eggType: string) => void;
 }
-
 
 const ZoneMap: React.FC<ZoneMapProps> = ({
   playerTeam,
@@ -38,11 +40,15 @@ const ZoneMap: React.FC<ZoneMapProps> = ({
   availableNodes,
   onUpdateMap,
   onUpdateAvailableNodes,
-  onUpdateCurrentNode
+  onUpdateCurrentNode,
+  onUpdatePlayerTeam,
+  onAddEgg
 }) => {
   const ROWS = 9;
   const COLS = 9;
   const NUM_PATHS = 3;
+  const [showNodeEvent, setShowNodeEvent] = useState(false);
+  const [currentEventType, setCurrentEventType] = useState<NodeType | null>(null);
 
   useEffect(() => {
     if (!map || map.length === 0) {
@@ -158,12 +164,13 @@ const ZoneMap: React.FC<ZoneMapProps> = ({
 
   const chooseNodeType = (row: number, totalRows: number): NodeType => {
     const progress = row / totalRows;
-    const types: NodeType[] = ['monster', 'chest', 'event'];
+    const types: NodeType[] = ['monster', 'chest', 'event', 'rest'];
     
     if (progress < 0.3) return 'monster';
-    if (progress > 0.7) return types[Math.floor(Math.random() * 2)];
+    if (progress > 0.7) return types[Math.floor(Math.random() * 3)];
     return types[Math.floor(Math.random() * types.length)];
   };
+
 
   const updateAvailableNodes = (nodeIndex: number) => {
     if (map.length === 0) return;
@@ -186,19 +193,36 @@ const ZoneMap: React.FC<ZoneMapProps> = ({
   const handleNodeClick = (row: number, col: number) => {
     const nodeIndex = row * COLS + col;
     if (availableNodes.includes(nodeIndex) && !map[row][col].completed) {
-      if (map[row][col].type === 'monster' || map[row][col].type === 'boss') {
-        const nodeType = map[row][col].type === 'boss' ? 'boss' : 'monster';
-        const playerLevel = Math.max(...playerTeam.map(d => d.level));
-        const enemyTeam = generateEnemyTeam(zoneName, nodeType, playerLevel, nodeType === 'boss' ? 1 : 2);
-        onStartBattle(nodeIndex, enemyTeam);
-      } else {
-        // Handle other node types (chest, event) here
-        const newMap = map.map(r => r.map(node => ({ ...node })));
-        newMap[row][col].completed = true;
-        onUpdateMap(newMap);
+      const nodeType = map[row][col].type;
+      switch (nodeType) {
+        case 'monster':
+        case 'boss':
+          const playerLevel = Math.max(...playerTeam.map(d => d.level));
+          const enemyTeam = generateEnemyTeam(zoneName, nodeType, playerLevel, nodeType === 'boss' ? 1 : 2);
+          onStartBattle(nodeIndex, enemyTeam);
+          break;
+        case 'chest':
+        case 'event':
+        case 'rest':
+        case 'start':
+        case 'empty':
+          setCurrentEventType(nodeType);
+          setShowNodeEvent(true);
+          break;
       }
       onUpdateCurrentNode(nodeIndex);
       updateAvailableNodes(nodeIndex);
+    }
+  };
+
+  const handleCloseNodeEvent = () => {
+    setShowNodeEvent(false);
+    setCurrentEventType(null);
+    if (currentNode !== null) {
+      const [row, col] = getRowColFromIndex(currentNode);
+      const newMap = map.map(r => r.map(node => ({ ...node })));
+      newMap[row][col].completed = true;
+      onUpdateMap(newMap);
     }
   };
 
@@ -285,6 +309,15 @@ const ZoneMap: React.FC<ZoneMapProps> = ({
           </div>
         </div>
       </div>
+      {showNodeEvent && currentEventType && (
+        <NodeEvent 
+          type={currentEventType}
+          onClose={handleCloseNodeEvent}
+          onUpdatePlayerTeam={onUpdatePlayerTeam}
+          playerTeam={playerTeam}
+          onAddEgg={onAddEgg}
+        />
+      )}
     </div>
   );
 };

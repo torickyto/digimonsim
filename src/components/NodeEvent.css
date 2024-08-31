@@ -1,0 +1,172 @@
+.node-event-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 20, 40, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+  }
+  
+  .node-event-modal {
+    background: linear-gradient(135deg, rgba(0, 50, 100, 0.9), rgba(0, 20, 60, 0.9));
+    border: 2px solid #00a8ff;
+    border-radius: 15px;
+    padding: 30px;
+    width: 90%;
+    max-width: 600px;
+    color: #e0f7ff;
+    box-shadow: 0 0 30px rgba(0, 168, 255, 0.5);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .node-event-modal::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      to bottom right,
+      transparent,
+      rgba(0, 168, 255, 0.1),
+      transparent
+    );
+    animation: digitalScan 10s linear infinite;
+  }
+  
+  @keyframes digitalScan {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  
+  .node-event-modal h2 {
+    font-size: 28px;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: #00a8ff;
+    text-shadow: 0 0 10px rgba(0, 168, 255, 0.5);
+  }
+  
+  .event-content {
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .event-content p {
+    margin-bottom: 15px;
+    font-size: 18px;
+    line-height: 1.5;
+  }
+  
+  .event-options {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 30px;
+  }
+  
+  .node-event-modal button {
+    background-color: rgba(0, 168, 255, 0.2);
+    border: 2px solid #00a8ff;
+    color: #e0f7ff;
+    padding: 12px 25px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    margin: 5px;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .node-event-modal button::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      45deg,
+      transparent,
+      rgba(0, 168, 255, 0.3),
+      transparent
+    );
+    transform: rotate(45deg);
+    transition: all 0.3s ease;
+  }
+  
+  .node-event-modal button:hover {
+    background-color: rgba(0, 168, 255, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 168, 255, 0.3);
+  }
+  
+  .node-event-modal button:hover::before {
+    left: 100%;
+  }
+  
+  .node-event-modal button small {
+    display: block;
+    font-size: 12px;
+    margin-top: 5px;
+    opacity: 0.8;
+  }
+  
+  .digimon-selection {
+    margin-top: 20px;
+  }
+  
+  .digimon-selection button {
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
+    text-align: left;
+    padding: 10px 15px;
+  }
+  
+  .digimon-selection button.selected {
+    background-color: rgba(0, 255, 255, 0.3);
+    border-color: #00ffff;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+  }
+  
+  /* Glitch effect for text */
+  @keyframes glitch {
+    0% {
+      transform: translate(0);
+    }
+    20% {
+      transform: translate(-2px, 2px);
+    }
+    40% {
+      transform: translate(-2px, -2px);
+    }
+    60% {
+      transform: translate(2px, 2px);
+    }
+    80% {
+      transform: translate(2px, -2px);
+    }
+    100% {
+      transform: translate(0);
+    }
+  }
+  
+  .node-event-modal h2:hover,
+  .event-content p:hover {
+    animation: glitch 0.3s infinite;
+  }

@@ -8,8 +8,10 @@ import './App.css';
 import { EggTypes, getRandomOutcome } from './data/eggTypes';
 import { generateEnemyTeam } from './data/enemyManager';
 
+type NodeType = 'start' | 'monster' | 'chest' | 'event' | 'boss' | 'empty' | 'rest';
+
 type MapNode = {
-  type: 'start' | 'monster' | 'chest' | 'event' | 'boss' | 'empty';
+  type: NodeType;
   connections: number[];
   completed: boolean;
 };
@@ -208,6 +210,15 @@ const App: React.FC = () => {
               onUpdateMap={handleUpdateMap}
               onUpdateAvailableNodes={handleUpdateAvailableNodes}
               onUpdateCurrentNode={handleUpdateCurrentNode}
+              onUpdatePlayerTeam={handleUpdatePlayerTeam}
+              onAddEgg={(eggType) => {
+                const newEgg: DigimonEgg = {
+                  id: Date.now(),
+                  typeId: EggTypes.find(egg => egg.name === eggType)?.id || 0,
+                  hatchTime: Math.floor(Math.random() * 10) + 5,
+                };
+                setEggs(prevEggs => [...prevEggs, newEgg]);
+              }}
             />
           );
         default:
