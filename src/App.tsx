@@ -206,9 +206,9 @@ const App: React.FC = () => {
     case 'battle':
         return (
           <BattleScreen
-            playerTeam={playerTeam}
-            enemyTeam={enemyTeam}
-            onBattleEnd={handleBattleEnd}
+          playerTeam={playerTeam}
+          enemyTeam={enemyTeam}
+          onBattleEnd={handleBattleEnd}
           />
         );
         case 'adventure':

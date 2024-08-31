@@ -43,12 +43,20 @@ export const createUniqueDigimon = (templateName: string, level: number = 1): Di
 };
 
 export const gainExperience = (digimon: Digimon, expGained: number): Digimon => {
+  console.log(`${digimon.displayName} is gaining ${expGained} experience`);
   let updatedDigimon = { ...digimon };
   updatedDigimon.exp += expGained;
 
+  console.log(`Current exp: ${updatedDigimon.exp}, Required for next level: ${updatedDigimon.expToNextLevel}`);
+
+  if (updatedDigimon.exp >= updatedDigimon.expToNextLevel) {
+    console.log(`${updatedDigimon.displayName} has enough exp to level up!`);
+  }
+
   while (updatedDigimon.level < MAX_LEVEL && updatedDigimon.exp >= updatedDigimon.expToNextLevel) {
+    console.log(`${updatedDigimon.displayName} is leveling up from ${updatedDigimon.level} to ${updatedDigimon.level + 1}`);
     updatedDigimon = levelUpDigimon(updatedDigimon);
-    updatedDigimon.expToNextLevel = calculateExpRequirement(updatedDigimon.level);
+    console.log(`New level: ${updatedDigimon.level}, New exp to next level: ${updatedDigimon.expToNextLevel}`);
   }
 
   return updatedDigimon;
@@ -90,20 +98,30 @@ export const upgradeDigimonCard = (digimon: Digimon, cardId: string, upgrades: P
 });
 
 export const levelUpDigimon = (digimon: Digimon): Digimon => {
-  const template = getDigimonTemplate(digimon.name);
-  if (!template) throw new Error(`No template found for ${digimon.name}`);
-
   const newLevel = digimon.level + 1;
-  return {
+  console.log(`Leveling up ${digimon.displayName} to level ${newLevel}`);
+
+  const updatedDigimon: Digimon = {
     ...digimon,
     level: newLevel,
-    maxHp: calculateBaseStat(template.baseHp, newLevel),
-    hp: calculateBaseStat(template.baseHp, newLevel), 
-    attack: calculateBaseStat(template.baseAttack, newLevel),
-    healing: calculateBaseStat(template.baseHealing, newLevel),
-    exp: digimon.exp - digimon.expToNextLevel,
+    maxHp: calculateBaseStat(digimon.maxHp, newLevel),
+    hp: calculateBaseStat(digimon.maxHp, newLevel), // Fully heal on level up
+    attack: calculateBaseStat(digimon.attack, newLevel),
+    healing: calculateBaseStat(digimon.healing, newLevel),
+    exp: digimon.exp - digimon.expToNextLevel, // Subtract the exp required for this level
     expToNextLevel: calculateExpRequirement(newLevel),
   };
+
+  console.log(`Updated stats for ${updatedDigimon.displayName}:`, {
+    level: updatedDigimon.level,
+    maxHp: updatedDigimon.maxHp,
+    attack: updatedDigimon.attack,
+    healing: updatedDigimon.healing,
+    exp: updatedDigimon.exp,
+    expToNextLevel: updatedDigimon.expToNextLevel,
+  });
+
+  return updatedDigimon;
 };
 
 export const applyPassiveSkill = (gameState: GameState, digimon: Digimon): GameState => {

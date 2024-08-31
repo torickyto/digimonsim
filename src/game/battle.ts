@@ -265,6 +265,17 @@ export const playCard = (gameState: GameState, cardIndex: number, targetInfo: Ta
   return updatedState;
 };
 
+export function calculateBattleEndExp(playerTeam: Digimon[], defeatedEnemies: DigimonState[]): number[] {
+  const totalExpReward = defeatedEnemies.reduce((total, enemy) => {
+    return total + calculateEnemyExpReward(enemy.level);
+  }, 0);
+
+  const aliveDigimon = playerTeam.filter(d => d.hp > 0);
+  const expPerDigimon = Math.floor(totalExpReward / aliveDigimon.length);
+
+  return playerTeam.map(digimon => digimon.hp > 0 ? expPerDigimon : 0);
+}
+
 export const endPlayerTurn = (gameState: GameState): GameState => {
   return {
     ...gameState,
@@ -374,6 +385,7 @@ export const drawCard = (state: GameState): { newState: GameState; drawnCard: Ca
   return { newState, drawnCard };
 };
 export function endBattle(state: GameState): GameState {
+  console.log("Ending battle, distributing experience...");
   const updatedState = { ...state };
   const aliveDigimon = updatedState.player.digimon.filter(d => d.hp > 0);
   const defeatedEnemies = updatedState.enemy.digimon.filter(d => d.hp <= 0);
@@ -384,10 +396,14 @@ export function endBattle(state: GameState): GameState {
     }, 0);
 
     const expPerDigimon = Math.floor(totalExpReward / aliveDigimon.length);
+    console.log(`Total exp reward: ${totalExpReward}, Exp per Digimon: ${expPerDigimon}`);
 
     updatedState.player.digimon = updatedState.player.digimon.map(digimon => {
       if (digimon.hp > 0 && 'deck' in digimon && 'expToNextLevel' in digimon) {
-        return gainExperience(digimon, expPerDigimon);
+        console.log(`Digimon ${digimon.displayName} before exp gain: Level ${digimon.level}, Exp ${digimon.exp}/${digimon.expToNextLevel}`);
+        const updatedDigimon = gainExperience(digimon, expPerDigimon);
+        console.log(`Digimon ${updatedDigimon.displayName} after exp gain: Level ${updatedDigimon.level}, Exp ${updatedDigimon.exp}/${updatedDigimon.expToNextLevel}`);
+        return updatedDigimon;
       }
       return digimon;
     });

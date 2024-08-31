@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { GameState, Card, Digimon, BattleAction, TargetType, TargetInfo, EnemyAction } from '../shared/types';
-import { initializeBattle, startPlayerTurn, playCard, endPlayerTurn, executeEnemyTurn, checkBattleEnd, applyDamage as battleApplyDamage} from '../game/battle';
+import { initializeBattle, startPlayerTurn, playCard, endPlayerTurn, executeEnemyTurn, checkBattleEnd, calculateBattleEndExp, applyDamage as battleApplyDamage} from '../game/battle';
 import DigimonSprite from './DigimonSprite';
 import CompactCard from './CompactCard';
 import FullCardDisplay from './FullCardDisplay';
@@ -9,6 +9,7 @@ import './BattleScreen.css';
 import './BattleScreenAnimations.css';
 import CardPileModal from './CardPileModal';
 import BattleLog from './BattleLog';
+import PostBattleScreen from './PostBattleScreen';
 
 
 
@@ -58,6 +59,9 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   const [logEntries, setLogEntries] = useState<{ id: number; message: string }[]>([]);
   const [logEntryId, setLogEntryId] = useState(0);
   const [battleStartLogged, setBattleStartLogged] = useState(false);
+  const [showPostBattle, setShowPostBattle] = useState(false);
+  const [expGained, setExpGained] = useState<number[]>([]);
+
 
   const addLogEntry = useCallback((message: string) => {
     setLogEntries(prevEntries => [...prevEntries, { id: logEntryId, message }]);
@@ -143,7 +147,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     setGameState(enemyState);
     setCurrentEnemyActionIndex(0);
     setShouldProcessQueue(true);
-  }, [executeEnemyTurn]);
+  }, []);
 
 
 
@@ -172,6 +176,38 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     if (event.target === event.currentTarget) {
       deselectCard();
     }
+  };
+
+  const handleBattleEnd = (result: 'win' | 'lose') => {
+    if (result === 'win') {
+      const defeatedEnemies = gameState.enemy.digimon.filter(d => d.hp <= 0);
+      const alivePlayerDigimon = gameState.player.digimon.filter((d): d is Digimon => 
+        d.hp > 0 && 'deck' in d && 'expToNextLevel' in d && 'displayName' in d && d.displayName !== undefined
+      );
+      
+      const expGained = calculateBattleEndExp(alivePlayerDigimon, defeatedEnemies);
+      console.log("Battle ended. Alive player Digimon:", alivePlayerDigimon);
+      console.log("Exp gained:", expGained);
+      setExpGained(expGained);
+      setShowPostBattle(true);
+    } else {
+      const updatedPlayerTeam = gameState.player.digimon.filter((d): d is Digimon => 
+        'deck' in d && 'expToNextLevel' in d && 'displayName' in d && d.displayName !== undefined
+      );
+      onBattleEnd(result, updatedPlayerTeam);
+    }
+  };
+  
+  const handlePostBattleContinue = () => {
+    const updatedPlayerTeam = gameState.player.digimon
+      .filter((d): d is Digimon => 
+        'deck' in d && 'expToNextLevel' in d && 'displayName' in d && d.displayName !== undefined
+      )
+      .map((digimon, index) => ({
+        ...digimon,
+        exp: digimon.exp + (expGained[index] || 0),
+      }));
+    onBattleEnd('win', updatedPlayerTeam);
   };
 
   useEffect(() => {
@@ -366,6 +402,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
       (effect.shield && ['enemy', 'all_enemies', 'random_enemy'].includes(effect.shield.target))
     );
   };
+  
 
 
   const handleDigimonClick = (isEnemy: boolean, index: number) => {
@@ -542,6 +579,13 @@ const handleStartNewTurn = useCallback((newTurn: number) => {
     if (isProcessingAction || state.actionQueue.length === 0) {
       if (isEnemyTurn && state.actionQueue.length === 0) {
         console.log('Enemy turn ended, transitioning to player turn');
+        setIsEnemyTurn(false);
+        const { updatedState: newState, drawnCard } = startPlayerTurn(state);
+        setGameState(newState);
+        if (drawnCard) {
+          setNewlyDrawnCards([drawnCard.instanceId ?? '']);
+        }
+        handleStartNewTurn(newState.turn);
       }
       setShouldProcessQueue(false);
       return;
@@ -571,13 +615,9 @@ const handleStartNewTurn = useCallback((newTurn: number) => {
         setAttackingEnemyDigimon(enemyAction.attackingEnemyIndex);
         setHitDigimon({ isEnemy: false, index: enemyAction.targetPlayerIndex });
         
-        // Get the correct target Digimon
-        const targetDigimon = updatedState.player.digimon[enemyAction.targetPlayerIndex];
-        
-        // Apply damage immediately
         updatedState = battleApplyDamage(
           enemyAction.damage, 
-          targetDigimon, 
+          targetPlayer, 
           updatedState, 
           {
             targetType: 'single_ally',
@@ -586,16 +626,13 @@ const handleStartNewTurn = useCallback((newTurn: number) => {
           }
         );
         
-        // Update the state to trigger a re-render
-        setGameState(updatedState);
-        
-        // Set a timeout to reset the animation states
         setTimeout(() => {
           setAttackingEnemyDigimon(null);
           setHitDigimon(null);
           processNextAction();
-        }, 1000); // Duration of the attack animation
+        }, 1000);
         break;
+  
         case 'DIGIMON_DEATH':
   console.log(`Processing DIGIMON_DEATH action for Digimon at index ${action.digimonIndex}`);
   updatedState = await handleDigimonDeath(action.digimonIndex, updatedState);
@@ -631,8 +668,7 @@ const handleStartNewTurn = useCallback((newTurn: number) => {
     }
 
   }, [setGameState, startPlayerTurn, battleApplyDamage, onBattleEnd, isEnemyTurn, isProcessingAction, handleDigimonDeath, animateCardBurn]);
-
-  
+ 
   useEffect(() => {
     if (gameState.actionQueue.length > 0) {
       console.log('Action queue changed, processing...');
@@ -644,17 +680,39 @@ const handleStartNewTurn = useCallback((newTurn: number) => {
       // Check for battle end when no actions are pending
       const battleStatus = checkBattleEnd(gameState);
       if (battleStatus !== 'ongoing') {
-        const updatedPlayerTeam = gameState.player.digimon.map(digimon => {
+        handleBattleEnd(battleStatus);
+      }
+    }
+  }, [gameState, isEnemyTurn, processActionQueue, processEnemyTurn, checkBattleEnd, handleBattleEnd]);
+  
+ useEffect(() => {
+  if (gameState.actionQueue.length === 0 && !isEnemyTurn) {
+    const battleStatus = checkBattleEnd(gameState);
+    if (battleStatus === 'win') {
+      const defeatedEnemies = gameState.enemy.digimon.filter(d => d.hp <= 0);
+      const alivePlayerDigimon = gameState.player.digimon.filter((d): d is Digimon => 
+        d.hp > 0 && 'deck' in d && 'expToNextLevel' in d && 'displayName' in d && d.displayName !== undefined
+      );
+      const expGained = calculateBattleEndExp(alivePlayerDigimon, defeatedEnemies);
+      setExpGained(expGained);
+      console.log("Player team before showing post-battle screen:", gameState.player.digimon);
+      setShowPostBattle(true);
+    } else if (battleStatus === 'lose') {
+      const updatedPlayerTeam = gameState.player.digimon
+        .filter((d): d is Digimon => 
+          'deck' in d && 'expToNextLevel' in d && 'displayName' in d && d.displayName !== undefined
+        )
+        .map(digimon => {
           const originalDigimon = playerTeam.find(d => d.id === digimon.id);
           return {
             ...digimon,
             deck: originalDigimon ? originalDigimon.deck : [],
-          } as Digimon;
+          };
         });
-        onBattleEnd(battleStatus, updatedPlayerTeam);
-      }
+      onBattleEnd(battleStatus, updatedPlayerTeam);
     }
-  }, [gameState, isEnemyTurn, processActionQueue, processEnemyTurn, checkBattleEnd, onBattleEnd, playerTeam]);
+  }
+}, [gameState, isEnemyTurn, checkBattleEnd, calculateBattleEndExp, onBattleEnd, playerTeam]);
 
 
   const handlePlayerDigimonClick = (index: number) => {
@@ -682,18 +740,17 @@ const handleStartNewTurn = useCallback((newTurn: number) => {
 
   return (
     <div className="battle-screen-container">
-      
-    <div className={`battle-screen ${isEnemyTurn ? 'enemy-turn' : ''}`} ref={battleScreenRef} onClick={handleBackgroundClick}>
-    <BattleLog entries={logEntries} />
-      {isEnemyTurn && (
-        <>
-          <div className="enemy-turn-overlay"></div>
-          <div className="enemy-turn-indicator">
-            <div className="enemy-turn-text">ENEMY TURN</div>
-          </div>
-          <div className="danger-flash"></div>
-        </>
-      )}
+      <div className={`battle-screen ${isEnemyTurn ? 'enemy-turn' : ''}`} ref={battleScreenRef} onClick={handleBackgroundClick}>
+        <BattleLog entries={logEntries} />
+        {isEnemyTurn && (
+          <>
+            <div className="enemy-turn-overlay"></div>
+            <div className="enemy-turn-indicator">
+              <div className="enemy-turn-text">ENEMY TURN</div>
+            </div>
+            <div className="danger-flash"></div>
+          </>
+        )}
         {battleStarting && (
           <div className="battle-start-overlay">
             {showWarning && <div className="warning-sign">WARNING!</div>}
@@ -724,8 +781,8 @@ const handleStartNewTurn = useCallback((newTurn: number) => {
                       onClick={handleDiscard}
                       onMouseEnter={() => setIsDiscardHovered(true)}
                       onMouseLeave={() => setIsDiscardHovered(false)}
-                      disabled={isEnemyTurn} // Add this line
-                      >
+                      disabled={isEnemyTurn}
+                    >
                       Discard
                     </button>
                     <button 
@@ -763,16 +820,16 @@ const handleStartNewTurn = useCallback((newTurn: number) => {
                 </div>
               </div>
               <div className="battle-area">
-              <div className="enemy-digimon">
-  {gameState.enemy.digimon.map((digimon, index) => (
-    <div key={`enemy-${index}`} className="enemy-digimon-container" onClick={() => handleEnemyClick(index)}>
-      <DigimonSprite 
-        name={digimon.name} 
-        scale={spriteScale * 1.75}
-        isAttacking={attackingEnemyDigimon === index}
-        isOnHit={hitDigimon?.isEnemy && hitDigimon.index === index}
-        isDead={digimon.hp <= 0}
-      />
+                <div className="enemy-digimon">
+                  {gameState.enemy.digimon.map((digimon, index) => (
+                    <div key={`enemy-${index}`} className="enemy-digimon-container" onClick={() => handleEnemyClick(index)}>
+                      <DigimonSprite 
+                        name={digimon.name} 
+                        scale={spriteScale * 1.75}
+                        isAttacking={attackingEnemyDigimon === index}
+                        isOnHit={hitDigimon?.isEnemy && hitDigimon.index === index}
+                        isDead={digimon.hp <= 0}
+                      />
                       <div className="enemy-health-bar">
                         <div className="health-fill" style={{ width: `${(digimon.hp / digimon.maxHp) * 100}%` }}></div>
                         <span className="enemy-hp-number">{`${digimon.hp}/${digimon.maxHp}`}</span>
@@ -793,56 +850,56 @@ const handleStartNewTurn = useCallback((newTurn: number) => {
                   ))}
                 </div>
                 <div className="player-digimon">
-  {gameState.player.digimon.map((digimon, index) => {
-    let positionStyle: React.CSSProperties = {
-      position: 'absolute',
-      bottom: '0',
-      transform: 'translateX(-50%)',
-    };
-
-    if (gameState.player.digimon.length === 1) {
-      positionStyle.left = '50%';
-    } else if (gameState.player.digimon.length === 2) {
-      positionStyle.left = index === 0 ? '33.33%' : '66.67%';
-    } else {
-      positionStyle.left = `${16.67 + index * 33.33}%`;
-    }
-
-    return (
-      <div 
-        key={`player-${index}`} 
-        className="player-digimon-container" 
-        onClick={() => handlePlayerDigimonClick(index)}
-        style={positionStyle}
-      >
-        <DigimonSprite 
-          name={digimon.name} 
-          scale={spriteScale * 1.6}
-          isAttacking={attackingDigimon === index}
-          isOnHit={hitDigimon?.isEnemy === false && hitDigimon.index === index}
-          isDead={digimon.hp <= 0}
-        />
-      </div>
-    );
-  })}
-</div>
+                  {gameState.player.digimon.map((digimon, index) => {
+                    let positionStyle: React.CSSProperties = {
+                      position: 'absolute',
+                      bottom: '0',
+                      transform: 'translateX(-50%)',
+                    };
+  
+                    if (gameState.player.digimon.length === 1) {
+                      positionStyle.left = '50%';
+                    } else if (gameState.player.digimon.length === 2) {
+                      positionStyle.left = index === 0 ? '33.33%' : '66.67%';
+                    } else {
+                      positionStyle.left = `${16.67 + index * 33.33}%`;
+                    }
+  
+                    return (
+                      <div 
+                        key={`player-${index}`} 
+                        className="player-digimon-container" 
+                        onClick={() => handlePlayerDigimonClick(index)}
+                        style={positionStyle}
+                      >
+                        <DigimonSprite 
+                          name={digimon.name} 
+                          scale={spriteScale * 1.6}
+                          isAttacking={attackingDigimon === index}
+                          isOnHit={hitDigimon?.isEnemy === false && hitDigimon.index === index}
+                          isDead={digimon.hp <= 0}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
               <div className="hand-area">
-  {gameState.player.hand.map((card, index) => (
-    <CompactCard 
-      key={card.instanceId ?? index}
-      card={card} 
-      ownerDigimon={gameState.player.digimon[card.ownerDigimonIndex]}
-      onClick={() => handleCardClick(card)}
-      isSelected={selectedCard?.instanceId === card.instanceId}
-      isPlayable={gameState.player.ram >= card.cost && !isEnemyTurn}
-      isTopCard={index === 0 && isDiscardHovered}
-      isNewlyDrawn={card.instanceId ? newlyDrawnCards.includes(card.instanceId) : false}
-      onMouseEnter={handleCardHover}
-      onMouseLeave={handleCardHoverEnd}
-    />
-  ))}
-</div>
+                {gameState.player.hand.map((card, index) => (
+                  <CompactCard 
+                    key={card.instanceId ?? index}
+                    card={card} 
+                    ownerDigimon={gameState.player.digimon[card.ownerDigimonIndex]}
+                    onClick={() => handleCardClick(card)}
+                    isSelected={selectedCard?.instanceId === card.instanceId}
+                    isPlayable={gameState.player.ram >= card.cost && !isEnemyTurn}
+                    isTopCard={index === 0 && isDiscardHovered}
+                    isNewlyDrawn={card.instanceId ? newlyDrawnCards.includes(card.instanceId) : false}
+                    onMouseEnter={handleCardHover}
+                    onMouseLeave={handleCardHoverEnd}
+                  />
+                ))}
+              </div>
               {hoveredCard && (
                 <FullCardDisplay 
                   card={hoveredCard} 
@@ -851,67 +908,74 @@ const handleStartNewTurn = useCallback((newTurn: number) => {
                 />
               )}
               <div className="bottom-bar">
-  {gameState.player.digimon.map((digimon, index) => {
-    let infoStyle: React.CSSProperties = {
-      position: 'absolute',
-      bottom: '0',
-      transform: 'translateX(-50%)',
-    };
-
-    if (gameState.player.digimon.length === 1) {
-      infoStyle.left = '50%';
-    } else if (gameState.player.digimon.length === 2) {
-      infoStyle.left = index === 0 ? '33.33%' : '66.67%';
-    } else {
-      infoStyle.left = `${16.67 + index * 33.33}%`;
-    }
-
-    return (
-      <div key={index} className="digimon-info" style={infoStyle}>
-        <span className="digimon-name">{digimon.nickname ? digimon.nickname : digimon.displayName}</span>
-        <div className="hp-container">
-          <span className="hp-number">{digimon.hp}/{digimon.maxHp}</span>
-          <div className="hp-bar">
-            <div 
-              className="hp-fill" 
-              style={{ width: `${(digimon.hp / digimon.maxHp) * 100}%` }}
-            ></div>
-          </div>
-        </div>
-        <div className="shield-container">
-          <span className="shield-icon">🛡️</span>
-          <span className="shield-number">{digimon.shield || 0}</span>
-          <div className="shield-bar">
-            <div 
-              className="shield-fill" 
-              style={{ width: `${((digimon.shield || 0) / digimon.maxHp) * 100}%` }}
-            ></div>
-          </div>
-        </div>
-      </div>
-    );
-  })}
-</div>
+                {gameState.player.digimon.map((digimon, index) => {
+                  let infoStyle: React.CSSProperties = {
+                    position: 'absolute',
+                    bottom: '0',
+                    transform: 'translateX(-50%)',
+                  };
+  
+                  if (gameState.player.digimon.length === 1) {
+                    infoStyle.left = '50%';
+                  } else if (gameState.player.digimon.length === 2) {
+                    infoStyle.left = index === 0 ? '33.33%' : '66.67%';
+                  } else {
+                    infoStyle.left = `${16.67 + index * 33.33}%`;
+                  }
+  
+                  return (
+                    <div key={index} className="digimon-info" style={infoStyle}>
+                      <span className="digimon-name">{digimon.nickname ? digimon.nickname : digimon.displayName}</span>
+                      <div className="hp-container">
+                        <span className="hp-number">{digimon.hp}/{digimon.maxHp}</span>
+                        <div className="hp-bar">
+                          <div 
+                            className="hp-fill" 
+                            style={{ width: `${(digimon.hp / digimon.maxHp) * 100}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                      <div className="shield-container">
+                        <span className="shield-icon">🛡️</span>
+                        <span className="shield-number">{digimon.shield || 0}</span>
+                        <div className="shield-bar">
+                          <div 
+                            className="shield-fill" 
+                            style={{ width: `${((digimon.shield || 0) / digimon.maxHp) * 100}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
               <CardPileModal
-  isOpen={isDeckModalOpen}
-  onClose={() => setIsDeckModalOpen(false)}
-  cards={shuffledDeckForDisplay}
-  title="Draw Pile"
-  playerDigimon={gameState.player.digimon}
-/>
-<CardPileModal
-  isOpen={isDiscardModalOpen}
-  onClose={() => setIsDiscardModalOpen(false)}
-  cards={gameState.player.discardPile}
-  title="Discard Pile"
-  playerDigimon={gameState.player.digimon}
-/>
+                isOpen={isDeckModalOpen}
+                onClose={() => setIsDeckModalOpen(false)}
+                cards={shuffledDeckForDisplay}
+                title="Draw Pile"
+                playerDigimon={gameState.player.digimon}
+              />
+              <CardPileModal
+                isOpen={isDiscardModalOpen}
+                onClose={() => setIsDiscardModalOpen(false)}
+                cards={gameState.player.discardPile}
+                title="Discard Pile"
+                playerDigimon={gameState.player.digimon}
+              />
             </>
           )}
         </div>
       </div>
-    </div>
-  );
-};
+      {showPostBattle && playerTeam.length > 0 && expGained.length > 0 && (
+  <PostBattleScreen
+    playerTeam={playerTeam}
+    expGained={expGained}
+    onContinue={handlePostBattleContinue}
+  />
+)}
+  </div>
+);
+}
 
 export default BattleScreen;
