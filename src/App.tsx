@@ -40,10 +40,9 @@ const App: React.FC = () => {
     setPlayerTeam(starterDigimon.slice(0, 3)); // Set the first three as the player's team
   }, []);
 
-  const handleUpdateBits = (newBits: number) => {
-    setBits(newBits);
+  const handleUpdateBits = (amount: number) => {
+    setBits(prevBits => prevBits + amount);
   };
-
   const getZoneDifficulty = (zoneName: string): number => {
     switch (zoneName) {
       case 'Label Forest':
@@ -213,30 +212,32 @@ const App: React.FC = () => {
           />
         );
         case 'adventure':
-          return (
-            <ZoneMap
-              playerTeam={playerTeam}
-              onEndDay={handleEndDay}
-              onStartBattle={handleStartBattle}
-              zoneName={selectedZone || ""}
-              zoneDifficulty={getZoneDifficulty(selectedZone || "")}
-              currentNode={currentNode}
-              map={zoneMap}
-              availableNodes={availableNodes}
-              onUpdateMap={handleUpdateMap}
-              onUpdateAvailableNodes={handleUpdateAvailableNodes}
-              onUpdateCurrentNode={handleUpdateCurrentNode}
-              onUpdatePlayerTeam={handleUpdatePlayerTeam}
-              onAddEgg={(eggType) => {
-                const newEgg: DigimonEgg = {
-                  id: Date.now(),
-                  typeId: EggTypes.find(egg => egg.name === eggType)?.id || 0,
-                  hatchTime: Math.floor(Math.random() * 10) + 5,
-                };
-                setEggs(prevEggs => [...prevEggs, newEgg]);
-              }}
-            />
-          );
+      return (
+        <ZoneMap
+          playerTeam={playerTeam}
+          onEndDay={handleEndDay}
+          onStartBattle={handleStartBattle}
+          zoneName={selectedZone || ""}
+          zoneDifficulty={getZoneDifficulty(selectedZone || "")}
+          currentNode={currentNode}
+          map={zoneMap}
+          availableNodes={availableNodes}
+          onUpdateMap={handleUpdateMap}
+          onUpdateAvailableNodes={handleUpdateAvailableNodes}
+          onUpdateCurrentNode={handleUpdateCurrentNode}
+          onUpdatePlayerTeam={handleUpdatePlayerTeam}
+          onAddEgg={(eggType) => {
+            const newEgg: DigimonEgg = {
+              id: Date.now(),
+              typeId: EggTypes.find(egg => egg.name === eggType)?.id || 0,
+              hatchTime: Math.floor(Math.random() * 10) + 5,
+            };
+            setEggs(prevEggs => [...prevEggs, newEgg]);
+          }}
+          bits={bits}
+          onUpdateBits={handleUpdateBits}
+        />
+      );
         default:
           return null;
   }

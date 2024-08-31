@@ -14,19 +14,27 @@ interface NodeEventProps {
     onUpdatePlayerTeam: (updatedTeam: Digimon[]) => void;
     playerTeam: Digimon[];
     onAddEgg: (eggType: string) => void;
+    onUpdateBits: (amount: number) => void;
   }
   
 
-const NodeEvent: React.FC<NodeEventProps> = ({ type, onClose, onUpdatePlayerTeam, playerTeam, onAddEgg }) => {
+const NodeEvent: React.FC<NodeEventProps> = ({ type, onClose, onUpdatePlayerTeam, playerTeam, onAddEgg, onUpdateBits }) => {
     const [selectedDigimon, setSelectedDigimon] = useState<Digimon | null>(null);
     const [loading, setLoading] = useState(true);
     const [frame, setFrame] = useState(0);
     const [eggType, setEggType] = useState<EggType | undefined>(undefined);
+    const [bitsReward, setBitsReward] = useState(0);
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 1000);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (type === 'chest') {
+      setBitsReward(Math.floor(Math.random() * 50) + 50);
+    }
+  }, [type]);
 
   const handleRestEvent = () => {
     if (selectedDigimon) {
@@ -134,20 +142,27 @@ const NodeEvent: React.FC<NodeEventProps> = ({ type, onClose, onUpdatePlayerTeam
     );
   };
 
+  const handleChestEvent = () => {
+    return (
+      <div className="event-content">
+        <h2>💾 Data Cache Located</h2>
+        <p>Your Digivice has decrypted a data cache. {bitsReward} bits extracted!</p>
+        <button onClick={() => {
+          onUpdateBits(bitsReward);
+          onClose();
+        }}>Download and Close</button>
+      </div>
+    );
+  };
+
   const renderEventContent = () => {
     if (loading) {
       return <div className="loading">Scanning area...</div>;
     }
 
     switch (type) {
-      case 'chest':
-        return (
-          <div className="event-content">
-            <h2>💾 Data Cache Located</h2>
-            <p>Your Digivice has decrypted a data cache. 50 RAM units extracted!</p>
-            <button onClick={onClose}>Download and Close</button>
-          </div>
-        );
+        case 'chest':
+          return handleChestEvent();
       case 'rest':
         return (
           <div className="event-content">

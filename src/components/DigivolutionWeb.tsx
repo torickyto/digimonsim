@@ -33,16 +33,23 @@ export const getDigivolutionConnections = (): DigivolutionConnection[] => {
 
     { from: 'koromon', to: 'agumon' },
     { from: 'koromon', to: 'kamemon' },
+    { from: 'koromon', to: 'monodramon' },
+    { from: 'koromon', to: 'veemon' },
+
 
 
     { from: 'tsunomon', to: 'gabumon' },
+
 
 
     { from: 'tokomon', to: 'patamon' },
 
 
     { from: 'minomon', to: 'tentomon' },
+    { from: 'goblimon', to: 'kunemon' },
 
+
+    { from: 'budmon', to: 'mushmon' },
 
     { from: 'gummymon', to: 'terriermon' },
 
@@ -60,6 +67,7 @@ export const getDigivolutionConnections = (): DigivolutionConnection[] => {
 
 
     { from: 'agumon', to: 'greymon' },
+
 
 
     { from: 'kamemon', to: 'gawappamon' },
@@ -93,6 +101,9 @@ export const getDigivolutionConnections = (): DigivolutionConnection[] => {
     { from: 'metalgreymon', to: 'wargreymon' },
 
     { from: 'shawujingmon', to: 'jumbogamemon' },
+
+
+    { from: 'tokomon', to: 'lucemon' },
 
   ];
 };
