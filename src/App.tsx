@@ -27,6 +27,7 @@ const App: React.FC = () => {
   const [zoneMap, setZoneMap] = useState<MapNode[][]>([]);
   const [availableNodes, setAvailableNodes] = useState<number[]>([]);
   const [dayCount, setDayCount] = useState(1);
+  const [bits, setBits] = useState(0);
 
   useEffect(() => {
     // Initialize with some starter Digimon
@@ -38,6 +39,10 @@ const App: React.FC = () => {
     setOwnedDigimon(starterDigimon);
     setPlayerTeam(starterDigimon.slice(0, 3)); // Set the first three as the player's team
   }, []);
+
+  const handleUpdateBits = (newBits: number) => {
+    setBits(newBits);
+  };
 
   const getZoneDifficulty = (zoneName: string): number => {
     switch (zoneName) {
@@ -195,6 +200,8 @@ const App: React.FC = () => {
           onHatchEgg={handleHatchEgg}
           onStartAdventure={handleStartAdventure}
           dayCount={dayCount}
+          bits={bits}
+          onUpdateBits={handleUpdateBits}
         />
       );
     case 'battle':
