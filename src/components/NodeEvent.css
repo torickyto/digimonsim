@@ -64,13 +64,26 @@
     margin-bottom: 20px;
     position: relative;
     z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
   
   .event-content p {
     margin-bottom: 15px;
     font-size: 18px;
     line-height: 1.5;
+    text-align: center;
   }
+  
+  .egg-sprite-container {
+    width: 96px;
+    height: 96px;
+    margin: 0 auto 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  
   
   .event-options {
     display: flex;

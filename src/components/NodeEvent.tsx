@@ -1,20 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { Digimon } from '../shared/types';
 import './NodeEvent.css';
+import { getEggType, EggType } from '../data/eggTypes';
+
+
+const digitamaSpriteSheet = require('../assets/images/digitama-sheet.png');
 
 type NodeType = 'start' | 'monster' | 'chest' | 'event' | 'boss' | 'empty' | 'rest';
 
 interface NodeEventProps {
-  type: NodeType;
-  onClose: () => void;
-  onUpdatePlayerTeam: (updatedTeam: Digimon[]) => void;
-  playerTeam: Digimon[];
-  onAddEgg: (eggType: string) => void;
-}
+    type: NodeType;
+    onClose: () => void;
+    onUpdatePlayerTeam: (updatedTeam: Digimon[]) => void;
+    playerTeam: Digimon[];
+    onAddEgg: (eggType: string) => void;
+  }
+  
 
 const NodeEvent: React.FC<NodeEventProps> = ({ type, onClose, onUpdatePlayerTeam, playerTeam, onAddEgg }) => {
-  const [selectedDigimon, setSelectedDigimon] = useState<Digimon | null>(null);
-  const [loading, setLoading] = useState(true);
+    const [selectedDigimon, setSelectedDigimon] = useState<Digimon | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [frame, setFrame] = useState(0);
+    const [eggType, setEggType] = useState<EggType | undefined>(undefined);
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 1000);
@@ -36,54 +43,100 @@ const NodeEvent: React.FC<NodeEventProps> = ({ type, onClose, onUpdatePlayerTeam
     }
   };
 
-  const handleLabelForestEvent = () => (
-    <div className="event-content">
-      <h2>📡 Digital Anomaly Detected</h2>
-      <p>Your Digivice scans the area and detects a mysterious data cluster resembling a Red Egg within the digital landscape of Label Forest.</p>
-      <div className="event-options">
-        <button onClick={() => {
-          onAddEgg('Red');
-          onClose();
-        }}>
-          🥚 Materialize Egg
-          <small>Acquire 1 Red Egg Data</small>
-        </button>
-        <button onClick={() => {
-          if (selectedDigimon) {
-            const updatedTeam = playerTeam.map(digimon => 
-              digimon.id === selectedDigimon.id 
-                ? { ...digimon, hp: digimon.maxHp }
-                : digimon
-            );
-            onUpdatePlayerTeam(updatedTeam);
-            alert(`${selectedDigimon.displayName} was fully restored!`);
+  useEffect(() => {
+    if (type === 'event') {
+      const frames = [0, 1, 0, 2];
+      let frameIndex = 0;
+
+      const intervalId = setInterval(() => {
+        setFrame(frames[frameIndex]);
+        frameIndex = (frameIndex + 1) % frames.length;
+      }, 250);
+
+      setEggType(getEggType(0));
+
+      return () => clearInterval(intervalId);
+    }
+  }, [type]);
+
+  const getBackgroundPosition = (eggId: number, frameIndex: number) => {
+    const eggsPerRow = 6;
+    const eggWidth = 32;
+    const eggHeight = 32;
+
+    const row = Math.floor(eggId / eggsPerRow);
+    const col = eggId % eggsPerRow;
+
+    const x = (col * 3 + frameIndex) * eggWidth;
+    const y = row * eggHeight;
+
+    return `-${x}px -${y}px`;
+  };
+
+  const handleLabelForestEvent = () => {
+    const spritePosition = {
+      backgroundImage: `url(${digitamaSpriteSheet})`,
+      backgroundPosition: getBackgroundPosition(0, frame),
+      backgroundRepeat: 'no-repeat',
+      backgroundSize: '576px 256px',
+      width: '32px',
+      height: '32px',
+      imageRendering: 'pixelated' as 'pixelated',
+      margin: '0 auto 20px',
+      transform: 'scale(2)',
+    };
+
+
+    return (
+      <div className="event-content">
+        <h2>📡 Digital Anomaly Detected</h2>
+        <div style={spritePosition} className="egg-sprite-container" />
+        <p>You found a data cluster resembling a digimon egg.</p>
+        <div className="event-options">
+          <button onClick={() => {
+            onAddEgg('Red');
             onClose();
-          } else {
-            alert("Please select a Digimon to absorb the data.");
-          }
-        }}>
-          💽 Absorb Data
-          <small>Restore a Digimon to full capacity</small>
-        </button>
-      </div>
-      <div className="digimon-selection">
-        <p>Select a Digimon:</p>
-        {playerTeam.map(digimon => (
-          <button 
-            key={digimon.id} 
-            onClick={() => setSelectedDigimon(digimon)}
-            className={selectedDigimon?.id === digimon.id ? 'selected' : ''}
-          >
-            {digimon.displayName} (HP: {digimon.hp}/{digimon.maxHp})
+          }}>
+            Scan
+            <small>Acquire 1 Red Egg</small>
           </button>
-        ))}
+          <button onClick={() => {
+            if (selectedDigimon) {
+              const updatedTeam = playerTeam.map(digimon => 
+                digimon.id === selectedDigimon.id 
+                  ? { ...digimon, hp: digimon.maxHp }
+                  : digimon
+              );
+              onUpdatePlayerTeam(updatedTeam);
+              alert(`${selectedDigimon.displayName} was fully restored!`);
+              onClose();
+            } else {
+              alert("Please select a Digimon to absorb the data.");
+            }
+          }}>
+            Absorb Data
+            <small>Give 50 XP to a Digimon</small>
+          </button>
+        </div>
+        <div className="digimon-selection">
+          <p>Select a Digimon:</p>
+          {playerTeam.map(digimon => (
+            <button //TODO: SWITCH TO XP LOGIC
+              key={digimon.id} 
+              onClick={() => setSelectedDigimon(digimon)}
+              className={selectedDigimon?.id === digimon.id ? 'selected' : ''}
+            >
+              {digimon.displayName} (HP: {digimon.hp}/{digimon.maxHp})
+            </button>
+          ))}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderEventContent = () => {
     if (loading) {
-      return <div className="loading">Initializing digital interface...</div>;
+      return <div className="loading">Scanning area...</div>;
     }
 
     switch (type) {
