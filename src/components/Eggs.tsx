@@ -118,7 +118,7 @@ const Egg: React.FC<EggProps> = ({ egg, onHatch }) => {
         <div className="egg-name">{eggType?.name || 'Unknown Egg'}</div>
         <div className="egg-hatch-time">Hatch in: {egg.hatchTime} turns</div>
       </div>
-      <button className="hatch-button" onClick={onHatch}>Hatch</button>
+      <button className="hatch-button" onClick={onHatch}>DEV FORCE HATCH</button>
     </div>
   );
 };
