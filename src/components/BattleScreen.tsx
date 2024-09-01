@@ -146,31 +146,23 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   }, []);
 
   const handleBattleEnd = useCallback((result: 'win' | 'lose') => {
-    console.log(`BattleScreen: handleBattleEnd called with result: ${result}`);
-    if (battleEnded) {
-      console.log('BattleScreen: Battle already ended, returning');
-      return;
-    }
+    if (battleEnded) return;
     
     setBattleEnded(true);
     if (result === 'win') {
       const defeatedEnemies = gameState.enemy.digimon.filter(d => d.hp <= 0);
-      const alivePlayerDigimon = gameState.player.digimon.filter((d): d is Digimon => 
-        d.hp > 0 && 'deck' in d && 'expToNextLevel' in d && 'displayName' in d && d.displayName !== undefined
-      );
-      
-      const expGained = calculateBattleEndExp(alivePlayerDigimon, defeatedEnemies);
-      console.log("BattleScreen: Exp to be gained:", expGained);
+      const expGained = calculateBattleEndExp(gameState.player.digimon as Digimon[], defeatedEnemies);
+      console.log("Battle ended. Exp gained:", expGained);
+      console.log("Player team HP:", gameState.player.digimon.map(d => d.hp));
       setExpGained(expGained);
       setShowPostBattle(true);
     } else {
       const updatedPlayerTeam = gameState.player.digimon.filter((d): d is Digimon => 
         'deck' in d && 'expToNextLevel' in d && 'displayName' in d && d.displayName !== undefined
       );
-      console.log('BattleScreen: Calling onBattleEnd for loss');
       onBattleEnd(result, updatedPlayerTeam);
     }
-  }, [gameState, calculateBattleEndExp, onBattleEnd, battleEnded]);
+  }, [gameState, onBattleEnd, battleEnded]);
 
   const handlePostBattleContinue = useCallback(() => {
     console.log("BattleScreen: handlePostBattleContinue called");

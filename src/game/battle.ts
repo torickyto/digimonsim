@@ -271,7 +271,7 @@ export function calculateBattleEndExp(playerTeam: Digimon[], defeatedEnemies: Di
   }, 0);
 
   const aliveDigimon = playerTeam.filter(d => d.hp > 0);
-  const expPerDigimon = Math.floor(totalExpReward / aliveDigimon.length);
+  const expPerDigimon = aliveDigimon.length > 0 ? Math.floor(totalExpReward / aliveDigimon.length) : 0;
 
   return playerTeam.map(digimon => digimon.hp > 0 ? expPerDigimon : 0);
 }
@@ -390,24 +390,18 @@ export function endBattle(state: GameState): GameState {
   const aliveDigimon = updatedState.player.digimon.filter(d => d.hp > 0);
   const defeatedEnemies = updatedState.enemy.digimon.filter(d => d.hp <= 0);
 
-  if (aliveDigimon.length > 0 && defeatedEnemies.length > 0) {
-    const totalExpReward = defeatedEnemies.reduce((total, enemy) => {
-      return total + calculateEnemyExpReward(enemy.level);
-    }, 0);
+  const expDistribution = calculateBattleEndExp(updatedState.player.digimon as Digimon[], defeatedEnemies);
 
-    const expPerDigimon = Math.floor(totalExpReward / aliveDigimon.length);
-    console.log(`Total exp reward: ${totalExpReward}, Exp per Digimon: ${expPerDigimon}`);
-
-    updatedState.player.digimon = updatedState.player.digimon.map(digimon => {
-      if (digimon.hp > 0 && 'deck' in digimon && 'expToNextLevel' in digimon) {
-        console.log(`Digimon ${digimon.displayName} before exp gain: Level ${digimon.level}, Exp ${digimon.exp}/${digimon.expToNextLevel}`);
-        const updatedDigimon = gainExperience(digimon, expPerDigimon);
-        console.log(`Digimon ${updatedDigimon.displayName} after exp gain: Level ${updatedDigimon.level}, Exp ${updatedDigimon.exp}/${updatedDigimon.expToNextLevel}`);
-        return updatedDigimon;
-      }
-      return digimon;
-    });
-  }
+  updatedState.player.digimon = updatedState.player.digimon.map((digimon, index) => {
+    if (digimon.hp > 0 && 'deck' in digimon && 'expToNextLevel' in digimon) {
+      const expGained = expDistribution[index];
+      console.log(`Digimon ${digimon.displayName} (HP: ${digimon.hp}) before exp gain: Level ${digimon.level}, Exp ${digimon.exp}/${digimon.expToNextLevel}`);
+      const updatedDigimon = gainExperience(digimon, expGained);
+      console.log(`Digimon ${updatedDigimon.displayName} after exp gain: Level ${updatedDigimon.level}, Exp ${updatedDigimon.exp}/${updatedDigimon.expToNextLevel}`);
+      return updatedDigimon;
+    }
+    return digimon;
+  });
 
   return updatedState;
 }

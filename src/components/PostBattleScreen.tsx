@@ -16,16 +16,16 @@ const PostBattleScreen: React.FC<PostBattleScreenProps> = ({ playerTeam, expGain
 
   const animateExpBars = useCallback(() => {
     const totalExpNeeded = playerTeam.map(digimon => digimon.expToNextLevel);
-    const startExp = playerTeam.map((digimon, index) => digimon.exp - expGained[index]);
-    const endExp = playerTeam.map(digimon => digimon.exp);
-    const duration = 2000; // 2 seconds
+    const startExp = playerTeam.map(digimon => digimon.exp);
+    const endExp = playerTeam.map((digimon, index) => digimon.exp + expGained[index]);
+    const duration = 1000; // 2 seconds
     const startTime = Date.now();
 
     const updateExpBars = () => {
       const elapsed = Date.now() - startTime;
       const progress = Math.min(elapsed / duration, 1);
 
-      const newWidths = playerTeam.map((_, index) => {
+      const newWidths = playerTeam.map((digimon, index) => {
         const currentExp = startExp[index] + progress * expGained[index];
         return (currentExp / totalExpNeeded[index]) * 100;
       });
@@ -50,6 +50,10 @@ const PostBattleScreen: React.FC<PostBattleScreenProps> = ({ playerTeam, expGain
   useEffect(() => {
     animateExpBars();
   }, [animateExpBars]);
+
+  const getInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  };
 
   return (
     <div className="pbs-overlay">
