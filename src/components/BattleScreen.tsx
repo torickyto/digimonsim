@@ -10,6 +10,7 @@ import './BattleScreenAnimations.css';
 import CardPileModal from './CardPileModal';
 import BattleLog from './BattleLog';
 import PostBattleScreen from './PostBattleScreen';
+import { gainExperience } from '../data/digimon';
 
 interface BattleScreenProps {
   playerTeam: Digimon[];
@@ -145,7 +146,11 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   }, []);
 
   const handleBattleEnd = useCallback((result: 'win' | 'lose') => {
-    if (battleEnded) return;
+    console.log(`BattleScreen: handleBattleEnd called with result: ${result}`);
+    if (battleEnded) {
+      console.log('BattleScreen: Battle already ended, returning');
+      return;
+    }
     
     setBattleEnded(true);
     if (result === 'win') {
@@ -155,27 +160,29 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
       );
       
       const expGained = calculateBattleEndExp(alivePlayerDigimon, defeatedEnemies);
-      console.log("Battle ended. Alive player Digimon:", alivePlayerDigimon);
-      console.log("Exp gained:", expGained);
+      console.log("BattleScreen: Exp to be gained:", expGained);
       setExpGained(expGained);
       setShowPostBattle(true);
     } else {
       const updatedPlayerTeam = gameState.player.digimon.filter((d): d is Digimon => 
         'deck' in d && 'expToNextLevel' in d && 'displayName' in d && d.displayName !== undefined
       );
+      console.log('BattleScreen: Calling onBattleEnd for loss');
       onBattleEnd(result, updatedPlayerTeam);
     }
   }, [gameState, calculateBattleEndExp, onBattleEnd, battleEnded]);
 
   const handlePostBattleContinue = useCallback(() => {
+    console.log("BattleScreen: handlePostBattleContinue called");
     const updatedPlayerTeam = gameState.player.digimon
       .filter((d): d is Digimon => 
         'deck' in d && 'expToNextLevel' in d && 'displayName' in d && d.displayName !== undefined
       )
-      .map((digimon, index) => ({
-        ...digimon,
-        exp: digimon.exp + (expGained[index] || 0),
-      }));
+      .map((digimon, index) => {
+        console.log(`BattleScreen: Applying experience to ${digimon.displayName}: current exp ${digimon.exp}, gaining ${expGained[index]}`);
+        return gainExperience(digimon, expGained[index] || 0);
+      });
+    console.log('BattleScreen: Calling onBattleEnd for win');
     onBattleEnd('win', updatedPlayerTeam);
   }, [gameState, expGained, onBattleEnd]);
 

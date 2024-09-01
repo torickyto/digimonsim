@@ -68,8 +68,11 @@ const App: React.FC = () => {
   };
 
   const handleBattleEnd = (result: 'win' | 'lose', updatedPlayerTeam: Digimon[]) => {
+    console.log("App: handleBattleEnd called with result:", result);
+    console.log("App: Updated player team:", updatedPlayerTeam.map(d => `${d.displayName} (exp: ${d.exp}, level: ${d.level})`));
+    
     if (result === 'win') {
-      // Update the player team with the new health values
+      console.log("App: Updating player team for win");
       setPlayerTeam(updatedPlayerTeam);
 
       // Mark the current node as completed
@@ -84,13 +87,6 @@ const App: React.FC = () => {
         });
       }
 
-      // Add experience to the Digimon
-      setPlayerTeam(prevTeam =>
-        prevTeam.map(digimon => ({
-          ...digimon,
-          exp: digimon.exp + 50, // You can adjust this value as needed
-        }))
-      );
     } else {
       // Handle lose condition (e.g., return to home screen or retry)
       setGameState('home');
