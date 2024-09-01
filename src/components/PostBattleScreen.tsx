@@ -70,12 +70,8 @@ const PostBattleScreen: React.FC<PostBattleScreenProps> = ({ playerTeam, expGain
 
         // Move to next Digimon after a short delay
         setTimeout(() => {
-          if (currentDigimonIndex < playerTeam.length - 1) {
-            setCurrentDigimonIndex(prevIndex => prevIndex + 1);
-            setExpBarWidth(0);
-          } else {
-            setIsAnimating(false);
-          }
+          setCurrentDigimonIndex(prevIndex => prevIndex + 1);
+          setExpBarWidth(0);
         }, 1000);
       }
     };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { GameState, Card, Digimon, BattleAction, TargetType, TargetInfo, EnemyAction } from '../shared/types';
+import { GameState, Card, Digimon, TargetType, TargetInfo, EnemyAction } from '../shared/types';
 import { initializeBattle, startPlayerTurn, playCard, endPlayerTurn, executeEnemyTurn, checkBattleEnd, calculateBattleEndExp, applyDamage as battleApplyDamage} from '../game/battle';
 import DigimonSprite from './DigimonSprite';
 import CompactCard from './CompactCard';
@@ -11,8 +11,6 @@ import CardPileModal from './CardPileModal';
 import BattleLog from './BattleLog';
 import PostBattleScreen from './PostBattleScreen';
 
-
-
 interface BattleScreenProps {
   playerTeam: Digimon[];
   enemyTeam: Digimon[];
@@ -22,22 +20,17 @@ interface BattleScreenProps {
 
 const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBattleEnd, backgroundImage }) => {
   const [gameState, setGameState] = useState<GameState>(() => initializeBattle(playerTeam, enemyTeam));
-  
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const [spriteScale, setSpriteScale] = useState(1);
-  const battleScreenRef = useRef<HTMLDivElement>(null);
   const [isDiscardHovered, setIsDiscardHovered] = useState(false);
-  const previousHandRef = useRef<Card[]>([]);
   const [newlyDrawnCards, setNewlyDrawnCards] = useState<string[]>([]);
-  const [handKey, setHandKey] = useState(0);
   const [isDeckModalOpen, setIsDeckModalOpen] = useState(false);
   const [isDiscardModalOpen, setIsDiscardModalOpen] = useState(false);
   const [shuffledDeckForDisplay, setShuffledDeckForDisplay] = useState<Card[]>([]);
   const [hoveredCard, setHoveredCard] = useState<Card | null>(null);
   const [hoverPosition, setHoverPosition] = useState({ x: 0, y: 0 });
   const [highlightedRam, setHighlightedRam] = useState(0);
-  const [parentDimensions, setParentDimensions] = useState({ width: 0, height: 0 });
   const [isShuffling, setIsShuffling] = useState(false);
   const [targetingDigimon, setTargetingDigimon] = useState(false);
   const [attackingDigimon, setAttackingDigimon] = useState<number | null>(null);
@@ -47,11 +40,9 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   const [showBattleField, setShowBattleField] = useState(false);
   const [showGlitchTransition, setShowGlitchTransition] = useState(true);
   const [showOpeningAttacks, setShowOpeningAttacks] = useState(false);
-  const [initialAnimationComplete, setInitialAnimationComplete] = useState(false);
   const [openingAttacksComplete, setOpeningAttacksComplete] = useState(false);
   const [isEnemyTurn, setIsEnemyTurn] = useState(false);
   const [shouldProcessQueue, setShouldProcessQueue] = useState(false);
-  const [currentEnemyActionIndex, setCurrentEnemyActionIndex] = useState(0);
   const [isProcessingAction, setIsProcessingAction] = useState(false);
   const [attackingEnemyDigimon, setAttackingEnemyDigimon] = useState<number | null>(null);
   const [removedCards, setRemovedCards] = useState<{ [digimonIndex: number]: Card[] }>({});
@@ -63,24 +54,20 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   const [expGained, setExpGained] = useState<number[]>([]);
   const [battleEnded, setBattleEnded] = useState(false);
 
+  const battleScreenRef = useRef<HTMLDivElement>(null);
+  const battleBackgroundRef = useRef<HTMLDivElement>(null);
+  const prevHandRef = useRef<Card[]>([]);
 
   const addLogEntry = useCallback((message: string) => {
     setLogEntries(prevEntries => [...prevEntries, { id: logEntryId, message }]);
     setLogEntryId(prevId => prevId + 1);
   }, [logEntryId]);
 
-  const addDetailedLogEntry = useCallback((message: string) => {
-    setLogEntries(prevEntries => [...prevEntries, { id: logEntryId, message }]);
-    setLogEntryId(prevId => prevId + 1);
-  }, [logEntryId]);
-  
-
-  const battleBackgroundRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const updateScale = () => {
       if (battleBackgroundRef.current) {
         const { width, height } = battleBackgroundRef.current.getBoundingClientRect();
-        const scale = Math.min(width / 1280, height / 720); // Assuming 1280x720 is your base size
+        const scale = Math.min(width / 1280, height / 720);
         setScale(scale);
         document.documentElement.style.setProperty('--battle-scale', scale.toString());
       }
@@ -91,33 +78,24 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     return () => window.removeEventListener('resize', updateScale);
   }, []);
 
-
   useEffect(() => {
     if (battleStarting) {
-      setTimeout(() => setShowWarning(false), 1000);
-      setTimeout(() => setShowGlitchTransition(true), 1000);
-      setTimeout(() => {
-        setShowGlitchTransition(false);
-        setShowBattleField(true);
-      }, 1000);
-      setTimeout(() => {
-        setBattleStarting(false);
-        setShowOpeningAttacks(true);
-      }, 1100);
+      const timers = [
+        setTimeout(() => setShowWarning(false), 1000),
+        setTimeout(() => setShowGlitchTransition(true), 1000),
+        setTimeout(() => {
+          setShowGlitchTransition(false);
+          setShowBattleField(true);
+        }, 1000),
+        setTimeout(() => {
+          setBattleStarting(false);
+          setShowOpeningAttacks(true);
+        }, 1100)
+      ];
+
+      return () => timers.forEach(clearTimeout);
     }
   }, [battleStarting]);
-
-  useEffect(() => {
-  
-    gameState.player.digimon.forEach((digimon, index) => {
-      
-    });
-  
-   
-    gameState.enemy.digimon.forEach((digimon, index) => {
-     
-    });
-  }, [gameState]);
 
   useEffect(() => {
     if (showOpeningAttacks) {
@@ -141,46 +119,33 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     }
   }, [showOpeningAttacks, playerTeam.length, enemyTeam.length]);
 
-
-  const processEnemyTurn = useCallback((state: GameState) => {
-    console.log('Processing enemy turn');
-    const enemyState = executeEnemyTurn(state);
-    setGameState(enemyState);
-    setCurrentEnemyActionIndex(0);
-    setShouldProcessQueue(true);
-  }, []);
-
-
-
   useEffect(() => {
-    // listener for the Escape key
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        deselectCard();
+        setSelectedCard(null);
+        setHighlightedRam(0);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-
-  const deselectCard = () => {
-    setSelectedCard(null);
-    setHighlightedRam(0);
-  };
-
-  const handleBackgroundClick = (event: React.MouseEvent) => {
-    if (event.target === event.currentTarget) {
-      deselectCard();
+  useEffect(() => {
+    if (!battleStartLogged && openingAttacksComplete) {
+      addLogEntry(`Battle Start`);
+      setBattleStartLogged(true);
     }
-  };
+  }, [addLogEntry, battleStartLogged, openingAttacksComplete]);
+  const processEnemyTurn = useCallback((state: GameState) => {
+    console.log('Processing enemy turn');
+    const enemyState = executeEnemyTurn(state);
+    setGameState(enemyState);
+    setShouldProcessQueue(true);
+  }, []);
 
   const handleBattleEnd = useCallback((result: 'win' | 'lose') => {
-    if (battleEnded) return; // Prevent multiple calls
+    if (battleEnded) return;
     
     setBattleEnded(true);
     if (result === 'win') {
@@ -200,10 +165,9 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
       );
       onBattleEnd(result, updatedPlayerTeam);
     }
-  }, [gameState, calculateBattleEndExp, onBattleEnd]);
-  
-   
-  const handlePostBattleContinue = () => {
+  }, [gameState, calculateBattleEndExp, onBattleEnd, battleEnded]);
+
+  const handlePostBattleContinue = useCallback(() => {
     const updatedPlayerTeam = gameState.player.digimon
       .filter((d): d is Digimon => 
         'deck' in d && 'expToNextLevel' in d && 'displayName' in d && d.displayName !== undefined
@@ -213,117 +177,49 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
         exp: digimon.exp + (expGained[index] || 0),
       }));
     onBattleEnd('win', updatedPlayerTeam);
-  };
+  }, [gameState, expGained, onBattleEnd]);
 
-
-  useEffect(() => {
-    const updateScaleFactor = () => {
-        if (battleScreenRef.current) {
-            const battleBackground = battleScreenRef.current.querySelector('.battle-background');
-            if (battleBackground) {
-                const { width, height } = battleBackground.getBoundingClientRect();
-                const uiScaleFactor = Math.min(1, width / 1280, height / 720);
-                battleScreenRef.current.style.setProperty('--scale-factor', uiScaleFactor.toString());
-
-                const scale = Math.min(width / 1280, height / 720);
-                setSpriteScale(scale);
-            }
-        }
-    };
-
-    updateScaleFactor();
-    window.addEventListener('resize', updateScaleFactor);
-    return () => window.removeEventListener('resize', updateScaleFactor);
-}, []);
-  
-
-  useEffect(() => {
-    const updateDimensions = () => {
-      if (battleScreenRef.current) {
-        setParentDimensions({
-          width: battleScreenRef.current.offsetWidth,
-          height: battleScreenRef.current.offsetHeight
-        });
-      }
-    };
-
-    updateDimensions();
-    window.addEventListener('resize', updateDimensions);
-    return () => window.removeEventListener('resize', updateDimensions);
-  }, []);
-
-  useEffect(() => {
-    console.log('Hand changed. Current hand:', gameState.player.hand);
-    console.log('Newly drawn cards:', newlyDrawnCards);
-  
-    if (newlyDrawnCards.length > 0) {
-      const timer = setTimeout(() => {
-        setNewlyDrawnCards([]);
-      }, 600); 
-  
-      return () => clearTimeout(timer);
-    }
-  }, [gameState.player.hand, newlyDrawnCards]);
-
-  const animateCardBurn = useCallback(async (card: Card) => {
-    const cardElement = document.createElement('div');
-    cardElement.classList.add('card-animation', 'burn');
-    cardElement.style.backgroundImage = `url(${require(`../assets/cards/${card.name.toLowerCase().replace(/\s+/g, '')}.png`)})`;
-    
-    // Position the card element
-    const battleScreen = document.querySelector('.battle-screen');
-    if (battleScreen) {
-      const rect = battleScreen.getBoundingClientRect();
-      cardElement.style.position = 'fixed';
-      cardElement.style.left = `${rect.left + rect.width / 2}px`;
-      cardElement.style.top = `${rect.top + rect.height / 2}px`;
-      cardElement.style.width = `${rect.width * 0.1}px`;
-      cardElement.style.height = `${rect.height * 0.2}px`;
-    }
-    
-    document.body.appendChild(cardElement);
-  
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Duration of the animation
-  
-    cardElement.remove();
-  }, []);
-
-
-  const shuffleDiscardIntoDeck = () => { //NEED TO BE RE-IMPLEMENTED WITH ANIM
-    setIsShuffling(true);
-    setTimeout(() => {
-      setGameState(prevState => ({
-        ...prevState,
-        player: {
-          ...prevState.player,
-          deck: [...prevState.player.deck, ...prevState.player.discardPile].sort(() => Math.random() - 0.5),
-          discardPile: []
-        }
-      }));
-      setIsShuffling(false);
-    }, 1000); // Duration of the shuffle animation
-  };
-
-  const handleCardClick = (card: Card) => {
+  const handleCardClick = useCallback((card: Card) => {
     if (gameState.player.ram >= card.cost) {
       if (selectedCard && selectedCard.instanceId === card.instanceId) {
-        deselectCard();
+        setSelectedCard(null);
+        setHighlightedRam(0);
       } else {
         setSelectedCard(card);
         setHighlightedRam(card.cost);
         setTargetingDigimon(true);
       }
     }
-  };
+  }, [gameState.player.ram, selectedCard]);
 
-  const handleEndTurn = () => {
+  const handleEndTurn = useCallback(() => {
     if (isEnemyTurn) return;
-    deselectCard();
+    setSelectedCard(null);
+    setHighlightedRam(0);
     const updatedState = endPlayerTurn(gameState);
     setGameState(updatedState);
     setIsEnemyTurn(true);
     setHitDigimon(null);
     processEnemyTurn(updatedState);
+  }, [gameState, isEnemyTurn, processEnemyTurn]);
+
+  const doesCardAffectTarget = (card: Card, isEnemy: boolean): boolean => {
+    return card.effects.some(effect => 
+      (effect.damage && ['enemy', 'all_enemies', 'random_enemy'].includes(effect.damage.target)) ||
+      (effect.applyStatus && effect.applyStatus.type !== 'bugged' && isEnemy) ||
+      (effect.shield && ['enemy', 'all_enemies', 'random_enemy'].includes(effect.shield.target))
+    );
+  };
+
+  const deselectCard = () => {
+    setSelectedCard(null);
+    setHighlightedRam(0);
+  };
+  
+  const handleBackgroundClick = (event: React.MouseEvent) => {
+    if (event.target === event.currentTarget) {
+      deselectCard();
+    }
   };
 
   const handleDiscard = () => {
@@ -379,39 +275,13 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     }
     deselectCard();
   };
-
-  const shuffleArray = <T,>(array: T[]): T[] => {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
-  };
-
-  const handleDeckClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setShuffledDeckForDisplay(shuffleArray([...gameState.player.deck]));
-    setIsDeckModalOpen(true);
-  };
-
+  
   const handleDiscardClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsDiscardModalOpen(true);
-    
   };
 
-  const doesCardAffectTarget = (card: Card, isEnemy: boolean): boolean => {
-    return card.effects.some(effect => 
-      (effect.damage && ['enemy', 'all_enemies', 'random_enemy'].includes(effect.damage.target)) ||
-      (effect.applyStatus && effect.applyStatus.type !== 'bugged' && isEnemy) ||
-      (effect.shield && ['enemy', 'all_enemies', 'random_enemy'].includes(effect.shield.target))
-    );
-  };
-  
-
-
-  const handleDigimonClick = (isEnemy: boolean, index: number) => {
+  const handleDigimonClick = useCallback((isEnemy: boolean, index: number) => {
     if (targetingDigimon && selectedCard) {
       const targetDigimon = isEnemy ? gameState.enemy.digimon[index] : gameState.player.digimon[index];
       addLogEntry(`${gameState.player.digimon[selectedCard.ownerDigimonIndex].displayName} used ${selectedCard.name} on ${targetDigimon.displayName}`);
@@ -423,36 +293,65 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
           targetDigimonIndex: index,
         };
   
-        // Set attacking state for the player's Digimon
         setAttackingDigimon(selectedCard.ownerDigimonIndex);
   
-        // Only set hitDigimon if the card affects the target
         if (doesCardAffectTarget(selectedCard, isEnemy)) {
           setHitDigimon({ isEnemy, index: targetInfo.targetDigimonIndex });
         }
   
-        // Play the card and update the game state
         const updatedState = playCard(gameState, cardIndex, targetInfo);
         setGameState(updatedState);
-  
-        // Trigger action queue processing
         setShouldProcessQueue(true);
   
-        // Reset states after a short delay
         setTimeout(() => {
           setAttackingDigimon(null);
           setHitDigimon(null);
           setSelectedCard(null);
           setTargetingDigimon(false);
           setHighlightedRam(0);
-        }, 600); 
+        }, 600);
       }
     }
+  }, [targetingDigimon, selectedCard, gameState, addLogEntry]);
+
+  const handleEnemyClick = useCallback((index: number) => {
+    handleDigimonClick(true, index);
+  }, [handleDigimonClick]);
+
+  const handlePlayerDigimonClick = useCallback((index: number) => {
+    handleDigimonClick(false, index);
+  }, [handleDigimonClick]);
+
+  const handleDeckClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShuffledDeckForDisplay(shuffleArray([...gameState.player.deck]));
+    setIsDeckModalOpen(true);
   };
 
-  const handleEnemyClick = (index: number) => {
-    handleDigimonClick(true, index);
-  };
+  
+
+  const animateCardBurn = useCallback(async (card: Card) => {
+    const cardElement = document.createElement('div');
+    cardElement.classList.add('card-animation', 'burn');
+    cardElement.style.backgroundImage = `url(${require(`../assets/cards/${card.name.toLowerCase().replace(/\s+/g, '')}.png`)})`;
+    
+    // Position the card element
+    const battleScreen = document.querySelector('.battle-screen');
+    if (battleScreen) {
+      const rect = battleScreen.getBoundingClientRect();
+      cardElement.style.position = 'fixed';
+      cardElement.style.left = `${rect.left + rect.width / 2}px`;
+      cardElement.style.top = `${rect.top + rect.height / 2}px`;
+      cardElement.style.width = `${rect.width * 0.1}px`;
+      cardElement.style.height = `${rect.height * 0.2}px`;
+    }
+    
+    document.body.appendChild(cardElement);
+  
+    await new Promise(resolve => setTimeout(resolve, 1000)); // Duration of the animation
+  
+    cardElement.remove();
+  }, []);
 
   const handleDigimonDeath = useCallback(async (deadDigimonIndex: number, prevState: GameState) => {
     console.log(`Handling death of Digimon at index ${deadDigimonIndex}`);
@@ -460,126 +359,75 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     const deadDigimon = prevState.player.digimon[deadDigimonIndex];
     console.log(`Dead Digimon: ${deadDigimon.displayName}`);
       
-      // Collect all cards belonging to the dead Digimon
-      const cardsToRemove = [
-        ...prevState.player.hand.filter(card => card.ownerDigimonIndex === deadDigimonIndex),
-        ...prevState.player.deck.filter(card => card.ownerDigimonIndex === deadDigimonIndex),
-        ...prevState.player.discardPile.filter(card => card.ownerDigimonIndex === deadDigimonIndex),
-      ];
-      console.log(`Cards to remove: ${cardsToRemove.length}`);
+    // Collect all cards belonging to the dead Digimon
+    const cardsToRemove = [
+      ...prevState.player.hand.filter(card => card.ownerDigimonIndex === deadDigimonIndex),
+      ...prevState.player.deck.filter(card => card.ownerDigimonIndex === deadDigimonIndex),
+      ...prevState.player.discardPile.filter(card => card.ownerDigimonIndex === deadDigimonIndex),
+    ];
+    console.log(`Cards to remove: ${cardsToRemove.length}`);
   
-      // Remove cards from hand, deck, and discard pile
-      const newHand = prevState.player.hand.filter(card => card.ownerDigimonIndex !== deadDigimonIndex);
-      const newDeck = prevState.player.deck.filter(card => card.ownerDigimonIndex !== deadDigimonIndex);
-      const newDiscardPile = prevState.player.discardPile.filter(card => card.ownerDigimonIndex !== deadDigimonIndex);
+    // Remove cards from hand, deck, and discard pile
+    const newHand = prevState.player.hand.filter(card => card.ownerDigimonIndex !== deadDigimonIndex);
+    const newDeck = prevState.player.deck.filter(card => card.ownerDigimonIndex !== deadDigimonIndex);
+    const newDiscardPile = prevState.player.discardPile.filter(card => card.ownerDigimonIndex !== deadDigimonIndex);
   
-      console.log(`New hand size: ${newHand.length}`);
-      console.log(`New deck size: ${newDeck.length}`);
-      console.log(`New discard pile size: ${newDiscardPile.length}`);
+    console.log(`New hand size: ${newHand.length}`);
+    console.log(`New deck size: ${newDeck.length}`);
+    console.log(`New discard pile size: ${newDiscardPile.length}`);
   
-      // Update the removedCards state
-      const newRemovedCards = {
-        ...prevState.removedCards,
-        [deadDigimonIndex]: [...(prevState.removedCards[deadDigimonIndex] || []), ...cardsToRemove]
-      };
+    // Update the removedCards state
+    const newRemovedCards = {
+      ...prevState.removedCards,
+      [deadDigimonIndex]: [...(prevState.removedCards[deadDigimonIndex] || []), ...cardsToRemove]
+    };
   
-      cardsToRemove.forEach(card => {
-        const cardElement = document.createElement('div');
-        cardElement.classList.add('card-animation', 'burn');
-        cardElement.style.backgroundImage = `url(${require(`../assets/cards/${card.name.toLowerCase().replace(/\s+/g, '')}.png`)})`;
+    cardsToRemove.forEach(card => {
+      animateCardBurn(card);
+    });
+  
+    return {
+      ...prevState,
+      player: {
+        ...prevState.player,
+        hand: newHand,
+        deck: newDeck,
+        discardPile: newDiscardPile,
+      },
+      removedCards: newRemovedCards,
+    };
+  }, [animateCardBurn]);
+  
+  const shuffleArray = <T,>(array: T[]): T[] => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
 
-        //{require(`../assets/cards/${card.name.toLowerCase().replace(/\s+/g, '')}.png`)
-        //`url('/assets/cards/${card.id}.png')
-        
-        // Position the card element based on its location
-        const handArea = document.querySelector('.hand-area');
-        const deckInfo = document.querySelector('.deck-info');
-        const discardInfo = document.querySelector('.discard-info');
-    
-        if (handArea && prevState.player.hand.includes(card)) {
-          const cardIndex = prevState.player.hand.findIndex(c => c.instanceId === card.instanceId);
-          const handCard = handArea.children[cardIndex] as HTMLElement;
-          if (handCard) {
-            const rect = handCard.getBoundingClientRect();
-            cardElement.style.position = 'fixed';
-            cardElement.style.left = `${rect.left}px`;
-            cardElement.style.top = `${rect.top}px`;
-            cardElement.style.width = `${rect.width}px`;
-            cardElement.style.height = `${rect.height}px`;
-          }
-        } else if (deckInfo && prevState.player.deck.includes(card)) {
-          const rect = deckInfo.getBoundingClientRect();
-          cardElement.style.position = 'fixed';
-          cardElement.style.left = `${rect.left}px`;
-          cardElement.style.top = `${rect.top}px`;
-          cardElement.style.width = `${rect.width}px`;
-          cardElement.style.height = `${rect.height}px`;
-        } else if (discardInfo && prevState.player.discardPile.includes(card)) {
-          const rect = discardInfo.getBoundingClientRect();
-          cardElement.style.position = 'fixed';
-          cardElement.style.left = `${rect.left}px`;
-          cardElement.style.top = `${rect.top}px`;
-          cardElement.style.width = `${rect.width}px`;
-          cardElement.style.height = `${rect.height}px`;
-        }
-        
-        document.body.appendChild(cardElement);
-        
-        // Remove the card element after the animation
-        setTimeout(() => {
-          cardElement.remove();
-        }, 1000); // Duration of the animation
+  const handleCardHover = useCallback((card: Card, event: React.MouseEvent) => {
+    const rect = (event.target as HTMLElement).getBoundingClientRect();
+    const battleScreenRect = battleScreenRef.current?.getBoundingClientRect();
+    if (battleScreenRect) {
+      setHoveredCard(card);
+      setHoverPosition({ 
+        x: rect.right - battleScreenRect.left, 
+        y: rect.top - battleScreenRect.top 
       });
-  
-  return {
-    ...prevState,
-    player: {
-      ...prevState.player,
-      hand: newHand,
-      deck: newDeck,
-      discardPile: newDiscardPile,
-    },
-    removedCards: newRemovedCards,
-  };
-}, []);
+      setHighlightedRam(card.cost);
+    }
+  }, []);
 
+  const handleStartNewTurn = useCallback((newTurn: number) => {
+    addLogEntry(`---START TURN ${newTurn}---`);
+  }, [addLogEntry]);
 
-useEffect(() => {
-  if (!battleStartLogged && openingAttacksComplete) {
-    addLogEntry(`Battle Start`);
-    setBattleStartLogged(true);
-  }
-}, [gameState.turn, addLogEntry, battleStartLogged, openingAttacksComplete]);
-
-const handleStartNewTurn = useCallback((newTurn: number) => {
-  addLogEntry(`---START TURN ${newTurn}---`);
-}, [addLogEntry]);
-
-  useEffect(() => {
-    console.log('Hand changed. New hand size:', gameState.player.hand.length);
-  }, [gameState.player.hand]);
-
-  const handleDigimonRevive = (revivedDigimonIndex: number) => {
-    setGameState(prevState => {
-      const cardsToRestore = removedCards[revivedDigimonIndex] || [];
-      
-      return {
-        ...prevState,
-        player: {
-          ...prevState.player,
-          deck: [...prevState.player.deck, ...cardsToRestore],
-        },
-      };
-    });
-  
-    // Remove the restored cards from removedCards
-    setRemovedCards(prev => {
-      const newRemovedCards = { ...prev };
-      delete newRemovedCards[revivedDigimonIndex];
-      return newRemovedCards;
-    });
-  };
-
+  const handleCardHoverEnd = useCallback(() => {
+    setHoveredCard(null);
+    setHighlightedRam(selectedCard ? selectedCard.cost : 0);
+  }, [selectedCard]);
 
   const processActionQueue = useCallback(async (state: GameState) => {
     if (isProcessingAction || state.actionQueue.length === 0) {
@@ -639,120 +487,68 @@ const handleStartNewTurn = useCallback((newTurn: number) => {
         }, 1000);
         break;
   
-        case 'DIGIMON_DEATH':
-  console.log(`Processing DIGIMON_DEATH action for Digimon at index ${action.digimonIndex}`);
-  updatedState = await handleDigimonDeath(action.digimonIndex, updatedState);
-  processNextAction();
-  break;
+      case 'DIGIMON_DEATH':
+        console.log(`Processing DIGIMON_DEATH action for Digimon at index ${action.digimonIndex}`);
+        updatedState = await handleDigimonDeath(action.digimonIndex, updatedState);
+        processNextAction();
+        break;
+  
       case 'BURN_CARD':
         const burnAction = action as { type: 'BURN_CARD', card: Card };
         animateCardBurn(burnAction.card).then(() => {
           processNextAction();
         });
         break;
-        case 'DRAW_CARD':
-          const newlyDrawnCard = action.card;
-          setNewlyDrawnCards(prev => [...prev, newlyDrawnCard.instanceId ?? '']);
-          setTimeout(() => {
-            setNewlyDrawnCards(prev => prev.filter(id => id !== newlyDrawnCard.instanceId));
-          }, 500); // Duration of the draw animation
-          processNextAction();
-          break;
-          case 'END_ENEMY_TURN':
-            console.log('Ending enemy turn');
-            setIsEnemyTurn(false);
-            const { updatedState: newState, drawnCard } = startPlayerTurn(updatedState);
-            updatedState = newState;
-            if (drawnCard) {
-              setNewlyDrawnCards([drawnCard.instanceId ?? '']);
-            }
-            handleStartNewTurn(updatedState.turn);
-            processNextAction();
-            break;
+  
+      case 'DRAW_CARD':
+        const newlyDrawnCard = action.card;
+        setNewlyDrawnCards(prev => [...prev, newlyDrawnCard.instanceId ?? '']);
+        setTimeout(() => {
+          setNewlyDrawnCards(prev => prev.filter(id => id !== newlyDrawnCard.instanceId));
+        }, 500); // Duration of the draw animation
+        processNextAction();
+        break;
+  
+      case 'END_ENEMY_TURN':
+        console.log('Ending enemy turn');
+        setIsEnemyTurn(false);
+        const { updatedState: newState, drawnCard } = startPlayerTurn(updatedState);
+        updatedState = newState;
+        if (drawnCard) {
+          setNewlyDrawnCards([drawnCard.instanceId ?? '']);
+        }
+        handleStartNewTurn(updatedState.turn);
+        processNextAction();
+        break;
+  
       default:
         processNextAction();
     }
+  
+  }, [
+    setGameState,
+    startPlayerTurn,
+    battleApplyDamage,
+    handleDigimonDeath,
+    animateCardBurn,
+    addLogEntry,
+    handleStartNewTurn,
+    isEnemyTurn,
+    isProcessingAction
+  ]);
 
-  }, [setGameState, startPlayerTurn, battleApplyDamage, onBattleEnd, isEnemyTurn, isProcessingAction, handleDigimonDeath, animateCardBurn]);
- 
   useEffect(() => {
     if (gameState.actionQueue.length > 0) {
-      console.log('Action queue changed, processing...');
       processActionQueue(gameState);
     } else if (isEnemyTurn) {
-      console.log('Enemy turn, executing actions...');
       processEnemyTurn(gameState);
     } else {
-      // Check for battle end when no actions are pending
       const battleStatus = checkBattleEnd(gameState);
       if (battleStatus !== 'ongoing') {
         handleBattleEnd(battleStatus);
       }
     }
   }, [gameState, isEnemyTurn, processActionQueue, processEnemyTurn, checkBattleEnd, handleBattleEnd]);
-
-  useEffect(() => {
-    if (gameState.actionQueue.length === 0 && !isEnemyTurn && !battleEnded) {
-      const battleStatus = checkBattleEnd(gameState);
-      if (battleStatus !== 'ongoing') {
-        handleBattleEnd(battleStatus);
-      }
-    }
-  }, [gameState, isEnemyTurn, checkBattleEnd, handleBattleEnd, battleEnded]);
-
-  
- useEffect(() => {
-  if (gameState.actionQueue.length === 0 && !isEnemyTurn) {
-    const battleStatus = checkBattleEnd(gameState);
-    if (battleStatus === 'win') {
-      const defeatedEnemies = gameState.enemy.digimon.filter(d => d.hp <= 0);
-      const alivePlayerDigimon = gameState.player.digimon.filter((d): d is Digimon => 
-        d.hp > 0 && 'deck' in d && 'expToNextLevel' in d && 'displayName' in d && d.displayName !== undefined
-      );
-      const expGained = calculateBattleEndExp(alivePlayerDigimon, defeatedEnemies);
-      setExpGained(expGained);
-      console.log("Player team before showing post-battle screen:", gameState.player.digimon);
-      setShowPostBattle(true);
-    } else if (battleStatus === 'lose') {
-      const updatedPlayerTeam = gameState.player.digimon
-        .filter((d): d is Digimon => 
-          'deck' in d && 'expToNextLevel' in d && 'displayName' in d && d.displayName !== undefined
-        )
-        .map(digimon => {
-          const originalDigimon = playerTeam.find(d => d.id === digimon.id);
-          return {
-            ...digimon,
-            deck: originalDigimon ? originalDigimon.deck : [],
-          };
-        });
-      onBattleEnd(battleStatus, updatedPlayerTeam);
-    }
-  }
-}, [gameState, isEnemyTurn, checkBattleEnd, calculateBattleEndExp, onBattleEnd, playerTeam]);
-
-
-  const handlePlayerDigimonClick = (index: number) => {
-    handleDigimonClick(false, index);
-  };
-
-
-  const handleCardHover = (card: Card, event: React.MouseEvent) => {
-    const rect = (event.target as HTMLElement).getBoundingClientRect();
-    const battleScreenRect = battleScreenRef.current?.getBoundingClientRect();
-    if (battleScreenRect) {
-      setHoveredCard(card);
-      setHoverPosition({ 
-        x: rect.right - battleScreenRect.left, 
-        y: rect.top - battleScreenRect.top 
-      });
-      setHighlightedRam(card.cost);
-    }
-  };
-
-  const handleCardHoverEnd = () => {
-    setHoveredCard(null);
-    setHighlightedRam(selectedCard ? selectedCard.cost : 0);
-  };
 
   return (
     <div className="battle-screen-container">
@@ -993,7 +789,6 @@ const handleStartNewTurn = useCallback((newTurn: number) => {
         />
       )}
     </div>
-);
+  );
 }
-
 export default BattleScreen;
