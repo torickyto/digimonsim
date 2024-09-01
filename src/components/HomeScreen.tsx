@@ -572,7 +572,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
           <button onClick={onGenerateEgg}>DEV Generate Egg</button>
           <button className="stats-button" onClick={() => toggleScreen('party')}>Party</button>
           <button className="battle-button" onClick={handleAdventureClick}>Adventure</button>
-          <button onClick={() => setCurrentScreen('shop')}>Shop</button>
           <button 
             className={`arena-button ${isArenaAvailable ? 'available' : ''}`} 
             onClick={handleArenaClick}
@@ -582,6 +581,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
           </button>
         </div>
         <div className="hbutton-container">
+        <button className="stats-button" onClick={() => setCurrentScreen('shop')}>Shop</button>
           <button className="dev-button" onClick={() => toggleScreen('cardCollection')}>DEV: Cards</button>
           <button className="dev-button" onClick={() => toggleScreen('devPartyBox')}>DEV: Party Box</button>
           <button className="test-arena-button" onClick={() => toggleScreen('testArena')}>DEV: Test Battle</button>

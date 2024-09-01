@@ -61,6 +61,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   const [battleStartLogged, setBattleStartLogged] = useState(false);
   const [showPostBattle, setShowPostBattle] = useState(false);
   const [expGained, setExpGained] = useState<number[]>([]);
+  const [battleEnded, setBattleEnded] = useState(false);
 
 
   const addLogEntry = useCallback((message: string) => {
@@ -178,7 +179,10 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     }
   };
 
-  const handleBattleEnd = (result: 'win' | 'lose') => {
+  const handleBattleEnd = useCallback((result: 'win' | 'lose') => {
+    if (battleEnded) return; // Prevent multiple calls
+    
+    setBattleEnded(true);
     if (result === 'win') {
       const defeatedEnemies = gameState.enemy.digimon.filter(d => d.hp <= 0);
       const alivePlayerDigimon = gameState.player.digimon.filter((d): d is Digimon => 
@@ -196,8 +200,9 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
       );
       onBattleEnd(result, updatedPlayerTeam);
     }
-  };
+  }, [gameState, calculateBattleEndExp, onBattleEnd]);
   
+   
   const handlePostBattleContinue = () => {
     const updatedPlayerTeam = gameState.player.digimon
       .filter((d): d is Digimon => 
@@ -209,6 +214,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
       }));
     onBattleEnd('win', updatedPlayerTeam);
   };
+
 
   useEffect(() => {
     const updateScaleFactor = () => {
@@ -684,6 +690,16 @@ const handleStartNewTurn = useCallback((newTurn: number) => {
       }
     }
   }, [gameState, isEnemyTurn, processActionQueue, processEnemyTurn, checkBattleEnd, handleBattleEnd]);
+
+  useEffect(() => {
+    if (gameState.actionQueue.length === 0 && !isEnemyTurn && !battleEnded) {
+      const battleStatus = checkBattleEnd(gameState);
+      if (battleStatus !== 'ongoing') {
+        handleBattleEnd(battleStatus);
+      }
+    }
+  }, [gameState, isEnemyTurn, checkBattleEnd, handleBattleEnd, battleEnded]);
+
   
  useEffect(() => {
   if (gameState.actionQueue.length === 0 && !isEnemyTurn) {
@@ -967,14 +983,16 @@ const handleStartNewTurn = useCallback((newTurn: number) => {
           )}
         </div>
       </div>
-      {showPostBattle && playerTeam.length > 0 && expGained.length > 0 && (
-  <PostBattleScreen
-    playerTeam={playerTeam}
-    expGained={expGained}
-    onContinue={handlePostBattleContinue}
-  />
-)}
-  </div>
+      {showPostBattle && (
+        <PostBattleScreen
+          playerTeam={gameState.player.digimon.filter((d): d is Digimon => 
+            'deck' in d && 'expToNextLevel' in d && 'displayName' in d && d.displayName !== undefined
+          )}
+          expGained={expGained}
+          onContinue={handlePostBattleContinue}
+        />
+      )}
+    </div>
 );
 }
 

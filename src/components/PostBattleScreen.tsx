@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Digimon } from '../shared/types';
 import './PostBattleScreen.css';
 
@@ -12,6 +12,8 @@ const PostBattleScreen: React.FC<PostBattleScreenProps> = ({ playerTeam, expGain
   const [currentDigimonIndex, setCurrentDigimonIndex] = useState(0);
   const [expBarWidth, setExpBarWidth] = useState(0);
   const [levelUps, setLevelUps] = useState<number[]>([]);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const animationStartedRef = useRef(false);
 
   useEffect(() => {
     console.log("PostBattleScreen rendered with playerTeam:", playerTeam);
@@ -22,25 +24,27 @@ const PostBattleScreen: React.FC<PostBattleScreenProps> = ({ playerTeam, expGain
       return;
     }
 
-    setLevelUps(new Array(playerTeam.length).fill(0));
+    if (!animationStartedRef.current) {
+      setLevelUps(new Array(playerTeam.length).fill(0));
+      setCurrentDigimonIndex(0);
+      setExpBarWidth(0);
+      setIsAnimating(true);
+      animationStartedRef.current = true;
+    }
   }, [playerTeam, expGained]);
 
   const animateExpBar = useCallback(() => {
-    if (!playerTeam || playerTeam.length === 0 || currentDigimonIndex >= playerTeam.length) {
-      console.error("Invalid playerTeam or currentDigimonIndex", { playerTeam, currentDigimonIndex });
+    if (currentDigimonIndex >= playerTeam.length) {
+      console.log("Animation complete for all Digimon");
+      setIsAnimating(false);
       return;
     }
 
     const digimon = playerTeam[currentDigimonIndex];
-    if (!digimon) {
-      console.error(`No Digimon found at index ${currentDigimonIndex}`);
-      return;
-    }
-
-    console.log(`Animating exp bar for Digimon:`, digimon);
+    console.log(`Animating exp bar for Digimon: ${digimon.displayName}`);
 
     const totalExpNeeded = digimon.expToNextLevel;
-    const startExp = digimon.exp - (expGained[currentDigimonIndex] || 0);
+    const startExp = digimon.exp - expGained[currentDigimonIndex];
     const endExp = digimon.exp;
     const duration = 2000; // 2 seconds
     const startTime = Date.now();
@@ -48,7 +52,7 @@ const PostBattleScreen: React.FC<PostBattleScreenProps> = ({ playerTeam, expGain
     const updateExpBar = () => {
       const elapsed = Date.now() - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      const currentExp = startExp + progress * (expGained[currentDigimonIndex] || 0);
+      const currentExp = startExp + progress * expGained[currentDigimonIndex];
       const width = (currentExp / totalExpNeeded) * 100;
       setExpBarWidth(width);
 
@@ -69,6 +73,8 @@ const PostBattleScreen: React.FC<PostBattleScreenProps> = ({ playerTeam, expGain
           if (currentDigimonIndex < playerTeam.length - 1) {
             setCurrentDigimonIndex(prevIndex => prevIndex + 1);
             setExpBarWidth(0);
+          } else {
+            setIsAnimating(false);
           }
         }, 1000);
       }
@@ -78,9 +84,11 @@ const PostBattleScreen: React.FC<PostBattleScreenProps> = ({ playerTeam, expGain
   }, [currentDigimonIndex, playerTeam, expGained]);
 
   useEffect(() => {
-    console.log("Calling animateExpBar");
-    animateExpBar();
-  }, [animateExpBar]);
+    if (isAnimating && currentDigimonIndex < playerTeam.length) {
+      console.log("Calling animateExpBar");
+      animateExpBar();
+    }
+  }, [isAnimating, currentDigimonIndex, animateExpBar, playerTeam.length]);
 
   if (!playerTeam || playerTeam.length === 0) {
     console.error("Invalid playerTeam", playerTeam);
@@ -102,7 +110,7 @@ const PostBattleScreen: React.FC<PostBattleScreenProps> = ({ playerTeam, expGain
           )}
         </div>
       ))}
-      {currentDigimonIndex === playerTeam.length - 1 && (
+      {!isAnimating && (
         <button onClick={onContinue} className="continue-button">Continue</button>
       )}
     </div>
