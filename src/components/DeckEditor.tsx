@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Digimon, Card, CardEffect } from '../shared/types';
 import { CardCollection, updateCardDescription } from '../shared/cardCollection';
 import './DeckEditor.css';
-import { FaPencilAlt, FaPlus, FaMinus } from 'react-icons/fa';
+import { FaPencilAlt, FaPlus, FaMinus, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 interface DeckEditorProps {
   digimon: Digimon;
@@ -24,7 +24,6 @@ const DeckEditor: React.FC<DeckEditorProps> = ({ digimon, onSave, onClose, onPre
     setCurrentDeck([...digimon.deck]);
     setNewNickname(digimon.nickname || digimon.displayName);
     
-    // Filter out cards that are already in the deck
     const deckCardIds = new Set(digimon.deck.map(card => card.id));
     const availableCardsFromCollection = Object.values(CardCollection)
       .filter(card => !deckCardIds.has(card.id))
@@ -39,6 +38,27 @@ const DeckEditor: React.FC<DeckEditorProps> = ({ digimon, onSave, onClose, onPre
       setCurrentDeck(prev => [...prev, newCard]);
       setAvailableCards(prev => prev.filter(c => c.id !== card.id));
     }
+  };
+
+  const removeCardFromDeck = (card: Card) => {
+    setCurrentDeck(prev => prev.filter(c => c.instanceId !== card.instanceId));
+    const templateCard = CardCollection[card.id];
+    if (templateCard) {
+      setAvailableCards(prev => [...prev, { ...templateCard, instanceId: `temp_${templateCard.id}` }]);
+    }
+  };
+
+  const handleSave = () => {
+    onSave({ ...digimon, deck: currentDeck });
+  };
+
+  const handleNicknameEdit = () => {
+    setIsEditingNickname(true);
+  };
+
+  const handleNicknameSave = () => {
+    onUpdateNickname(digimon.id, newNickname);
+    setIsEditingNickname(false);
   };
 
   const renderCardEffects = (effects: CardEffect[]) => {
@@ -69,32 +89,10 @@ const DeckEditor: React.FC<DeckEditorProps> = ({ digimon, onSave, onClose, onPre
     ));
   };
 
-  const removeCardFromDeck = (card: Card) => {
-    setCurrentDeck(prev => prev.filter(c => c.instanceId !== card.instanceId));
-    // When removing, we add back to available cards using the template from CardCollection
-    const templateCard = CardCollection[card.id];
-    if (templateCard) {
-      setAvailableCards(prev => [...prev, { ...templateCard, instanceId: `temp_${templateCard.id}` }]);
-    }
-  };
-
-  const handleSave = () => {
-    onSave({ ...digimon, deck: currentDeck });
-  };
-
-  const handleNicknameEdit = () => {
-    setIsEditingNickname(true);
-  };
-
-  const handleNicknameSave = () => {
-    onUpdateNickname(digimon.id, newNickname);
-    setIsEditingNickname(false);
-  };
-
   return (
     <div className="de-deck-editor">
       <div className="de-deck-editor-header">
-        <button className="de-nav-button" onClick={onPrev}>&lt; Prev</button>
+        <button className="de-nav-button" onClick={onPrev}><FaChevronLeft /> Prev</button>
         {isEditingNickname ? (
           <input
             type="text"
@@ -110,7 +108,7 @@ const DeckEditor: React.FC<DeckEditorProps> = ({ digimon, onSave, onClose, onPre
             <FaPencilAlt className="de-edit-icon" onClick={handleNicknameEdit} />
           </h2>
         )}
-        <button className="de-nav-button" onClick={onNext}>Next &gt;</button>
+        <button className="de-nav-button" onClick={onNext}>Next <FaChevronRight /></button>
       </div>
       <div className="de-deck-editor-content">
         <div className="de-available-cards">
@@ -119,10 +117,10 @@ const DeckEditor: React.FC<DeckEditorProps> = ({ digimon, onSave, onClose, onPre
             {availableCards.map((card) => (
               <div
                 key={card.instanceId}
-                className={`de-card-item ${selectedCard?.id === card.id ? 'selected' : ''}`}
+                className={`de-card-item ${selectedCard?.id === card.id ? 'de-selected' : ''}`}
                 onClick={() => setSelectedCard(card)}
               >
-                <img src={require(`../assets/cards/${card.name.toLowerCase().replace(/\s+/g, '')}.png`)} alt={card.name} className="card-image" />
+                <img src={require(`../assets/cards/${card.name.toLowerCase().replace(/\s+/g, '')}.png`)} alt={card.name} className="de-card-image" />
                 <span className="de-card-name">{card.name}</span>
                 <FaPlus className="de-card-action" onClick={(e) => { e.stopPropagation(); addCardToDeck(card); }} />
               </div>
@@ -130,37 +128,37 @@ const DeckEditor: React.FC<DeckEditorProps> = ({ digimon, onSave, onClose, onPre
           </div>
         </div>
         <div className="de-card-preview">
-        {selectedCard && (
-          <div className="de-selected-card">
-            <img src={require(`../assets/cards/${selectedCard.name.toLowerCase().replace(/\s+/g, '')}.png`)} alt={selectedCard.name} className="card-image" />
-            <h4>{selectedCard.name}</h4>
-            <p className="de-card-description">{updateCardDescription(selectedCard, digimon).description}</p>
-            <div className="de-card-details">
-              <span>Type: {selectedCard.type}</span>
-              <span>Cost: {selectedCard.cost}</span>
-              <span>Digimon Type: {selectedCard.digimonType}</span>
-              <span>Target: {selectedCard.target}</span>
+          {selectedCard && (
+            <div className="de-selected-card">
+              <img src={require(`../assets/cards/${selectedCard.name.toLowerCase().replace(/\s+/g, '')}.png`)} alt={selectedCard.name} className="de-card-image-large" />
+              <h4>{selectedCard.name}</h4>
+              <p className="de-card-description">{updateCardDescription(selectedCard, digimon).description}</p>
+              <div className="de-card-details">
+                <span>Type: {selectedCard.type}</span>
+                <span>Cost: {selectedCard.cost}</span>
+                <span>Digimon Type: {selectedCard.digimonType}</span>
+                <span>Target: {selectedCard.target}</span>
+              </div>
+              <div className="de-card-effects">
+                <h5>Effects:</h5>
+                {renderCardEffects(selectedCard.effects)}
+              </div>
+              {selectedCard.requiresCardSelection && (
+                <p className="de-card-selection-note">This card requires additional selection when played.</p>
+              )}
             </div>
-            <div className="de-card-effects">
-              <h5>Effects:</h5>
-              {renderCardEffects(selectedCard.effects)}
-            </div>
-            {selectedCard.requiresCardSelection && (
-              <p className="de-card-selection-note">Example of card note</p>
-            )}
-          </div>
-        )}
-      </div>
+          )}
+        </div>
         <div className="de-current-deck">
           <h3>Current Deck ({currentDeck.length}/30)</h3>
           <div className="de-card-list">
             {currentDeck.map((card) => (
               <div
                 key={card.instanceId}
-                className={`de-card-item ${selectedCard?.instanceId === card.instanceId ? 'selected' : ''}`}
+                className={`de-card-item ${selectedCard?.instanceId === card.instanceId ? 'de-selected' : ''}`}
                 onClick={() => setSelectedCard(card)}
               >
-                <img src={require(`../assets/cards/${card.name.toLowerCase().replace(/\s+/g, '')}.png`)} alt={card.name} className="card-image" />
+                <img src={require(`../assets/cards/${card.name.toLowerCase().replace(/\s+/g, '')}.png`)} alt={card.name} className="de-card-image" />
                 <span className="de-card-name">{card.name}</span>
                 <FaMinus className="de-card-action" onClick={(e) => { e.stopPropagation(); removeCardFromDeck(card); }} />
               </div>
@@ -169,8 +167,8 @@ const DeckEditor: React.FC<DeckEditorProps> = ({ digimon, onSave, onClose, onPre
         </div>
       </div>
       <div className="de-deck-editor-actions">
-        <button onClick={handleSave}>Save Deck</button>
-        <button onClick={onClose}>Close</button>
+        <button className="de-save-button" onClick={handleSave}>Save Deck</button>
+        <button className="de-close-button" onClick={onClose}>Close</button>
       </div>
     </div>
   );
