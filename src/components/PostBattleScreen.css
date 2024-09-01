@@ -1,35 +1,79 @@
-.post-battle-screen {
+.post-battle-screen-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .post-battle-screen {
+    background-color: rgba(30, 30, 30, 0.9);
     color: white;
     padding: 20px;
     border-radius: 10px;
-    text-align: center;
     font-family: 'Press Start 2P', cursive;
+    width: 90%;
+    height: 90%;
+    overflow-y: auto;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .post-battle-screen h2 {
+    color: #FFD700;
+    margin-bottom: 20px;
+    text-align: center;
   }
   
   .digimon-exp-container {
-    margin: 20px 0;
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+    background-color: rgba(50, 50, 50, 0.7);
+    padding: 15px;
+    border-radius: 5px;
+  }
+  
+  .digimon-info {
+    flex: 1;
+    text-align: left;
   }
   
   .exp-bar-container {
-    width: 100%;
+    flex: 2;
     height: 20px;
     background-color: #333;
     border-radius: 10px;
     overflow: hidden;
-    margin: 10px 0;
+    margin: 0 10px;
   }
   
   .exp-bar {
     height: 100%;
     background-color: #4CAF50;
-    transition: width 0.5s ease-out;
+    transition: width 2s ease-out;
+  }
+  
+  .exp-gained {
+    flex: 1;
+    text-align: right;
   }
   
   .level-up-text {
     color: #FFD700;
     font-weight: bold;
     animation: pulse 1s infinite alternate;
+  }
+  
+  .continue-button-container {
+    margin-top: auto;
+    align-self: flex-end;
   }
   
   .continue-button {
@@ -41,7 +85,7 @@
     text-decoration: none;
     display: inline-block;
     font-size: 16px;
-    margin: 4px 2px;
+    margin: 20px 0 0 0;
     cursor: pointer;
     transition: background-color 0.3s;
   }

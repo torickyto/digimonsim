@@ -563,6 +563,15 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
             <div className="danger-flash"></div>
           </>
         )}
+        {showPostBattle && (
+      <PostBattleScreen
+        playerTeam={gameState.player.digimon.filter((d): d is Digimon => 
+          'deck' in d && 'expToNextLevel' in d && 'displayName' in d && d.displayName !== undefined
+        )}
+        expGained={expGained}
+        onContinue={handlePostBattleContinue}
+      />
+    )}
         {battleStarting && (
           <div className="battle-start-overlay">
             {showWarning && <div className="warning-sign">WARNING!</div>}
@@ -779,15 +788,6 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
           )}
         </div>
       </div>
-      {showPostBattle && (
-        <PostBattleScreen
-          playerTeam={gameState.player.digimon.filter((d): d is Digimon => 
-            'deck' in d && 'expToNextLevel' in d && 'displayName' in d && d.displayName !== undefined
-          )}
-          expGained={expGained}
-          onContinue={handlePostBattleContinue}
-        />
-      )}
     </div>
   );
 }
