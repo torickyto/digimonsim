@@ -131,7 +131,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
     });
   }, [playerTeam]);
 
-    useEffect(() => {
+  useEffect(() => {
     setLocalOwnedDigimon(ownedDigimon);
   }, [ownedDigimon]);
 
@@ -235,6 +235,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   const toggleStats = () => {
     setShowStats(!showStats);
     setCurrentDigimonIndex(0);
+  };
+
+  const getAvailableDigimon = () => {
+    return localOwnedDigimon.filter(digimon => !playerTeam.some(partyMember => partyMember.id === digimon.id));
   };
 
   const handleCloseNewDigimonStats = () => {
@@ -454,7 +458,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
                   <div className="stat-overlay">
                     <DigimonPartyBox
                       party={playerTeam}
-                      ownedDigimon={localOwnedDigimon}
+                      ownedDigimon={getAvailableDigimon()}
                       onSwapDigimon={handleSwapDigimon}
                     />
                   </div>

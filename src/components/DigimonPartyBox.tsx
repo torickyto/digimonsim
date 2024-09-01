@@ -69,7 +69,7 @@ const DigimonPartyBox: React.FC<DigimonPartyBoxProps> = ({ party, ownedDigimon, 
           <h3>STORAGE</h3>
           <div className="box-container">
             <div className="box-grid">
-              {availableDigimon.map((digimon, index) => renderDigimonCard(digimon, index, false))}
+              {ownedDigimon.map((digimon, index) => renderDigimonCard(digimon, index, false))}
             </div>
           </div>
         </div>

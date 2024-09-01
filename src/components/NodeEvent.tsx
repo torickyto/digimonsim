@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Digimon } from '../shared/types';
 import './NodeEvent.css';
 import { getEggType, EggType } from '../data/eggTypes';
+import { gainExperience } from '../data/digimon';
 
 
 const digitamaSpriteSheet = require('../assets/images/digitama-sheet.png');
@@ -109,19 +110,19 @@ const NodeEvent: React.FC<NodeEventProps> = ({ type, onClose, onUpdatePlayerTeam
             <small>Acquire 1 Red Egg</small>
           </button>
           <button onClick={() => {
-            if (selectedDigimon) {
-              const updatedTeam = playerTeam.map(digimon => 
-                digimon.id === selectedDigimon.id 
-                  ? { ...digimon, hp: digimon.maxHp }
-                  : digimon
-              );
-              onUpdatePlayerTeam(updatedTeam);
-              alert(`${selectedDigimon.displayName} was fully restored!`);
-              onClose();
-            } else {
-              alert("Please select a Digimon to absorb the data.");
-            }
-          }}>
+              if (selectedDigimon) {
+                const xpGain = 50;
+                const updatedDigimon = gainExperience(selectedDigimon, xpGain);
+                const updatedTeam = playerTeam.map(digimon => 
+                  digimon.id === selectedDigimon.id ? updatedDigimon : digimon
+                );
+                onUpdatePlayerTeam(updatedTeam);
+                alert(`${selectedDigimon.displayName} gained ${xpGain} XP!`);
+                onClose();
+              } else {
+                alert("Please select a Digimon to absorb the data.");
+              }
+            }}>
             Absorb Data
             <small>Give 50 XP to a Digimon</small>
           </button>
@@ -134,7 +135,7 @@ const NodeEvent: React.FC<NodeEventProps> = ({ type, onClose, onUpdatePlayerTeam
               onClick={() => setSelectedDigimon(digimon)}
               className={selectedDigimon?.id === digimon.id ? 'selected' : ''}
             >
-              {digimon.displayName} (HP: {digimon.hp}/{digimon.maxHp})
+               {digimon.displayName} (Level: {digimon.level}, XP: {digimon.exp}/{digimon.expToNextLevel})
             </button>
           ))}
         </div>

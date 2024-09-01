@@ -61,6 +61,10 @@ const App: React.FC = () => {
 
   const handleUpdatePlayerTeam = (updatedTeam: Digimon[]) => {
     setPlayerTeam(updatedTeam);
+    setOwnedDigimon(prevOwned => {
+      const newOwned = prevOwned.filter(d => !updatedTeam.some(teamD => teamD.id === d.id));
+      return [...newOwned, ...updatedTeam];
+    });
   };
 
   const handleUpdateOwnedDigimon = (updatedOwnedDigimon: Digimon[]) => {
