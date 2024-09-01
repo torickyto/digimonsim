@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Digimon } from '../shared/types';
+import DigimonSprite from './DigimonSprite';
 import './PostBattleScreen.css';
 
 interface PostBattleScreenProps {
@@ -51,30 +52,40 @@ const PostBattleScreen: React.FC<PostBattleScreenProps> = ({ playerTeam, expGain
   }, [animateExpBars]);
 
   return (
-    <div className="post-battle-screen-overlay">
-      <div className="post-battle-screen">
-        <h2>Battle Results</h2>
-        {playerTeam.map((digimon, index) => (
-          <div key={`${digimon.id}_${index}`} className="digimon-exp-container">
-            <div className="digimon-info">
-              <h3>{digimon.displayName || "Unknown Digimon"}</h3>
+    <div className="pbs-overlay">
+      <div className="pbs-content">
+        <div className="pbs-background-element pbs-background-1"></div>
+        <div className="pbs-background-element pbs-background-2"></div>
+        <h2 className="pbs-header">Battle Results</h2>
+        <div className="pbs-results">
+          {playerTeam.map((digimon, index) => (
+            <div key={`${digimon.id}_${index}`} className="pbs-digimon">
+              <div className="pbs-digimon-sprite">
+                <DigimonSprite 
+                  name={digimon.name} 
+                  scale={1.5}
+                  isAttacking={false}
+                  isOnHit={false}
+                  isDead={false}
+                />
+              </div>
+              <div className="pbs-digimon-info">
+                <div className="pbs-digimon-name">{digimon.displayName || "Unknown Digimon"}</div>
+                <div className="pbs-digimon-level">Level: {digimon.level}</div>
+                <div className="pbs-exp-bar">
+                  <div className="pbs-exp-fill" style={{ width: `${expBarWidths[index]}%` }}></div>
+                </div>
+                <div className="pbs-exp-gain">EXP Gained: {expGained[index] || 0}</div>
+                {levelUps[index] > 0 && (
+                  <div className="pbs-level-up">LEVEL UP!</div>
+                )}
+              </div>
             </div>
-            <div className="exp-bar-container">
-              <div className="exp-bar" style={{ width: `${expBarWidths[index]}%` }}></div>
-            </div>
-            <div className="exp-gained">
-              <p>EXP Gained: {expGained[index] || 0}</p>
-              {levelUps[index] > 0 && (
-                <p className="level-up-text">Level Up!</p>
-              )}
-            </div>
-          </div>
-        ))}
-        <div className="continue-button-container">
-          {!isAnimating && (
-            <button onClick={onContinue} className="continue-button">Continue</button>
-          )}
+          ))}
         </div>
+        {!isAnimating && (
+          <button onClick={onContinue} className="pbs-continue">Continue</button>
+        )}
       </div>
     </div>
   );

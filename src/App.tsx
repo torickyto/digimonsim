@@ -32,9 +32,9 @@ const App: React.FC = () => {
   useEffect(() => {
     // Initialize with some starter Digimon
     const starterDigimon = [
-      createUniqueDigimon('agumon'),
-      createUniqueDigimon('gabumon'),
-      createUniqueDigimon('patamon')
+      createUniqueDigimon('wargreymon'),
+      createUniqueDigimon('wargreymon'),
+      createUniqueDigimon('wargreymon')
     ];
     setOwnedDigimon(starterDigimon);
     setPlayerTeam(starterDigimon.slice(0, 3)); // Set the first three as the player's team
