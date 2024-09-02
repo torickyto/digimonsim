@@ -47,6 +47,7 @@ export interface CardEffect {
     value?: number;
     isResistable?: boolean;
     source?: number;
+    chance?: number;
   };
   once?: boolean;
   duration?: number;
@@ -145,6 +146,7 @@ export interface StatusEffect {
   value: number;
   isResistable?: boolean;
   source?: number;
+  chance?: number;
 }
 
 export interface GameState {
@@ -249,6 +251,9 @@ export interface Digimon extends DigimonState {
   deck: Card[];
   dateObtained: Date;
   nickname?: string;
+  level: number;
+  exp: number;
+  expToNextLevel: number;
 }
 
 export interface DigimonEgg {

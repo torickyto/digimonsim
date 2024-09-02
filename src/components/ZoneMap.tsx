@@ -27,6 +27,8 @@ interface ZoneMapProps {
   onUpdateCurrentNode: (newCurrentNode: number) => void;
   onUpdatePlayerTeam: (updatedTeam: Digimon[]) => void;
   onAddEgg: (eggType: string) => void;
+  bits: number;
+  onUpdateBits: (amount: number) => void;
 }
 
 const ZoneMap: React.FC<ZoneMapProps> = ({
@@ -42,7 +44,9 @@ const ZoneMap: React.FC<ZoneMapProps> = ({
   onUpdateAvailableNodes,
   onUpdateCurrentNode,
   onUpdatePlayerTeam,
-  onAddEgg
+  onAddEgg,
+  bits,
+  onUpdateBits
 }) => {
   const ROWS = 9;
   const COLS = 9;
@@ -293,6 +297,7 @@ const ZoneMap: React.FC<ZoneMapProps> = ({
     <div className="zm-zone-map">
       <div className="zm-zone-header">
         <h2 className="zm-zone-title">{zoneName}</h2>
+        <div className="zm-bits-display">Bits: {bits}</div>
         <button className="zm-end-day-button" onClick={onEndDay}>End Day</button>
       </div>
       <div className="zm-zone-content">
@@ -316,6 +321,7 @@ const ZoneMap: React.FC<ZoneMapProps> = ({
           onUpdatePlayerTeam={onUpdatePlayerTeam}
           playerTeam={playerTeam}
           onAddEgg={onAddEgg}
+          onUpdateBits={onUpdateBits}
         />
       )}
     </div>

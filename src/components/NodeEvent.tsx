@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Digimon } from '../shared/types';
 import './NodeEvent.css';
 import { getEggType, EggType } from '../data/eggTypes';
+import { gainExperience } from '../data/digimon';
 
 
 const digitamaSpriteSheet = require('../assets/images/digitama-sheet.png');
@@ -14,19 +15,27 @@ interface NodeEventProps {
     onUpdatePlayerTeam: (updatedTeam: Digimon[]) => void;
     playerTeam: Digimon[];
     onAddEgg: (eggType: string) => void;
+    onUpdateBits: (amount: number) => void;
   }
   
 
-const NodeEvent: React.FC<NodeEventProps> = ({ type, onClose, onUpdatePlayerTeam, playerTeam, onAddEgg }) => {
+const NodeEvent: React.FC<NodeEventProps> = ({ type, onClose, onUpdatePlayerTeam, playerTeam, onAddEgg, onUpdateBits }) => {
     const [selectedDigimon, setSelectedDigimon] = useState<Digimon | null>(null);
     const [loading, setLoading] = useState(true);
     const [frame, setFrame] = useState(0);
     const [eggType, setEggType] = useState<EggType | undefined>(undefined);
+    const [bitsReward, setBitsReward] = useState(0);
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 1000);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (type === 'chest') {
+      setBitsReward(Math.floor(Math.random() * 50) + 50);
+    }
+  }, [type]);
 
   const handleRestEvent = () => {
     if (selectedDigimon) {
@@ -101,19 +110,19 @@ const NodeEvent: React.FC<NodeEventProps> = ({ type, onClose, onUpdatePlayerTeam
             <small>Acquire 1 Red Egg</small>
           </button>
           <button onClick={() => {
-            if (selectedDigimon) {
-              const updatedTeam = playerTeam.map(digimon => 
-                digimon.id === selectedDigimon.id 
-                  ? { ...digimon, hp: digimon.maxHp }
-                  : digimon
-              );
-              onUpdatePlayerTeam(updatedTeam);
-              alert(`${selectedDigimon.displayName} was fully restored!`);
-              onClose();
-            } else {
-              alert("Please select a Digimon to absorb the data.");
-            }
-          }}>
+              if (selectedDigimon) {
+                const xpGain = 50;
+                const updatedDigimon = gainExperience(selectedDigimon, xpGain);
+                const updatedTeam = playerTeam.map(digimon => 
+                  digimon.id === selectedDigimon.id ? updatedDigimon : digimon
+                );
+                onUpdatePlayerTeam(updatedTeam);
+                alert(`${selectedDigimon.displayName} gained ${xpGain} XP!`);
+                onClose();
+              } else {
+                alert("Please select a Digimon to absorb the data.");
+              }
+            }}>
             Absorb Data
             <small>Give 50 XP to a Digimon</small>
           </button>
@@ -126,10 +135,23 @@ const NodeEvent: React.FC<NodeEventProps> = ({ type, onClose, onUpdatePlayerTeam
               onClick={() => setSelectedDigimon(digimon)}
               className={selectedDigimon?.id === digimon.id ? 'selected' : ''}
             >
-              {digimon.displayName} (HP: {digimon.hp}/{digimon.maxHp})
+               {digimon.displayName} (Level: {digimon.level}, XP: {digimon.exp}/{digimon.expToNextLevel})
             </button>
           ))}
         </div>
+      </div>
+    );
+  };
+
+  const handleChestEvent = () => {
+    return (
+      <div className="event-content">
+        <h2>💾 Data Cache Located</h2>
+        <p>Your Digivice has decrypted a data cache. {bitsReward} bits extracted!</p>
+        <button onClick={() => {
+          onUpdateBits(bitsReward);
+          onClose();
+        }}>Download and Close</button>
       </div>
     );
   };
@@ -140,14 +162,8 @@ const NodeEvent: React.FC<NodeEventProps> = ({ type, onClose, onUpdatePlayerTeam
     }
 
     switch (type) {
-      case 'chest':
-        return (
-          <div className="event-content">
-            <h2>💾 Data Cache Located</h2>
-            <p>Your Digivice has decrypted a data cache. 50 RAM units extracted!</p>
-            <button onClick={onClose}>Download and Close</button>
-          </div>
-        );
+        case 'chest':
+          return handleChestEvent();
       case 'rest':
         return (
           <div className="event-content">

@@ -231,11 +231,25 @@ function applyStatusEffect(statusEffect: StatusEffect | NonNullable<CardEffect['
           'UNKNOWN' as StatusEffectType,
     duration: statusEffect.duration,
     value: 'value' in statusEffect && statusEffect.value !== undefined ? statusEffect.value : 1,
-    isResistable: 'isResistable' in statusEffect ? statusEffect.isResistable : true
+    isResistable: 'isResistable' in statusEffect ? statusEffect.isResistable : true,
+    chance: 'chance' in statusEffect ? statusEffect.chance : 1
   };
   
+  if (effect.chance && Math.random() > effect.chance) {
+    return gameState; // Status effect doesn't apply due to chance
+  }
+
+  if (effect.type === 'corruption') {
+    // For corruption, we increase the value (stacks) if it already exists
+    const existingCorruption = target.statusEffects.find(e => e.type === 'corruption');
+    if (existingCorruption) {
+      effect.value += existingCorruption.value;
+    }
+  }
+
   if (!effect.isResistable || Math.random() > target.corruptionResistance) {
-    const updatedStatusEffects = [...target.statusEffects, effect];
+    const updatedStatusEffects = target.statusEffects.filter(e => e.type !== effect.type);
+    updatedStatusEffects.push(effect);
     const updatedTarget = { ...target, statusEffects: updatedStatusEffects };
     return updateDigimonInState(gameState, updatedTarget);
   }

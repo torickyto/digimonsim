@@ -1,204 +1,240 @@
-.digimon-stat-screen {
+.dss-container {
   width: 100%;
   height: 100%;
   color: #f0f6f0;
   font-family: 'Comfortaa', sans-serif;
-  background-color: rgba(18, 18, 18, 0.8);
+  background-color: rgba(18, 18, 18, 0.9);
   border-radius: 15px;
-  padding: 1vh;
+  padding: 20px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   overflow: hidden;
 }
 
-.sstop-section {
+.dss-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0vh;
+  margin-bottom: 15px;
 }
 
-.ssdigimon-image {
-  width: 30%;
-  height: 15vh;
+.dss-digimon-name {
+  font-size: 28px;
+  color: #ffd700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  margin: 0;
+}
+
+.dss-digimon-type {
+  font-size: 14px;
+  padding: 4px 12px;
+  border-radius: 15px;
+  color: #000;
+  font-weight: bold;
+}
+
+.dss-scrollable-content {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.dss-content {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.dss-image-info-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+}
+
+.dss-image-container {
+  width: 50%;
+  height: 200px;
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: rgba(255, 255, 255, 0.1);
   border-radius: 10px;
   overflow: hidden;
 }
 
-.ssdigimon-info {
-  width: 65%;
+.dss-basic-info {
+  width: 50%;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
+  gap: 10px;
 }
 
-.ssdigimon-name {
-  font-size: 1.25vw;
-  font-weight: bold;
-  margin: 0 0 1vh;
-  color: #ffd700;
-  text-shadow: 0 0 2px rgba(255, 215, 0, 0.5);
-}
-
-.ssdigimon-type {
-  font-size: .75vw;
-  padding: 0.25vh 1vw;
-  border-radius: 15px;
-  color: #000;
-  font-weight: bold;
-  margin-bottom: 1vh;
-  margin-top: 1vh;
-}
-
-.ssdigimon-details {
+.dss-info-item {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 8px;
+  border-radius: 5px;
+}
+
+.dss-info-label {
+  font-weight: bold;
+  color: #ffd700;
+  margin-right: 8px;
+}
+
+.dss-exp-section {
+  margin-top: 10px;
+}
+
+.dss-exp-bar-container {
   width: 100%;
-}
-
-.ssdigimon-stage, .ssdigimon-level {
-  font-size: 1vw;
-}
-
-.ssdigimon-stage {
-  margin-right: 10%;
-}
-
-.ssdate-obtained {
-  font-size: .75vw;
-  color: #c2c2c2;
-  margin-top: 1%;
-}
-
-.stats-section {
-  margin-bottom: 0vh;
-}
-
-.stat-columns {
-  display: flex;
-  justify-content: space-between;
-  gap: 2vw;
-}
-
-.stat-column {
-  flex: 1;
-}
-
-.stat-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  height: 8px;
   background-color: rgba(255, 255, 255, 0.1);
-  padding: 0.8vh 1vw;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.dss-exp-bar {
+  height: 100%;
+  background-color: #4ac8fa;
+  transition: width 0.3s ease;
+}
+
+.dss-exp-text {
+  display: flex;
+  justify-content: center;
+  font-size: 10px;
+  color: #f0f6f0;
+  margin-top: 4px;
+}
+
+.dss-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.dss-stat-item {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 8px;
   border-radius: 5px;
-  margin-bottom: .75vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.stat-label {
-  font-size: 1.1vw;
+.dss-stat-label {
+  font-size: 12px;
   color: #ffd700;
+  margin-bottom: 4px;
 }
 
-.stat-value {
-  font-size: 1.1vw;
+.dss-stat-value {
+  font-size: 16px;
   font-weight: bold;
 }
 
-.stat-bar-container {
-  flex-grow: 1;
-  height: 0.8vh;
+.dss-stat-bar-container {
+  width: 100%;
+  height: 4px;
   background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 5px;
-  margin: 0 1vw;
+  border-radius: 2px;
   overflow: hidden;
+  margin-bottom: 4px;
 }
 
-.stat-bar {
+.dss-stat-bar {
   height: 100%;
   background-color: #ffd700;
   transition: width 0.3s ease;
 }
 
-.ssresistance-section {
-  margin-bottom: 2vh;
+.dss-resistance-section, .dss-passive-section {
+  margin-top: 10px;
 }
 
-.sspassive-section {
-  margin-bottom: 2vh;
-}
-
-h3 {
-  font-size: 1.5vw;
+.dss-section-title {
+  font-size: 18px;
   color: #ffd700;
-  margin-bottom: 1vh;
+  margin-bottom: 8px;
+  text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
 }
 
-.ssresistance-bars {
+.dss-resistance-bars {
   display: flex;
   flex-direction: column;
-  gap: 1vh;
+  gap: 8px;
 }
 
-.ssresistance-bar {
+.dss-resistance-bar {
   display: flex;
   align-items: center;
-  gap: 1vw;
+  gap: 8px;
 }
 
-.ssresistance-label {
-  width: 20%;
-  font-size: 1.1vw;
+.dss-resistance-label {
+  width: 30%;
+  font-size: 12px;
 }
 
-.ssbar-container {
+.dss-bar-container {
   flex-grow: 1;
-  height: 0.8vh;
+  height: 6px;
   background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 5px;
+  border-radius: 3px;
   overflow: hidden;
 }
 
-.ssbar-fill {
+.dss-bar-fill {
   height: 100%;
   background-color: #ffd700;
   transition: width 0.3s ease;
 }
 
-.ssresistance-value {
+.dss-resistance-value {
   width: 15%;
   text-align: right;
-  font-size: 1.1vw;
+  font-size: 12px;
   font-weight: bold;
 }
 
-.sspassive-skill {
-  font-size: 1.2vw;
-  background-color: #ffd7001a;
-  padding: 1vh 1vw;
+.dss-passive-skill {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 8px;
   border-radius: 5px;
   text-align: center;
+  font-size: 14px;
+}
+
+/* Scrollbar styles */
+.dss-scrollable-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dss-scrollable-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.dss-scrollable-content::-webkit-scrollbar-thumb {
+  background: #ffd700;
+  border-radius: 4px;
+}
+
+.dss-scrollable-content::-webkit-scrollbar-thumb:hover {
+  background: #ffea00;
 }
 
 @media (max-width: 768px) {
-  .top-section {
-    flex-direction: column;
-  }
-  
-  .digimon-image, .digimon-info {
-    width: 100%;
-    margin-bottom: 1vh;
-  }
-
-  .digimon-name { font-size: 4vw; }
-  .digimon-type, .digimon-stage, .digimon-level { font-size: 2.5vw; }
-  .stat-label, .stat-value, .resistance-label, .resistance-value { font-size: 2.2vw; }
-  h3 { font-size: 3vw; }
-  .passive-skill { font-size: 2.5vw; }
+  .dss-digimon-name { font-size: 22px; }
+  .dss-digimon-type { font-size: 12px; }
+  .dss-stat-label, .dss-resistance-label { font-size: 10px; }
+  .dss-stat-value, .dss-resistance-value { font-size: 12px; }
+  .dss-section-title { font-size: 16px; }
+  .dss-passive-skill { font-size: 12px; }
+  .dss-exp-text { font-size: 9px; }
+  .dss-info-label, .dss-info-value { font-size: 11px; }
 }

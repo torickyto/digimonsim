@@ -44,7 +44,10 @@ export const removeStatusEffect = (digimon: DigimonState, effectType: StatusEffe
 
 export const updateStatusEffects = (digimon: DigimonState): DigimonState => {
   const updatedEffects = digimon.statusEffects
-    .map(effect => ({ ...effect, duration: effect.duration - 1 }))
+    .map(effect => ({
+      ...effect,
+      duration: effect.duration > 0 ? effect.duration - 1 : 0
+    }))
     .filter(effect => effect.duration > 0);
 
   return { ...digimon, statusEffects: updatedEffects };
@@ -52,22 +55,33 @@ export const updateStatusEffects = (digimon: DigimonState): DigimonState => {
 
 export const applyStatusEffects = (digimon: DigimonState): DigimonState => {
   let updatedDigimon = { ...digimon };
+  let updatedStatusEffects: StatusEffect[] = [];
 
   for (const effect of updatedDigimon.statusEffects) {
     switch (effect.type) {
       case 'corruption':
         updatedDigimon.hp -= effect.value * CORRUPTION_DAMAGE_PER_STACK;
+        updatedStatusEffects.push(effect); // Keep corruption without reducing duration
         break;
       case 'bugged':
         // Bugged (stun) is handled in the battle logic, not here
         break;
-      case 'taunt':
-        // Taunt is handled in the battle logic, not here
-        break;
+        case 'taunt':
+          if (effect.duration > 1) {
+            updatedStatusEffects.push({ ...effect, duration: effect.duration - 1 });
+          }
+          break;
     }
   }
 
-  return updateStatusEffects(updatedDigimon);
+  updatedDigimon.statusEffects = updatedDigimon.statusEffects
+  .map(effect => ({
+    ...effect,
+    duration: effect.type === 'corruption' ? effect.duration : effect.duration - 1
+  }))
+  .filter(effect => effect.duration > 0 || effect.type === 'corruption');
+
+  return { ...updatedDigimon, statusEffects: updatedStatusEffects };
 };
 
 export const hasStatusEffect = (digimon: DigimonState, effectType: StatusEffectType): boolean => {
@@ -75,7 +89,7 @@ export const hasStatusEffect = (digimon: DigimonState, effectType: StatusEffectT
 };
 
 export const isStunned = (digimon: DigimonState): boolean => {
-  return hasStatusEffect(digimon, 'bugged');
+  return digimon.statusEffects.some(effect => effect.type === 'bugged');
 };
 
 export const getTauntSource = (digimon: DigimonState): number | undefined => {

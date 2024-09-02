@@ -3,7 +3,11 @@ export const BASE_RAM = 3;
 export const MAX_HAND_SIZE = 9;
 export const CARDS_DRAWN_PER_TURN = 1;
 export const MAX_RAM = 10;
-export const EXPERIENCE_PER_LEVEL = 100;
+export const BASE_EXP_REQUIREMENT = 100;
+export const EXP_SCALE_FACTOR = 1.5;
+export const MAX_LEVEL = 100;
+export const ENEMY_DEFEAT_EXP_BASE = 20;
+export const ENEMY_DEFEAT_EXP_LEVEL_FACTOR = 5;
 
 
 export const STATUS_EFFECT_DURATIONS = {
@@ -18,4 +22,4 @@ export const DAMAGE_MULTIPLIERS = {
   TYPE_DISADVANTAGE: 0.75,
 };
 
-export const CORRUPTION_DAMAGE_PER_STACK = 5; // Moved from types.ts to here
+export const CORRUPTION_DAMAGE_PER_STACK = 2; 

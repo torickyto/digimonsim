@@ -3,8 +3,10 @@ import { STARTING_RAM, BASE_RAM, MAX_HAND_SIZE, CARDS_DRAWN_PER_TURN, MAX_RAM } 
 import { DigimonTemplates } from '../data/DigimonTemplate';
 import { createDigimon } from '../shared/digimonManager';
 import { calculateDamage, DamageCalculations } from '../shared/damageCalculations';
-import { applyStatusEffects } from './statusEffects';
+import { applyStatusEffects, isStunned, updateStatusEffects } from './statusEffects';
 import { resolveCardEffects } from './cardEffects';
+import { calculateEnemyExpReward } from '../game/expSystem';
+import { gainExperience } from '../data/digimon';
 
 
 
@@ -114,6 +116,8 @@ export const startPlayerTurn = (state: GameState): { updatedState: GameState; dr
   console.log('Starting player turn');
   let updatedState = { ...state };
 
+  updatedState.player.digimon = updatedState.player.digimon.map(digimon => applyStatusEffects(digimon));
+  updatedState.enemy.digimon = updatedState.enemy.digimon.map(digimon => applyStatusEffects(digimon));
   // Increment the turn counter at the start of the function
   updatedState.turn += 1;
   console.log('Turn:', updatedState.turn);
@@ -169,7 +173,6 @@ export const playCard = (gameState: GameState, cardIndex: number, targetInfo: Ta
   if (!card) {
     throw new Error('Invalid card index');
   }
-
   const updatedHand = gameState.player.hand.filter((_, index) => index !== cardIndex);
 
   let updatedState = { 
@@ -192,7 +195,12 @@ export const playCard = (gameState: GameState, cardIndex: number, targetInfo: Ta
   // Calculate damage and shield separately
   let damage = 0;
   let shield = 0;
-  const sourceDigimon = updatedState.player.digimon[targetInfo.sourceDigimonIndex];
+  const sourceDigimon = gameState.player.digimon[targetInfo.sourceDigimonIndex];
+  if (isStunned(sourceDigimon)) {
+    console.log(`${sourceDigimon.displayName} is stunned and cannot play a card`);
+    return gameState;
+  }
+
 
   card.effects.forEach(effect => {
     if (effect.damage && effect.damage.formula) {
@@ -263,6 +271,17 @@ export const playCard = (gameState: GameState, cardIndex: number, targetInfo: Ta
   return updatedState;
 };
 
+export function calculateBattleEndExp(playerTeam: Digimon[], defeatedEnemies: DigimonState[]): number[] {
+  const totalExpReward = defeatedEnemies.reduce((total, enemy) => {
+    return total + calculateEnemyExpReward(enemy.level);
+  }, 0);
+
+  const aliveDigimon = playerTeam.filter(d => d.hp > 0);
+  const expPerDigimon = aliveDigimon.length > 0 ? Math.floor(totalExpReward / aliveDigimon.length) : 0;
+
+  return playerTeam.map(digimon => digimon.hp > 0 ? expPerDigimon : 0);
+}
+
 export const endPlayerTurn = (gameState: GameState): GameState => {
   return {
     ...gameState,
@@ -277,20 +296,6 @@ export const executeEnemyTurn = (gameState: GameState): GameState => {
   let updatedState: GameState = { ...gameState };
 
   console.log('Executing enemy turn');
-  console.log('All player Digimon:', updatedState.player.digimon.map(d => `${d.displayName} (HP: ${d.hp})`));
-
-  // Create an array of indices of alive Digimon
-  const alivePlayerIndices = updatedState.player.digimon
-    .map((d, index) => ({ digimon: d, index }))
-    .filter(item => item.digimon.hp > 0)
-    .map(item => item.index);
-
-  console.log('Alive player Digimon indices:', alivePlayerIndices);
-
-  if (alivePlayerIndices.length === 0) {
-    console.log('No alive player Digimon, skipping enemy turn');
-    return updatedState;
-  }
 
   const enemyActions: EnemyAction[] = updatedState.enemy.digimon
     .map((enemyDigimon, enemyIndex) => {
@@ -299,16 +304,30 @@ export const executeEnemyTurn = (gameState: GameState): GameState => {
         return null;
       }
 
+      // Check if the Digimon is stunned before updating status effects
+      if (isStunned(enemyDigimon)) {
+        console.log(`Enemy Digimon ${enemyDigimon.displayName} is stunned, skipping turn`);
+        // Update status effects for this Digimon
+        updatedState.enemy.digimon[enemyIndex] = updateStatusEffects(enemyDigimon);
+        return null;
+      }
+
+      // If not stunned, proceed with the enemy action
+      const alivePlayerIndices = updatedState.player.digimon
+        .map((d, index) => ({ digimon: d, index }))
+        .filter(item => item.digimon.hp > 0)
+        .map(item => item.index);
+
+      if (alivePlayerIndices.length === 0) {
+        console.log('No alive player Digimon, skipping enemy turn');
+        return null;
+      }
+
       const randomAliveIndex = Math.floor(Math.random() * alivePlayerIndices.length);
       const targetPlayerIndex = alivePlayerIndices[randomAliveIndex];
       const targetPlayerDigimon = updatedState.player.digimon[targetPlayerIndex];
       
-      console.log(`Random alive index selected: ${randomAliveIndex}`);
-      console.log(`Target player Digimon: ${targetPlayerDigimon.displayName}`);
-      console.log(`Target player index in original array: ${targetPlayerIndex}`);
-      
       console.log(`Enemy ${enemyDigimon.displayName} (${enemyIndex}) targeting ${targetPlayerDigimon.displayName} (index: ${targetPlayerIndex})`);
-      console.log(`Target Digimon HP: ${targetPlayerDigimon.hp}`);
 
       const damage = calculateDamage('BASIC' as DamageFormulaKey, enemyDigimon, targetPlayerDigimon);
       console.log(`Calculated damage: ${damage}`);
@@ -326,6 +345,9 @@ export const executeEnemyTurn = (gameState: GameState): GameState => {
 
   updatedState.actionQueue = [...updatedState.actionQueue, ...enemyActions, { type: 'END_ENEMY_TURN' }];
 
+  // Update status effects for all enemy Digimon at the end of their turn
+  updatedState.player.digimon = updatedState.player.digimon.map(digimon => applyStatusEffects(digimon));
+  updatedState.enemy.digimon = updatedState.enemy.digimon.map(digimon => applyStatusEffects(digimon));
   console.log('Enemy turn executed, action queue:', updatedState.actionQueue);
 
   return updatedState;
@@ -371,9 +393,27 @@ export const drawCard = (state: GameState): { newState: GameState; drawnCard: Ca
 
   return { newState, drawnCard };
 };
+export function endBattle(state: GameState): GameState {
+  console.log("Ending battle, distributing experience...");
+  const updatedState = { ...state };
+  const aliveDigimon = updatedState.player.digimon.filter(d => d.hp > 0);
+  const defeatedEnemies = updatedState.enemy.digimon.filter(d => d.hp <= 0);
 
+  const expDistribution = calculateBattleEndExp(updatedState.player.digimon as Digimon[], defeatedEnemies);
 
+  updatedState.player.digimon = updatedState.player.digimon.map((digimon, index) => {
+    if (digimon.hp > 0 && 'deck' in digimon && 'expToNextLevel' in digimon) {
+      const expGained = expDistribution[index];
+      console.log(`Digimon ${digimon.displayName} (HP: ${digimon.hp}) before exp gain: Level ${digimon.level}, Exp ${digimon.exp}/${digimon.expToNextLevel}`);
+      const updatedDigimon = gainExperience(digimon, expGained);
+      console.log(`Digimon ${updatedDigimon.displayName} after exp gain: Level ${updatedDigimon.level}, Exp ${updatedDigimon.exp}/${updatedDigimon.expToNextLevel}`);
+      return updatedDigimon;
+    }
+    return digimon;
+  });
 
+  return updatedState;
+}
 
 export const applyDamage = (damage: number, target: Digimon | DigimonState, gameState: GameState, targetInfo: TargetInfo): GameState => {
   console.log('Applying damage:', damage, 'to target:', target, 'at index:', targetInfo.targetDigimonIndex);

@@ -21,6 +21,7 @@ import Eggs from './Eggs';
 import AdventureMap from './ZoneMap';
 import ZoneMap from './ZoneMap';
 import ArenaScreen from './ArenaScreen';
+import Shop from './Shop';
 
 
 interface HomeScreenProps {
@@ -35,6 +36,8 @@ interface HomeScreenProps {
   onUpdateEggs?: (updatedEggs: DigimonEgg[]) => void; 
   onStartAdventure: (zone: string) => void;
   dayCount: number;
+  bits: number;
+  onUpdateBits: (newBits: number) => void;
 }
 
 const HomeScreen: React.FC<HomeScreenProps> = ({ 
@@ -47,6 +50,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   onGenerateEgg,
   onHatchEgg,
   onStartAdventure,
+  bits,
+  onUpdateBits,
   onUpdateEggs,
   dayCount 
 }) => {
@@ -81,6 +86,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   const [showZoneModal, setShowZoneModal] = useState(false);
   const [isArenaAvailable, setIsArenaAvailable] = useState(false);
   const [daysUntilArena, setDaysUntilArena] = useState(0);
+  const [showShop, setShowShop] = useState(false);
 
   
   
@@ -125,7 +131,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
     });
   }, [playerTeam]);
 
-    useEffect(() => {
+  useEffect(() => {
     setLocalOwnedDigimon(ownedDigimon);
   }, [ownedDigimon]);
 
@@ -200,6 +206,26 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
     onStartAdventure(zone);
   };
 
+  const handlePurchase = (itemName: string, cost: number) => {
+    if (bits >= cost) {
+      onUpdateBits(bits - cost);
+      if (itemName === 'Golden Egg') {
+        onGenerateEgg(); 
+        alert('You have purchased a Golden Egg!');
+      } else if (itemName === 'Bits Boost') {
+        onUpdateBits(bits + 10000);
+        alert('You gained 10,000 bits!');
+      } else if (itemName === 'Mystery Box') {
+        // placeholder
+        alert('You opened a Mystery Box!');
+      } else if (itemName === 'EXP Booster') {
+        // placeholder
+        alert('EXP Booster activated for all Digimon!');
+      }
+    } else {
+      alert('Not enough bits to make this purchase!');
+    }
+  };
   const handleExitZone = () => {
     setShowZoneMap(false);
     setSelectedZone(null);
@@ -209,6 +235,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   const toggleStats = () => {
     setShowStats(!showStats);
     setCurrentDigimonIndex(0);
+  };
+
+  const getAvailableDigimon = () => {
+    return localOwnedDigimon.filter(digimon => !playerTeam.some(partyMember => partyMember.id === digimon.id));
   };
 
   const handleCloseNewDigimonStats = () => {
@@ -415,11 +445,20 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
                     </div>
                   ))}
                 </div>
+                {currentScreen === 'shop' && (
+                  <div className="stat-overlay">
+                    <Shop
+                      bits={bits}
+                      onPurchase={handlePurchase}
+                      onClose={() => setCurrentScreen(null)}
+                    />
+                  </div>
+                )}
                 {currentScreen === 'party' && (
                   <div className="stat-overlay">
                     <DigimonPartyBox
                       party={playerTeam}
-                      ownedDigimon={localOwnedDigimon}
+                      ownedDigimon={getAvailableDigimon()}
                       onSwapDigimon={handleSwapDigimon}
                     />
                   </div>
@@ -546,6 +585,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
           </button>
         </div>
         <div className="hbutton-container">
+        <button className="stats-button" onClick={() => setCurrentScreen('shop')}>Shop</button>
           <button className="dev-button" onClick={() => toggleScreen('cardCollection')}>DEV: Cards</button>
           <button className="dev-button" onClick={() => toggleScreen('devPartyBox')}>DEV: Party Box</button>
           <button className="test-arena-button" onClick={() => toggleScreen('testArena')}>DEV: Test Battle</button>
@@ -562,6 +602,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
           <button onClick={() => setShowZoneModal(false)}>Cancel</button>
         </div>
       )}
+       
 
 {currentScreen === 'cardCollection' && (
         <div className="modal card-collection-modal">
