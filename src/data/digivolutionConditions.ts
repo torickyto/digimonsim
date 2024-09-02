@@ -10,7 +10,7 @@ export const digivolutionConditions: Record<string, DigivolutionCondition[]> = {
   'koromon': [
     {
       targetDigimon: 'agumon',
-      conditions: (digimon: Digimon) => digimon.level >= 3 && digimon.attack >= 15
+      conditions: (digimon: Digimon) => digimon.level >= 2 && digimon.attack >= 4
     },
     {
       targetDigimon: 'kamemon',

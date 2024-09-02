@@ -1,9 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Digimon } from '../shared/types';
+import { Digimon, Card, DigimonTemplate } from '../shared/types';
 import DigimonSprite from './DigimonSprite';
 import './ZoneMap.css';
 import { generateEnemyTeam } from '../data/enemyManager';
 import NodeEvent from './NodeEvent';
+import { checkDigivolutionConditions } from '../data/digivolutionConditions';
+import { getDigimonTemplate } from '../data/DigimonTemplate';
+import { calculateBaseStat } from '../shared/statCalculations';
+import { v4 as uuidv4 } from 'uuid';
 
 type NodeType = 'start' | 'monster' | 'chest' | 'event' | 'boss' | 'empty' | 'rest';
 
@@ -53,6 +57,10 @@ const ZoneMap: React.FC<ZoneMapProps> = ({
   const NUM_PATHS = 3;
   const [showNodeEvent, setShowNodeEvent] = useState(false);
   const [currentEventType, setCurrentEventType] = useState<NodeType | null>(null);
+  const [showDigivolutionModal, setShowDigivolutionModal] = useState(false);
+  const [digivolvingDigimon, setDigivolvingDigimon] = useState<Digimon | null>(null);
+  const [newDigimonForm, setNewDigimonForm] = useState<string | null>(null);
+  const [digivolutionStage, setDigivolutionStage] = useState(0);
 
   useEffect(() => {
     if (!map || map.length === 0) {
@@ -61,6 +69,83 @@ const ZoneMap: React.FC<ZoneMapProps> = ({
       updateAvailableNodes(currentNode);
     }
   }, [zoneDifficulty, map, currentNode]);
+
+  useEffect(() => {
+    // Check for digivolution conditions
+    playerTeam.forEach((digimon) => {
+      const digivolveTarget = checkDigivolutionConditions(digimon);
+      if (digivolveTarget) {
+        setDigivolvingDigimon(digimon);
+        setNewDigimonForm(digivolveTarget);
+        setShowDigivolutionModal(true);
+      }
+    });
+  }, [playerTeam]);
+
+  useEffect(() => {
+    if (showDigivolutionModal) {
+      handleDigivolve();
+    }
+  }, [showDigivolutionModal]);
+
+  const handleDigivolve = () => {
+    if (digivolvingDigimon && newDigimonForm) {
+      setDigivolutionStage(1);
+      setTimeout(() => {
+        setDigivolutionStage(2);
+        setTimeout(() => {
+          setDigivolutionStage(3);
+          setTimeout(() => {
+            const newTemplate = getDigimonTemplate(newDigimonForm);
+            if (!newTemplate) {
+              console.error(`No template found for ${newDigimonForm}`);
+              return;
+            }
+
+            const newStartingCard: Card = {
+              ...newTemplate.startingCard,
+              instanceId: uuidv4(),
+              ownerDigimonIndex: playerTeam.findIndex(d => d.id === digivolvingDigimon.id)
+            };
+
+            const evolvedDigimon: Digimon = {
+              ...digivolvingDigimon,
+              name: newTemplate.name,
+              displayName: newTemplate.displayName,
+              type: newTemplate.type,
+              digivolutionStage: newTemplate.digivolutionStage,
+              hp: calculateBaseStat(newTemplate.baseHp, digivolvingDigimon.level),
+              maxHp: calculateBaseStat(newTemplate.baseHp, digivolvingDigimon.level),
+              attack: calculateBaseStat(newTemplate.baseAttack, digivolvingDigimon.level),
+              healing: calculateBaseStat(newTemplate.baseHealing, digivolvingDigimon.level),
+              evasion: newTemplate.baseEvadeChance,
+              critChance: newTemplate.baseCritChance,
+              accuracy: newTemplate.baseAccuracy,
+              corruptionResistance: newTemplate.baseCorruptionResistance,
+              buggedResistance: newTemplate.baseBuggedResistance,
+              passiveSkill: newTemplate.passiveSkill,
+              deck: [
+                ...digivolvingDigimon.deck,
+                newStartingCard
+              ]
+            };
+
+            const updatedTeam = playerTeam.map(d => 
+              d.id === digivolvingDigimon.id ? evolvedDigimon : d
+            );
+            setDigivolutionStage(4);
+            setTimeout(() => {
+              onUpdatePlayerTeam(updatedTeam);
+              setShowDigivolutionModal(false);
+              setDigivolvingDigimon(null);
+              setNewDigimonForm(null);
+              setDigivolutionStage(0);
+            }, 2000);
+          }, 2000);
+        }, 2000);
+      }, 2000);
+    }
+  };
 
 
   const generateMap = () => {
@@ -295,6 +380,26 @@ const ZoneMap: React.FC<ZoneMapProps> = ({
 
  return (
     <div className="zm-zone-map">
+        {showDigivolutionModal && digivolvingDigimon && newDigimonForm && (
+        <div className="digivolution-overlay">
+          <div className="digivolution-content">
+            <h2>{digivolvingDigimon.nickname || digivolvingDigimon.displayName} IS DIGIVOLVING</h2>
+            <div className={`digivolution-animation stage-${digivolutionStage}`}>
+              <div className="digimon-container original">
+                <DigimonSprite name={digivolvingDigimon.name} scale={2} />
+              </div>
+              <div className="digivolution-effect"></div>
+              <div className="digimon-container target">
+                <DigimonSprite 
+                  name={newDigimonForm} 
+                  scale={2} 
+                  isAttacking={digivolutionStage === 4}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="zm-zone-header">
         <h2 className="zm-zone-title">{zoneName}</h2>
         <div className="zm-bits-display">Bits: {bits}</div>
