@@ -22,4 +22,4 @@ export const DAMAGE_MULTIPLIERS = {
   TYPE_DISADVANTAGE: 0.75,
 };
 
-export const CORRUPTION_DAMAGE_PER_STACK = 5; // Moved from types.ts to here
+export const CORRUPTION_DAMAGE_PER_STACK = 2; 

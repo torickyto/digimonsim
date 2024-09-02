@@ -116,11 +116,11 @@ export const startPlayerTurn = (state: GameState): { updatedState: GameState; dr
   console.log('Starting player turn');
   let updatedState = { ...state };
 
+  updatedState.player.digimon = updatedState.player.digimon.map(digimon => applyStatusEffects(digimon));
+  updatedState.enemy.digimon = updatedState.enemy.digimon.map(digimon => applyStatusEffects(digimon));
   // Increment the turn counter at the start of the function
   updatedState.turn += 1;
   console.log('Turn:', updatedState.turn);
-
-  updatedState.player.digimon = updatedState.player.digimon.map(digimon => updateStatusEffects(digimon));
 
   // Reset RAM to the starting value
   updatedState.player.ram = calculateStartingRam(updatedState.player.digimon as Digimon[]);
@@ -346,8 +346,8 @@ export const executeEnemyTurn = (gameState: GameState): GameState => {
   updatedState.actionQueue = [...updatedState.actionQueue, ...enemyActions, { type: 'END_ENEMY_TURN' }];
 
   // Update status effects for all enemy Digimon at the end of their turn
-  updatedState.enemy.digimon = updatedState.enemy.digimon.map(digimon => updateStatusEffects(digimon));
-
+  updatedState.player.digimon = updatedState.player.digimon.map(digimon => applyStatusEffects(digimon));
+  updatedState.enemy.digimon = updatedState.enemy.digimon.map(digimon => applyStatusEffects(digimon));
   console.log('Enemy turn executed, action queue:', updatedState.actionQueue);
 
   return updatedState;

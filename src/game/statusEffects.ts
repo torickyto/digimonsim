@@ -55,31 +55,33 @@ export const updateStatusEffects = (digimon: DigimonState): DigimonState => {
 
 export const applyStatusEffects = (digimon: DigimonState): DigimonState => {
   let updatedDigimon = { ...digimon };
+  let updatedStatusEffects: StatusEffect[] = [];
 
   for (const effect of updatedDigimon.statusEffects) {
     switch (effect.type) {
       case 'corruption':
-        const corruptionDamage = effect.value * CORRUPTION_DAMAGE_PER_STACK;
-        updatedDigimon.hp = Math.max(0, updatedDigimon.hp - corruptionDamage);
-        console.log(`Applying corruption damage: ${corruptionDamage} to ${updatedDigimon.displayName}`);
+        updatedDigimon.hp -= effect.value * CORRUPTION_DAMAGE_PER_STACK;
+        updatedStatusEffects.push(effect); // Keep corruption without reducing duration
         break;
       case 'bugged':
         // Bugged (stun) is handled in the battle logic, not here
         break;
-      case 'taunt':
-        // Taunt is handled in the battle logic, not here
-        break;
+        case 'taunt':
+          if (effect.duration > 1) {
+            updatedStatusEffects.push({ ...effect, duration: effect.duration - 1 });
+          }
+          break;
     }
   }
 
   updatedDigimon.statusEffects = updatedDigimon.statusEffects
   .map(effect => ({
     ...effect,
-    duration: effect.duration > 0 ? effect.duration - 1 : effect.duration
+    duration: effect.type === 'corruption' ? effect.duration : effect.duration - 1
   }))
-  .filter(effect => effect.duration > 0 || effect.duration === -1); 
+  .filter(effect => effect.duration > 0 || effect.type === 'corruption');
 
-  return updateStatusEffects(updatedDigimon);
+  return { ...updatedDigimon, statusEffects: updatedStatusEffects };
 };
 
 export const hasStatusEffect = (digimon: DigimonState, effectType: StatusEffectType): boolean => {

@@ -479,7 +479,7 @@ TOUCH_OF_EVIL: createCard(
   [{
     description: "Deal {damage} damage to an enemy.",
     damage: {
-      formula: 'STRONG',
+      formula: 'BASIC2',
       target: 'enemy'
     }
   },
