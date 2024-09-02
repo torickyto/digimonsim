@@ -44,7 +44,10 @@ export const removeStatusEffect = (digimon: DigimonState, effectType: StatusEffe
 
 export const updateStatusEffects = (digimon: DigimonState): DigimonState => {
   const updatedEffects = digimon.statusEffects
-    .map(effect => ({ ...effect, duration: effect.duration - 1 }))
+    .map(effect => ({
+      ...effect,
+      duration: effect.duration > 0 ? effect.duration - 1 : 0
+    }))
     .filter(effect => effect.duration > 0);
 
   return { ...digimon, statusEffects: updatedEffects };
@@ -56,7 +59,9 @@ export const applyStatusEffects = (digimon: DigimonState): DigimonState => {
   for (const effect of updatedDigimon.statusEffects) {
     switch (effect.type) {
       case 'corruption':
-        updatedDigimon.hp -= effect.value * CORRUPTION_DAMAGE_PER_STACK;
+        const corruptionDamage = effect.value * CORRUPTION_DAMAGE_PER_STACK;
+        updatedDigimon.hp = Math.max(0, updatedDigimon.hp - corruptionDamage);
+        console.log(`Applying corruption damage: ${corruptionDamage} to ${updatedDigimon.displayName}`);
         break;
       case 'bugged':
         // Bugged (stun) is handled in the battle logic, not here
@@ -67,6 +72,13 @@ export const applyStatusEffects = (digimon: DigimonState): DigimonState => {
     }
   }
 
+  updatedDigimon.statusEffects = updatedDigimon.statusEffects
+  .map(effect => ({
+    ...effect,
+    duration: effect.duration > 0 ? effect.duration - 1 : effect.duration
+  }))
+  .filter(effect => effect.duration > 0 || effect.duration === -1); 
+
   return updateStatusEffects(updatedDigimon);
 };
 
@@ -75,7 +87,7 @@ export const hasStatusEffect = (digimon: DigimonState, effectType: StatusEffectT
 };
 
 export const isStunned = (digimon: DigimonState): boolean => {
-  return hasStatusEffect(digimon, 'bugged');
+  return digimon.statusEffects.some(effect => effect.type === 'bugged');
 };
 
 export const getTauntSource = (digimon: DigimonState): number | undefined => {

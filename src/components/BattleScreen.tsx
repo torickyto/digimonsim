@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { GameState, Card, Digimon, TargetType, TargetInfo, EnemyAction } from '../shared/types';
+import { GameState, Card, Digimon, TargetType, TargetInfo, EnemyAction, DigimonState, StatusEffect } from '../shared/types';
+import { CORRUPTION_DAMAGE_PER_STACK } from '../game/gameConstants';
 import { initializeBattle, startPlayerTurn, playCard, endPlayerTurn, executeEnemyTurn, checkBattleEnd, calculateBattleEndExp, applyDamage as battleApplyDamage} from '../game/battle';
 import DigimonSprite from './DigimonSprite';
 import CompactCard from './CompactCard';
@@ -11,6 +12,7 @@ import CardPileModal from './CardPileModal';
 import BattleLog from './BattleLog';
 import PostBattleScreen from './PostBattleScreen';
 import { gainExperience } from '../data/digimon';
+import { isStunned } from '../game/statusEffects';
 
 interface BattleScreenProps {
   playerTeam: Digimon[];
@@ -179,6 +181,12 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
   }, [gameState, expGained, onBattleEnd]);
 
   const handleCardClick = useCallback((card: Card) => {
+    const sourceDigimon = gameState.player.digimon[card.ownerDigimonIndex];
+    if (isStunned(sourceDigimon)) {
+      addLogEntry(`${sourceDigimon.displayName} is stunned and cannot play a card`);
+      return;
+    }
+  
     if (gameState.player.ram >= card.cost) {
       if (selectedCard && selectedCard.instanceId === card.instanceId) {
         setSelectedCard(null);
@@ -189,7 +197,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
         setTargetingDigimon(true);
       }
     }
-  }, [gameState.player.ram, selectedCard]);
+  }, [gameState.player.ram, selectedCard, gameState.player.digimon, addLogEntry]);
 
   const handleEndTurn = useCallback(() => {
     if (isEnemyTurn) return;
@@ -549,6 +557,21 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     }
   }, [gameState, isEnemyTurn, processActionQueue, processEnemyTurn, checkBattleEnd, handleBattleEnd]);
 
+  const renderStatusEffects = (digimon: DigimonState) => {
+    const corruptionEffect = digimon.statusEffects.find(effect => effect.type === 'corruption');
+    if (corruptionEffect) {
+      const corruptionDamage = corruptionEffect.value * CORRUPTION_DAMAGE_PER_STACK;
+      return (
+        <div className="corruption-indicator">
+          <span className="corruption-icon">☠️</span>
+          <span className="corruption-stacks">{corruptionEffect.value}</span>
+          <span className="corruption-damage">(-{corruptionDamage}/turn)</span>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <div className="battle-screen-container">
       <div className={`battle-screen ${isEnemyTurn ? 'enemy-turn' : ''}`} ref={battleScreenRef} onClick={handleBackgroundClick}>
@@ -649,7 +672,9 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
                         isAttacking={attackingEnemyDigimon === index}
                         isOnHit={hitDigimon?.isEnemy && hitDigimon.index === index}
                         isDead={digimon.hp <= 0}
+                        isStunned={isStunned(digimon)}
                       />
+                        {isStunned(digimon) && <div className="stunned-indicator">BUGGED</div>}
                       <div className="enemy-health-bar">
                         <div className="health-fill" style={{ width: `${(digimon.hp / digimon.maxHp) * 100}%` }}></div>
                         <span className="enemy-hp-number">{`${digimon.hp}/${digimon.maxHp}`}</span>
@@ -663,6 +688,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
                           <span className="enemy-shield-number">{digimon.shield}</span>
                         </div>
                       )}
+                       {renderStatusEffects(digimon)}
                       <div className="enemy-info-tooltip">
                         {digimon.displayName} - Type: {digimon.type}
                       </div>
@@ -699,6 +725,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
                           isOnHit={hitDigimon?.isEnemy === false && hitDigimon.index === index}
                           isDead={digimon.hp <= 0}
                         />
+                          {renderStatusEffects(digimon)}
                       </div>
                     );
                   })}
@@ -765,6 +792,7 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
                           ></div>
                         </div>
                       </div>
+                      {renderStatusEffects(digimon)}
                     </div>
                   );
                 })}

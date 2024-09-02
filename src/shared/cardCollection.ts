@@ -95,7 +95,7 @@ export const CardCollection: Record<string, Card> = {
       }
     },
     {
-      description: "Draw a card",
+      description: "",
       drawCards: 1
     }]
   ),
@@ -341,21 +341,22 @@ SUPER_SHOCKER: createCard(
   'attack',
   3,
   'VACCINE',
-  'Deal {damage} damage to an enemy. Can cause bugged.',
+  'Deal {damage} damage to an enemy. 50% chance to apply Bugged for 1 turn.',
   'enemy',
   [{
-    description: "Deal damage to an enemy.",
+    description: "Deal {damage} damage to an enemy.",
     damage: {
       formula: 'BASIC',
       target: 'enemy'
     }
   },
   {
-    description: "Make an enemy bugged for one turn",
+    description: "50% chance to apply Bugged for 1 turn.",
     applyStatus: {
       type: 'bugged',
       duration: 1,
-      value: 1
+      value: 1,
+      chance: 0.5
     }
   }]
 ),
@@ -472,22 +473,23 @@ TOUCH_OF_EVIL: createCard(
   'Touch of Evil',
   'attack',
   3,
-  'VACCINE',
-  'Deal {damage} damage and apply CORRUPTION.',
+  'VIRUS', 
+  'Deal {damage} damage to an enemy and apply 1 stack of CORRUPTION.',
   'enemy',
   [{
-    description: "PLACEHOLDER",
+    description: "Deal {damage} damage to an enemy.",
     damage: {
       formula: 'STRONG',
       target: 'enemy'
     }
   },
   {
-    description: "PLACEHOLDER",
+    description: "Apply 1 stack of CORRUPTION to the target.",
     applyStatus: {
       type: 'corruption',
-      duration: 3,
-      value: 1
+      duration: -1, // Corruption typically doesn't have a duration, it's removed by other means
+      value: 1, // This represents 1 stack of corruption
+      isResistable: true // Can be resisted based on the target's corruption resistance
     }
   }]
 ),

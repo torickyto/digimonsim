@@ -8,6 +8,7 @@ interface DigimonSpriteProps {
   onAttackComplete?: () => void;
   scale?: number;
   isDead?: boolean;
+  isStunned?: boolean;
   style?: React.CSSProperties;
 }
 
@@ -16,54 +17,47 @@ const DigimonSprite: React.FC<DigimonSpriteProps> = ({
   isAttacking = false, 
   isOnHit = false, 
   isDead = false,
+  isStunned = false,
   onAttackComplete,
   scale = 1,
   style = {}
 }) => {
   const [animationClass, setAnimationClass] = useState<'breathing' | 'attacking' | 'onHit'>('breathing');
 
-
   useEffect(() => {
-    if (isAttacking) {
-      //console.log(`DigimonSprite ${name}: Setting animation to 'attacking'`);
+    if (isDead) {
+      setAnimationClass('onHit');
+    } else if (isAttacking) {
       setAnimationClass('attacking');
       const timer = setTimeout(() => {
-        //console.log(`DigimonSprite ${name}: Attack animation complete, returning to 'breathing'`);
         setAnimationClass('breathing');
         onAttackComplete?.();
       }, 600); 
       return () => clearTimeout(timer);
     } else if (isOnHit) {
-      //console.log(`DigimonSprite ${name}: Setting animation to 'onHit'`);
       setAnimationClass('onHit');
       const timer = setTimeout(() => {
-        console.log(`DigimonSprite ${name}: OnHit animation complete, returning to 'breathing'`);
         setAnimationClass('breathing');
       }, 600); 
       return () => clearTimeout(timer);
     } else {
-      if (isDead) {
-        setAnimationClass('onHit');
-      } else {
-      //console.log(`DigimonSprite ${name}: Setting animation to 'breathing'`);
       setAnimationClass('breathing');
-      }
     }
-  }, [isAttacking, isOnHit, onAttackComplete, name]);
-
+  }, [isAttacking, isOnHit, isDead, onAttackComplete]);
 
   return (
     <div 
-      className={`digimon ${name} ${animationClass}`}
+      className={`digimon ${name} ${animationClass} ${isStunned ? 'stunned' : ''}`}
       style={{
         ...style,
         transform: `${style.transform || ''} scale(${scale})`,
         transformOrigin: 'bottom center',
         filter: isDead ? 'grayscale(100%)' : 'none'
       }}
-    ></div>
+    >
+      {isStunned && <div className="stun-effect"></div>}
+    </div>
   );
 };
-
 
 export default DigimonSprite;

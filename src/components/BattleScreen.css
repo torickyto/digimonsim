@@ -99,6 +99,80 @@
   margin-bottom: calc(1 * var(--battle-vh));
 }
 
+.player-digimon-container.stunned {
+  opacity: 0.7;
+}
+
+.stunned-indicator {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(255, 0, 0, 0.7);
+  color: white;
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-size: 0.8em;
+}
+
+.digimon-sprite.stunned {
+  filter: grayscale(50%);
+}
+
+.corruption-indicator {
+  position: absolute;
+  top: -25px;
+  right: -10px;
+  background-color: rgba(128, 0, 128, 0.7);
+  border-radius: 50%;
+  width: 25px;
+  height: 25px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  color: white;
+  z-index: 10;
+}
+
+.corruption-damage {
+  font-size: 10px;
+  color: #ff4444;
+  margin-left: 2px;
+}
+
+.corruption-icon {
+  font-size: 14px;
+  margin-right: 2px;
+}
+
+.corruption-stacks {
+  font-weight: bold;
+}
+
+
+.stun-effect {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 0, 0.2),
+    rgba(255, 255, 0, 0.2) 10px,
+    rgba(0, 0, 0, 0.1) 10px,
+    rgba(0, 0, 0, 0.1) 20px
+  );
+  animation: stun-pulse 2s infinite linear;
+}
+
+@keyframes stun-pulse {
+  0% { opacity: 0.5; }
+  50% { opacity: 0.8; }
+  100% { opacity: 0.5; }
+}
+
 .discard-button, .end-turn-button {
   font-family: "Comfortaa", sans-serif;
   font-size: calc(1.4 * var(--battle-vh));
