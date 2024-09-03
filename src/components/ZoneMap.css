@@ -392,6 +392,27 @@
   animation: appear 1s forwards;
 }
 
+.zm-view-deck-button {
+  padding: 10px 20px;
+  font-size: 14px;
+  cursor: pointer;
+  background-color: rgba(0, 150, 255, 0.2);
+  color: #e0f7ff;
+  border: 2px solid #00a8ff;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  font-family: 'Rajdhani', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  box-shadow: 0 0 15px rgba(0, 150, 255, 0.3);
+  margin-right: 10px;
+}
+
+.zm-view-deck-button:hover {
+  background-color: rgba(0, 150, 255, 0.4);
+  box-shadow: 0 0 25px rgba(0, 150, 255, 0.5);
+}
+
 @keyframes pulse {
   0% { transform: translate(-50%, -50%) scale(1); }
   100% { transform: translate(-50%, -50%) scale(1.1); }

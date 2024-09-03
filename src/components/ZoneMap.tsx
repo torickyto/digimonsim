@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { Digimon, Card, DigimonTemplate } from '../shared/types';
 import DigimonSprite from './DigimonSprite';
 import './ZoneMap.css';
@@ -8,6 +8,7 @@ import { checkDigivolutionConditions } from '../data/digivolutionConditions';
 import { getDigimonTemplate } from '../data/DigimonTemplate';
 import { calculateBaseStat } from '../shared/statCalculations';
 import { v4 as uuidv4 } from 'uuid';
+import DeckViewModal from './DeckViewModal';
 
 type NodeType = 'start' | 'monster' | 'chest' | 'event' | 'boss' | 'empty' | 'rest';
 
@@ -61,6 +62,7 @@ const ZoneMap: React.FC<ZoneMapProps> = ({
   const [digivolvingDigimon, setDigivolvingDigimon] = useState<Digimon | null>(null);
   const [newDigimonForm, setNewDigimonForm] = useState<string | null>(null);
   const [digivolutionStage, setDigivolutionStage] = useState(0);
+  const [showDeckModal, setShowDeckModal] = useState(false);
 
   useEffect(() => {
     if (!map || map.length === 0) {
@@ -87,6 +89,14 @@ const ZoneMap: React.FC<ZoneMapProps> = ({
       handleDigivolve();
     }
   }, [showDigivolutionModal]);
+
+  const toggleDeckModal = () => {
+    setShowDeckModal(!showDeckModal);
+  };
+
+  const allCards = useMemo(() => {
+    return playerTeam.flatMap(digimon => digimon.deck);
+  }, [playerTeam]);
 
   const handleDigivolve = () => {
     if (digivolvingDigimon && newDigimonForm) {
@@ -402,6 +412,7 @@ const ZoneMap: React.FC<ZoneMapProps> = ({
       )}
       <div className="zm-zone-header">
         <h2 className="zm-zone-title">{zoneName}</h2>
+        <button className="zm-view-deck-button" onClick={toggleDeckModal}>View Deck</button>
         <div className="zm-bits-display">Bits: {bits}</div>
         <button className="zm-end-day-button" onClick={onEndDay}>End Day</button>
       </div>
@@ -419,6 +430,14 @@ const ZoneMap: React.FC<ZoneMapProps> = ({
           </div>
         </div>
       </div>
+      {showDeckModal && (
+        <DeckViewModal 
+          isOpen={showDeckModal}
+          onClose={toggleDeckModal}
+          playerTeam={playerTeam}
+          title="Current Deck"
+        />
+      )}
       {showNodeEvent && currentEventType && (
         <NodeEvent 
           type={currentEventType}
