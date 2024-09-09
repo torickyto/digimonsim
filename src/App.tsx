@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import HomeScreen from './components/HomeScreen';
 import BattleScreen from './components/BattleScreen';
 import ZoneMap from './components/ZoneMap';
+import AuthForm from './components/AuthForm';
 import { Digimon, DigimonEgg, DigimonTemplate } from './shared/types';
 import { createUniqueDigimon } from './data/digimon';
 import './App.css';
 import { EggTypes, getRandomOutcome } from './data/eggTypes';
 import { generateEnemyTeam } from './data/enemyManager';
+import { savePlayerData, loadPlayerData, PlayerData } from './playerData';
+import { getCurrentUser, signOut } from './auth';
 
 type NodeType = 'start' | 'monster' | 'chest' | 'event' | 'boss' | 'empty' | 'rest';
 
@@ -17,6 +20,8 @@ type MapNode = {
 };
 
 const App: React.FC = () => {
+  const [user, setUser] = useState<any>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [gameState, setGameState] = useState<'home' | 'battle' | 'adventure'>('home');
   const [playerTeam, setPlayerTeam] = useState<Digimon[]>([]);
   const [ownedDigimon, setOwnedDigimon] = useState<Digimon[]>([]);
@@ -28,16 +33,117 @@ const App: React.FC = () => {
   const [availableNodes, setAvailableNodes] = useState<number[]>([]);
   const [dayCount, setDayCount] = useState(1);
   const [bits, setBits] = useState(0);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
+  /* AUTO LOG IN
   useEffect(() => {
-    // Initialize with some starter Digimon
+    const fetchUser = async () => {
+      const { user, error } = await getCurrentUser();
+      if (user) {
+        setUser(user);
+        setIsAuthenticated(true);
+        loadGameData(user.id);
+      } else if (error) {
+        console.error('Error fetching user:', error);
+      }
+    };
+    fetchUser();
+  }, []); */
+
+  /* const handleAuthSuccess = (user: any) => {
+    setUser(user);
+    setIsAuthenticated(true);
+    loadGameData(user.id);
+  }; */
+
+  const handleAuthSuccess = (user: any) => {
+    setUser(user);
+    loadGameData(user.id);
+  };
+
+  const saveData = useCallback(() => {
+    if (user) {
+      const gameData: PlayerData = {
+        owned_digimon: ownedDigimon,
+        player_team: playerTeam,
+        eggs,
+        bits,
+        day_count: dayCount
+      };
+      savePlayerData(user.id, gameData).then(() => {
+        console.log('Game progress saved after adventure.');
+      }).catch((error) => {
+        console.error('Failed to save game progress:', error);
+      });
+    }
+  }, [user, ownedDigimon, playerTeam, eggs, bits, dayCount]);
+
+  const handleLogout = async () => {
+    if (user) {
+      // Save game data before logging out
+      await saveData();
+      
+      const { error } = await signOut();
+      if (!error) {
+        setUser(null);
+        // Reset game state
+        setPlayerTeam([]);
+        setOwnedDigimon([]);
+        setEggs([]);
+        setBits(0);
+        setDayCount(1);
+        setGameState('home');
+      } else {
+        console.error('Logout error:', error);
+      // Handle logout error
+    }
+  }
+  };
+
+
+  const loadGameData = async (userId: string) => {
+    const { data, error } = await loadPlayerData(userId);
+    if (data) {
+      setOwnedDigimon(data.owned_digimon);
+      setPlayerTeam(data.player_team);
+      setEggs(data.eggs);
+      setBits(data.bits);
+      setDayCount(data.day_count);
+    } else if (error) {
+      console.error('Error loading game data:', error.message);
+      initializeNewUserData(userId);
+    } else {
+      // No data found for the user, initialize new user data
+      initializeNewUserData(userId);
+    }
+  };
+
+   const initializeNewUserData = async (userId: string) => {
     const starterDigimon = [
-      createUniqueDigimon('wargreymon'),
-      createUniqueDigimon('beelzemon')
+      createUniqueDigimon('agumon'),
+      createUniqueDigimon('gabumon')
     ];
     setOwnedDigimon(starterDigimon);
-    setPlayerTeam(starterDigimon.slice(0, 3)); // Set the first three as the player's team
-  }, []);
+    setPlayerTeam(starterDigimon.slice(0, 2));
+    
+    const initialGameData: PlayerData = {
+      owned_digimon: starterDigimon,
+      player_team: starterDigimon.slice(0, 2),
+      eggs: [],
+      bits: 0,
+      day_count: 1
+    };
+    
+    await savePlayerData(userId, initialGameData);
+  };
+
+  if (!user) {
+    return <AuthForm onAuthSuccess={handleAuthSuccess} />;
+  }
+
+  const handleUpdateDayCount = (newDayCount: number) => {
+    setDayCount(newDayCount);
+  };
 
   const handleUpdateBits = (amount: number) => {
     setBits(prevBits => prevBits + amount);
@@ -158,31 +264,35 @@ const App: React.FC = () => {
     setGameState('home');
     setDayCount(prevDay => prevDay + 1);
     
-    //end-of-day actions here
+    // Perform end-of-day actions
     setPlayerTeam(prevTeam => prevTeam.map(digimon => ({
       ...digimon,
-      hp: digimon.maxHp,  // Fully heal Digimon
-      // Reset any daily stats or buffs here
+      hp: digimon.maxHp,
     })));
 
           //temporary egg hatching logic
-    setEggs(prevEggs => prevEggs.map(egg => ({
-      ...egg,
-      hatchTime: Math.max(0, egg.hatchTime - 1)
-    })));
-
-    eggs.forEach(egg => {
-      if (egg.hatchTime <= 0) {
-        hatchEgg(egg.id);
-      }
-    });
-  };
+          setEggs(prevEggs => prevEggs.map(egg => ({
+            ...egg,
+            hatchTime: Math.max(0, egg.hatchTime - 1)
+          })));
+      
+          eggs.forEach(egg => {
+            if (egg.hatchTime <= 0) {
+              hatchEgg(egg.id);
+            }
+          });
+          saveData();
+        };
 
   const handleExitZone = () => {
     setSelectedZone(null);
     setCurrentNode(null);
     setGameState('home');
   };
+
+  if (!user) {
+    return <AuthForm onAuthSuccess={handleAuthSuccess} />;
+  }
 
   switch (gameState) {
     case 'home':
@@ -200,17 +310,19 @@ const App: React.FC = () => {
           dayCount={dayCount}
           bits={bits}
           onUpdateBits={handleUpdateBits}
+          onUpdateDayCount={handleUpdateDayCount}
+          onLogout={handleLogout}
         />
       );
     case 'battle':
-        return (
-          <BattleScreen
+      return (
+        <BattleScreen
           playerTeam={playerTeam}
           enemyTeam={enemyTeam}
           onBattleEnd={handleBattleEnd}
-          />
-        );
-        case 'adventure':
+        />
+      );
+    case 'adventure':
       return (
         <ZoneMap
           playerTeam={playerTeam}
@@ -237,9 +349,10 @@ const App: React.FC = () => {
           onUpdateBits={handleUpdateBits}
         />
       );
-        default:
-          return null;
+    default:
+      return null;
   }
 };
+
 
 export default App;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import DigimonSprite from './DigimonSprite';
 import DigimonStatScreen from './DigimonStatScreen';
 import CardDex from './CardDex';
@@ -22,6 +22,8 @@ import AdventureMap from './ZoneMap';
 import ZoneMap from './ZoneMap';
 import ArenaScreen from './ArenaScreen';
 import Shop from './Shop';
+import { getCurrentUser } from '../auth';
+import { savePlayerData, loadPlayerData } from '../playerData';
 
 
 interface HomeScreenProps {
@@ -38,6 +40,8 @@ interface HomeScreenProps {
   dayCount: number;
   bits: number;
   onUpdateBits: (newBits: number) => void;
+  onUpdateDayCount: (newDayCount: number) => void;
+  onLogout: () => void;
 }
 
 const HomeScreen: React.FC<HomeScreenProps> = ({ 
@@ -53,8 +57,11 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   bits,
   onUpdateBits,
   onUpdateEggs,
-  dayCount 
+  dayCount,
+  onUpdateDayCount, 
+  onLogout,
 }) => {
+  const [user, setUser] = useState<any>(null);
   const [showStats, setShowStats] = useState(false);
   const [showParty, setShowParty] = useState(false);
   const [showEggs, setShowEggs] = useState(false);
@@ -87,8 +94,61 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   const [isArenaAvailable, setIsArenaAvailable] = useState(false);
   const [daysUntilArena, setDaysUntilArena] = useState(0);
   const [showShop, setShowShop] = useState(false);
+  const [isReturningFromAdventure, setIsReturningFromAdventure] = useState(false);
 
-  
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { user, error } = await getCurrentUser();
+      if (user) {
+        setUser(user);
+      } else if (error) {
+        console.error('Error fetching user:', error);
+      }
+    };
+    fetchUser();
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      loadPlayerData(user.id).then(({ data, error }) => {
+        if (data) {
+          onUpdatePlayerTeam(data.player_team);
+          onUpdateOwnedDigimon(data.owned_digimon);
+          if (onUpdateEggs) onUpdateEggs(data.eggs);
+          onUpdateBits(data.bits);
+          onUpdateDayCount(data.day_count);
+        }
+      });
+    }
+  }, [user]);
+
+  const saveData = useCallback(() => {
+    if (user) {
+      savePlayerData(user.id, {
+        owned_digimon: ownedDigimon,
+        player_team: playerTeam,
+        eggs,
+        bits,
+        day_count: dayCount
+      }).then(() => {
+        console.log('Game progress saved.');
+      }).catch((error) => {
+        console.error('Failed to save game progress:', error);
+      });
+    }
+  }, [user, ownedDigimon, playerTeam, eggs, bits, dayCount]);
+
+  useEffect(() => {
+    if (isReturningFromAdventure) {
+      saveData();
+      setIsReturningFromAdventure(false);
+    }
+  }, [isReturningFromAdventure]);
+
+  const handleReturnFromAdventure = () => {
+    setIsReturningFromAdventure(true);
+  };
   
   useEffect(() => {
     // Check for digivolution conditions
@@ -428,6 +488,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
 
   return (
     <div className="home-screen">
+       <button onClick={onLogout}>Logout</button>
       <div className="digivice">
         <div className="digivice-content">
           <div className="screen-wrapper">
@@ -517,7 +578,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
                     <Eggs 
                       eggs={eggs} 
                       onHatchEgg={handleHatchEgg}
-                      onUpdateEggs={onUpdateEggs || (() => {})}
+                      onUpdateEggs={handleUpdateEggs}
                       onClose={() => setCurrentScreen(null)}
                     />
                   </div>
