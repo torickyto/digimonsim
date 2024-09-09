@@ -1,0 +1,146 @@
+.auth-body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    font-family: 'Comfortaa', sans-serif;
+  }
+  
+  .auth-container {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+  }
+  /*
+  .auth-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('../assets/images/digiworld-background.jpg');
+    background-size: cover;
+    background-position: center;
+    filter: brightness(0.7);
+    animation: backgroundPan 60s linear infinite alternate;
+  } */
+  
+  @keyframes backgroundPan {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+  }
+  
+  .auth-content {
+    position: relative;
+    z-index: 1;
+    background: rgba(26, 26, 46, 0.8);
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 0 50px rgba(0, 168, 255, 0.3);
+    max-width: 400px;
+    width: 90%;
+  }
+  
+  .auth-logo {
+    display: block;
+    margin: 0 auto 30px;
+    max-width: 200px;
+    filter: drop-shadow(0 0 10px #5efdf7);
+  }
+  
+  .auth-form h2 {
+    color: #4ab9a3;
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 24px;
+    letter-spacing: 2px;
+    text-shadow: 0 0 1px #5efdf7;
+  }
+  
+  .input-group {
+    margin-bottom: 20px;
+  }
+  
+  .auth-form input {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #4ab9a3;
+    font-size: 16px;
+    transition: all 0.3s ease;
+  }
+  
+  .auth-form input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px #5efdf7;
+  }
+  
+  .auth-form button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+  
+  .submit-btn {
+    background: linear-gradient(45deg, #5dc190, #4ab9a3);
+    color: #32313b;
+    font-weight: bold;
+  }
+  
+  .submit-btn:hover {
+    background: linear-gradient(45deg, #4593a5, #4ab9a3);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px #5efdf730;
+  }
+  
+  .toggle-btn {
+    background: transparent;
+    color: #5efdf7;
+    border: 1px solid #4ac8fa;
+  }
+  
+  .toggle-btn:hover {
+    background: rgba(74, 200, 250, 0.1);
+  }
+  
+  .error {
+    color: #ff6b6b;
+    text-align: center;
+    margin-bottom: 15px;
+  }
+  
+  .auth-footer {
+    position: absolute;
+    bottom: 20px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+  }
+  
+  @keyframes floatAnimation {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
+    100% { transform: translateY(0); }
+  }
+  @keyframes glitch {
+    0%, 100% { transform: translate(0, 0); opacity: 1; }
+    92% { transform: translate(1px, 1px); opacity: 0.75; }
+    94% { transform: translate(-1px, -1px); opacity: 0.75; }
+    96% { transform: translate(2px, -2px); opacity: 0.75; }
+    98% { transform: translate(-2px, 2px); opacity: 0.75; }
+  }
+
+  .auth-logo {
+    animation: glitch 1s ease-in-out infinite;
+  }
