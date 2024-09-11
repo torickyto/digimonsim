@@ -56,6 +56,57 @@ const App: React.FC = () => {
     loadGameData(user.id);
   }; */
 
+  const handleEndDay = useCallback(async () => {
+    setSelectedZone(null);
+    setCurrentNode(null);
+    setGameState('home');
+    setDayCount(prevDay => prevDay + 1);
+    
+    // Perform end-of-day actions
+    const updatedPlayerTeam = playerTeam.map(digimon => ({
+      ...digimon,
+      hp: digimon.maxHp,
+    }));
+
+    const updatedEggs = eggs.map(egg => ({
+      ...egg,
+      hatchTime: Math.max(0, egg.hatchTime - 1)
+    }));
+
+    const newlyHatchedEggs = updatedEggs.filter(egg => egg.hatchTime <= 0);
+    const remainingEggs = updatedEggs.filter(egg => egg.hatchTime > 0);
+
+    const newDigimon = newlyHatchedEggs.map(egg => {
+      const eggType = EggTypes.find(type => type.id === egg.typeId);
+      if (eggType) {
+        const newDigimonTemplate = getRandomOutcome(eggType);
+        if (newDigimonTemplate) {
+          return createUniqueDigimon(newDigimonTemplate.name);
+        }
+      }
+      return null;
+    }).filter((digimon): digimon is Digimon => digimon !== null);
+
+    const updatedOwnedDigimon = [...ownedDigimon, ...newDigimon];
+
+    // Update state
+    setPlayerTeam(updatedPlayerTeam);
+    setEggs(remainingEggs);
+    setOwnedDigimon(updatedOwnedDigimon);
+
+    // Save updated game data
+    if (user) {
+      const gameData: PlayerData = {
+        owned_digimon: updatedOwnedDigimon,
+        player_team: updatedPlayerTeam,
+        eggs: remainingEggs,
+        bits,
+        day_count: dayCount + 1
+      };
+      await savePlayerData(user.id, gameData);
+    }
+  }, [playerTeam, eggs, ownedDigimon, bits, dayCount, user, setSelectedZone, setCurrentNode, setGameState, setDayCount, setPlayerTeam, setEggs, setOwnedDigimon]);
+
   const handleAuthSuccess = (user: any) => {
     setUser(user);
     loadGameData(user.id);
@@ -258,31 +309,6 @@ const App: React.FC = () => {
     setAvailableNodes([]);
   };
 
-  const handleEndDay = () => {
-    setSelectedZone(null);
-    setCurrentNode(null);
-    setGameState('home');
-    setDayCount(prevDay => prevDay + 1);
-    
-    // Perform end-of-day actions
-    setPlayerTeam(prevTeam => prevTeam.map(digimon => ({
-      ...digimon,
-      hp: digimon.maxHp,
-    })));
-
-          //temporary egg hatching logic
-          setEggs(prevEggs => prevEggs.map(egg => ({
-            ...egg,
-            hatchTime: Math.max(0, egg.hatchTime - 1)
-          })));
-      
-          eggs.forEach(egg => {
-            if (egg.hatchTime <= 0) {
-              hatchEgg(egg.id);
-            }
-          });
-          saveData();
-        };
 
   const handleExitZone = () => {
     setSelectedZone(null);

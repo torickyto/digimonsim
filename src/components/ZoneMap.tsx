@@ -94,6 +94,18 @@ const ZoneMap: React.FC<ZoneMapProps> = ({
     setShowDeckModal(!showDeckModal);
   };
 
+  const handleEndDay = () => {
+    // Update any remaining state before ending the day
+    const updatedPlayerTeam = playerTeam.map(digimon => ({
+      ...digimon,
+      hp: digimon.maxHp, // Heal all Digimon
+    }));
+    onUpdatePlayerTeam(updatedPlayerTeam);
+
+    // Call the onEndDay prop to trigger the day end in the parent component
+    onEndDay();
+  };
+
   const allCards = useMemo(() => {
     return playerTeam.flatMap(digimon => digimon.deck);
   }, [playerTeam]);
@@ -414,7 +426,7 @@ const ZoneMap: React.FC<ZoneMapProps> = ({
         <h2 className="zm-zone-title">{zoneName}</h2>
         <button className="zm-view-deck-button" onClick={toggleDeckModal}>View Deck</button>
         <div className="zm-bits-display">Bits: {bits}</div>
-        <button className="zm-end-day-button" onClick={onEndDay}>End Day</button>
+         <button className="zm-end-day-button" onClick={handleEndDay}>End Day</button>
       </div>
       <div className="zm-zone-content">
         <div className="zm-player-team">

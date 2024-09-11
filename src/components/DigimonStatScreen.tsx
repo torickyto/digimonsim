@@ -28,10 +28,10 @@ const DigimonStatScreen: React.FC<DigimonStatScreenProps> = ({ digimon, isObtain
     return () => window.removeEventListener('resize', updateSpriteScale);
   }, []);
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  const formatDate = (date: Date | string) => {
+    const dateObject = date instanceof Date ? date : new Date(date);
+    return dateObject.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   };
-
   return (
     <div className="dss-container" ref={containerRef}>
       <div className="dss-header">

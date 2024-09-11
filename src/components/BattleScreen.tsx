@@ -155,7 +155,15 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
       const defeatedEnemies = gameState.enemy.digimon.filter(d => d.hp <= 0);
       const expGained = calculateBattleEndExp(gameState.player.digimon as Digimon[], defeatedEnemies);
       console.log("Battle ended. Exp gained:", expGained);
+      const updatedPlayerDigimon = gameState.player.digimon.map(d => ({ ...d, shield: 0 }));
       console.log("Player team HP:", gameState.player.digimon.map(d => d.hp));
+      setGameState(prevState => ({
+        ...prevState,
+        player: {
+          ...prevState.player,
+          digimon: updatedPlayerDigimon
+        }
+      }));
       setExpGained(expGained);
       setShowPostBattle(true);
     } else {

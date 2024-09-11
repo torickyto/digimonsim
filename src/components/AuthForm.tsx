@@ -96,7 +96,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
           </button>
         </form>
         <div className="auth-footer">
-          <p>DigimonQuest v2.1 | Venture into the Digital Realm</p>
+          <p>DigimonQuest v0.1 | A Fan Game</p>
         </div>
       </div>
     </div>
