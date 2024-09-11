@@ -14,10 +14,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    document.body.classList.add('auth-body');
-    return () => {
-      document.body.classList.remove('auth-body');
-    };
+    createParticles();
   }, []);
 
   const digimonQuestLogo = require('../assets/images/digimonquest.png');
@@ -44,17 +41,38 @@ const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
     }
   };
 
+  const createParticles = () => {
+    const particlesContainer = document.querySelector('.particles');
+    if (particlesContainer) {
+      for (let i = 0; i < 50; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('particle');
+        particle.style.left = `${Math.random() * 100}%`;
+        particle.style.top = `${Math.random() * 100}%`;
+        particle.style.width = `${Math.random() * 3 + 1}px`;
+        particle.style.height = particle.style.width;
+        particle.style.animationDuration = `${Math.random() * 10 + 5}s`;
+        particle.style.animationDelay = `${Math.random() * 5}s`;
+        particlesContainer.appendChild(particle);
+      }
+    }
+  };
+
   return (
     <div className="auth-container">
-      <div className="auth-background"></div>
-      <div className="auth-content">
+      <div className="auth-visual">
+        <div className="dynamic-background"></div>
+        <div className="particles"></div>
         <img src={digimonQuestLogo} alt="DigimonQuest Logo" className="auth-logo" />
+      </div>
+      <div className="auth-form-container">
+        <div className="grid-background"></div>
         <form onSubmit={handleSubmit} className="auth-form">
-          <h2>{isSignUp ? 'prodigious!' : 'momentai!'}</h2>
+          <h2>{isSignUp ? 'Create Tamer Profile' : 'Login'}</h2>
           <div className="input-group">
             <input
               type="email"
-              placeholder="Email"
+              placeholder="Tamer ID (Email)"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -71,15 +89,15 @@ const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
           </div>
           {error && <p className="error">{error}</p>}
           <button type="submit" className="submit-btn" disabled={isLoading}>
-            {isLoading ? 'Loading...' : (isSignUp ? 'Embark' : 'Login')}
+            {isLoading ? 'Initializing...' : (isSignUp ? 'Initialize Tamer' : 'CONNECT')}
           </button>
           <button type="button" className="toggle-btn" onClick={() => setIsSignUp(!isSignUp)}>
-            {isSignUp ? 'Already a Tamer? Sign In' : 'New Tamer? Sign Up'}
+            {isSignUp ? 'Existing Tamer? Log In' : 'New Tamer? Sign Up'}
           </button>
         </form>
-      </div>
-      <div className="auth-footer">
-        <p>&copy; 2024 DigimonQuest. All rights reserved.</p>
+        <div className="auth-footer">
+          <p>DigimonQuest v2.1 | Venture into the Digital Realm</p>
+        </div>
       </div>
     </div>
   );
