@@ -31,7 +31,7 @@ interface ZoneMapProps {
   onUpdateAvailableNodes: (newAvailableNodes: number[]) => void;
   onUpdateCurrentNode: (newCurrentNode: number) => void;
   onUpdatePlayerTeam: (updatedTeam: Digimon[]) => void;
-  onAddEgg: (eggType: string) => void;
+  onAddEgg: (eggTypeId: number) => void;
   bits: number;
   onUpdateBits: (amount: number) => void;
 }

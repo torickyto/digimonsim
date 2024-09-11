@@ -363,10 +363,10 @@ const App: React.FC = () => {
           onUpdateAvailableNodes={handleUpdateAvailableNodes}
           onUpdateCurrentNode={handleUpdateCurrentNode}
           onUpdatePlayerTeam={handleUpdatePlayerTeam}
-          onAddEgg={(eggType) => {
+          onAddEgg={(eggTypeId: number) => {
             const newEgg: DigimonEgg = {
               id: Date.now(),
-              typeId: EggTypes.find(egg => egg.name === eggType)?.id || 0,
+              typeId: eggTypeId,
               hatchTime: Math.floor(Math.random() * 10) + 5,
             };
             setEggs(prevEggs => [...prevEggs, newEgg]);
