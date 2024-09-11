@@ -430,6 +430,22 @@ export const DigimonTemplates: Record<string, DigimonTemplate> = {
     startingCard: CardCollection.DEADLY_NAIL,
     passiveSkill: nullPassiveSkill
   },
+  veggiemon: {
+    name: 'veggiemon',
+    displayName: 'Veggiemon',
+    type: 'VIRUS' as DigimonType,
+    digivolutionStage: 'Champion' as DigivolutionStage,
+    baseHp: 73,
+    baseAttack: 15,
+    baseHealing: 7,
+    baseEvadeChance: 0.05,
+    baseCritChance: 0.05,
+    baseAccuracy: 0.95,
+    baseCorruptionResistance: 0.2,
+    baseBuggedResistance: 0.2,
+    startingCard: CardCollection.DEADLY_NAIL,
+    passiveSkill: nullPassiveSkill
+  },
   kuwagamon: {
     name: 'kuwagamon',
     displayName: 'Kuwagamon',

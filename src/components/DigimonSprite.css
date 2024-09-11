@@ -110,6 +110,10 @@
   .vilemon {
     background-image: url('../assets/images/greymon-sprite.png');
   } 
+
+  .veggiemon {
+    background-image: url('../assets/images/veggiemon-sprite.png');
+  } 
   
 
   .devimon {
@@ -217,7 +221,7 @@
     height: 80px;
   }
 
-  .tsumemon.attacking, .koromon.attacking, .mushmon.onHit, .budmon.attacking, .tsunomon.attacking, .veemon.attacking, .kune.attacking, .guilmon.attacking, .gummymon.attacking, .minomon.attacking, .tokomon.attacking, .pagumon.attacking, .agumon.attacking, .gabumon.attacking, .impmon.attacking, .patamon.attacking, .tentomon.attacking, .kamemon.attacking {
+  .tsumemon.attacking, .koromon.attacking, .mushmon.attacking, .veggiemon.attacking, .budmon.attacking, .tsunomon.attacking, .veemon.attacking, .kune.attacking, .guilmon.attacking, .gummymon.attacking, .minomon.attacking, .tokomon.attacking, .pagumon.attacking, .agumon.attacking, .gabumon.attacking, .impmon.attacking, .patamon.attacking, .tentomon.attacking, .kamemon.attacking {
     background-size: 192px 160px; 
     background-position: -96px -80px;
     width: 96px; 
@@ -271,12 +275,12 @@
 
 /*big sprite */
 
-.garurumon, .greymon, .angemon, .devimon, .wargreymon {
+.garurumon, .greymon, .angemon, .devimon, .veggiemon, .wargreymon {
   width: 112px;
   height: 144px;
 }
 
-.garurumon.breathing, .greymon.breathing, .angemon.breathing, .devimon.breathing, .wargreymon.breathing {
+.garurumon.breathing, .greymon.breathing, .angemon.breathing, .devimon.breathing, .veggiemon.breathing, .wargreymon.breathing {
   animation: breathe-big 1.5s steps(1, end) infinite;
 }
 
@@ -286,14 +290,14 @@
   50% { background-position: -224px 0; }
 }
 
-.garurumon.attacking, .greymon.attacking, .angemon.attacking, .devimon.attacking, .wargreymon.attacking {
+.garurumon.attacking, .greymon.attacking, .angemon.attacking, .devimon.attacking, .veggiemon.attacking, .wargreymon.attacking {
   background-size: 336px 336px; 
     background-position: -168px -144px;
     width: 168px; 
     height: 192px;
 }
 
-.garurumon.onHit, .greymon.onHit, .angemon.onHit, .devimon.onHit, .wargreymon.onHit {
+.garurumon.onHit, .greymon.onHit, .angemon.onHit, .devimon.onHit, .veggiemon.onHit, .wargreymon.onHit {
   background-size: 336px 336px; 
     background-position: 0px -144px;
     width: 168px; 
@@ -302,12 +306,12 @@
 
 
 /* Large sprite */
-.metalgreymon, .beelzemon, .sangloupmon {
+.metalgreymon, .beelzemon, .kuwagamon, .sangloupmon {
   width: 160px;
   height: 176px;
 }
 
-.metalgreymon.breathing, .beelzemon.breathing, .sangloupmon.breathing {
+.metalgreymon.breathing, .beelzemon.breathing, .kuwagamon.breathing, .sangloupmon.breathing {
   animation: breathe-large 1.5s steps(1, end) infinite;
 }
 
@@ -317,14 +321,14 @@
   50% { background-position: -320px 0; }
 }
 
-.metalgreymon.attacking, .beelzemon.attacking, .sangloupmon.attacking {
+.metalgreymon.attacking, .beelzemon.attacking, .kuwagamon.attacking, .sangloupmon.attacking {
   background-size: 480px 368px; 
     background-position: -240px -176px;
     width: 240px; 
     height: 192px;
 }
 
-.metalgreymon.onHit, .beelzemon.onHit, .sangloupmon.onHit {
+.metalgreymon.onHit, .beelzemon.onHit, .kuwagamon.onHit, .sangloupmon.onHit {
   background-size: 480px 368px; 
     background-position: 0px -176px;
     width: 240px; 
