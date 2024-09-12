@@ -125,11 +125,10 @@ const App: React.FC = () => {
     }
   }, [playerTeam, eggs, ownedDigimon, bits, dayCount, user, setSelectedZone, setCurrentNode, setGameState, setDayCount, setPlayerTeam, setEggs, setOwnedDigimon]);
 
-  const handleAuthSuccess = async (user: any, starterDigimonName?: string) => {
+  const handleAuthSuccess = async (user: any, starterDigimon?: Digimon) => {
     setUser(user);
-    if (starterDigimonName) {
+    if (starterDigimon) {
       // New user with starter Digimon
-      const starterDigimon = createUniqueDigimon(starterDigimonName);
       const initialGameData: PlayerData = {
         owned_digimon: [starterDigimon],
         player_team: [starterDigimon],

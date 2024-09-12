@@ -140,7 +140,93 @@ export const CardCollection: Record<string, Card> = {
         formula: 'BASIC',
         target: 'enemy'
       },
-      requireEnemyShield: true
+    }]
+  ),
+
+  //Veemon
+  VEE_HEADBUTT: createCard(
+    'VEE_HEADBUTT',
+    'Vee Headbutt',
+    'attack',
+    0,
+    'VACCINE',
+    '',
+    'enemy',
+    [{
+      description: "",
+      damage: {
+        formula: 'LIGHT2',
+        target: 'enemy'
+      },
+      gainRam: 1
+    }]
+  ),
+
+  VICTORY_RUSH: createCard(
+    'VICTORY_RUSH',
+    'Victory Rush',
+    'attack',
+    4,
+    'VACCINE',
+    '',
+    'enemy',
+    [{
+      description: "Deal Heavy damage",
+      damage: {
+        formula: 'HEAVY',
+        target: 'enemy'
+      },
+    }]
+  ),
+
+  // Terriermon
+
+  TERRIER_TORNADO: createCard(
+    'TERRIER_TORNADO',
+    'Terrier Tornado',
+    'attack',
+    3,
+    'DATA',
+    '',
+    'all_enemies',
+    [{
+      description: "",
+      damage: {
+        formula: 'STRONG',
+        target: 'all_enemies'
+      },
+      //can be used once per battle
+    }]
+  ),
+  BUNNY_BLAST: createCard(
+    'BUNNY_BLAST',
+    'Bunny Blast',
+    'attack',
+    1,
+    'DATA',
+    '',
+    'enemy',
+    [{
+      description: "",
+      damage: {
+        formula: 'BASIC',
+        target: 'enemy'
+      },
+      //lowers enemy attack
+    }]
+  ),
+
+  TERRIER_BALLOON: createCard(
+    'TERRIER_BALLOON',
+    'Terrier Balloon',
+    'special',
+    1,
+    'DATA',
+    '',
+    'self',
+    [{
+      description: "",
+      //DRAW A CARD, GAIN BASIC SHIELD ON SELF
     }]
   ),
 
@@ -203,6 +289,132 @@ export const CardCollection: Record<string, Card> = {
       recompile: true
     }]
   ),
+
+  // Keramon
+  BUG_BLASTER: createCard(
+    'BUG_BLASTER',
+    'Bug Blaster',
+    'attack',
+    1,
+    'VIRUS',
+    '',
+    'enemy',
+    [{
+      description: "",
+      damage: {
+        formula: 'LIGHT',
+        target: 'enemy'
+      },
+      applyStatus: {
+        type: 'bugged',
+        duration: 1,
+        value: 1,
+        chance: 0.5
+      }
+    }]
+  ),
+
+  CRAZY_SMOKE: createCard(
+    'CRAZY_SMOKE',
+    'Crazy Smoke',
+    'attack',
+    2,
+    'VIRUS',
+    '',
+    'all_enemies',
+    [{
+      description: "",
+      applyStatus: {
+        type: 'corruption',
+        duration: -1, // Corruption typically doesn't have a duration, it's removed by other means
+        value: 1, // This represents 1 stack of corruption
+        isResistable: true // Can be resisted based on the target's corruption resistance
+      }
+    }]
+  ),
+
+  NETWORK_FLAPPING: createCard(
+    'NETWORK_FLAPPING',
+    'Network Flapping',
+    'special',
+    0,
+    'VIRUS',
+    '',
+    'all_enemies',
+    [{
+      description: "",
+      //discard 3 random cards, draw 3 cards
+    }]
+  ),
+
+  // Monodramon
+  CRACKING_BITE: createCard(
+    'CRACKING_BITE',
+    'Cracking Bite',
+    'attack',
+    1,
+    'VACCINE',
+    '',
+    'enemy',
+    [{
+      description: "",
+      damage: {
+        formula: 'BASIC',
+        target: 'enemy'
+      //lowers enemy attack
+      }
+    }]
+  ),
+
+  SHADOW_WING: createCard(
+    'SHADOW_WING',
+    'Shadow Wing',
+    'attack',
+    2,
+    'VACCINE',
+    '',
+    'enemy',
+    [{
+      description: "",
+      damage: {
+        formula: 'BASIC2',
+        target: 'enemy'
+      //increases own attack
+      }
+    }]
+  ),
+
+  // Kamemon
+
+  ARMORED_ARROW: createCard(
+    'ARMORED_ARROW',
+    'Armored Arrow',
+    'attack',
+    1,
+    'VACCINE',
+    '',
+    'enemy',
+    [{
+      description: "",
+      //deals damage based on users shield
+      
+    }]
+  ),
+
+  TORTO_TACKLE: createCard(
+    'TORTO_TACKLE',
+    'Torto-Tackle',
+    'attack',
+    2,
+    'VACCINE',
+    '',
+    'enemy',
+    [{
+      description: "",
+      //deals basic damage, gain basic shield
+    }]
+  ),
+
 
   // Agumon
   PEPPER_BREATH: createCard(
@@ -414,10 +626,7 @@ SUPER_SHOCKER: createCard(
     damage: {
       formula: 'BASIC',
       target: 'enemy'
-    }
-  },
-  {
-    description: "50% chance to apply Bugged for 1 turn.",
+    },
     applyStatus: {
       type: 'bugged',
       duration: 1,
@@ -547,17 +756,14 @@ TOUCH_OF_EVIL: createCard(
     damage: {
       formula: 'BASIC2',
       target: 'enemy'
-    }
-  },
-  {
-    description: "Apply 1 stack of CORRUPTION to the target.",
+    },
     applyStatus: {
       type: 'corruption',
       duration: -1, // Corruption typically doesn't have a duration, it's removed by other means
       value: 1, // This represents 1 stack of corruption
       isResistable: true // Can be resisted based on the target's corruption resistance
-    }
-  }]
+  }
+}]
 ),
 
 HELL_CONTRACT: createCard(

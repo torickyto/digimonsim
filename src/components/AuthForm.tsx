@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { signUp, signIn } from '../auth';
-import { Digimon } from '../shared/types';
 import { getDigimonTemplate } from '../data/DigimonTemplate';
 import DigimonSprite from './DigimonSprite';
+import { Digimon } from '../shared/types';
+import { v4 as uuidv4 } from 'uuid';
 import './AuthForm.css';
 
 interface AuthFormProps {
-  onAuthSuccess: (user: any, starterDigimon?: string) => void;
+  onAuthSuccess: (user: any, starterDigimon?: Digimon) => void;
 }
 
 const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
@@ -37,7 +38,41 @@ const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
         }
         const { user, error } = await signUp({ email, password });
         if (error) throw new Error(error);
-        if (user) onAuthSuccess(user, selectedDigimon);
+        if (user) {
+          const template = getDigimonTemplate(selectedDigimon);
+          if (!template) throw new Error("Invalid starter Digimon");
+          
+          const starterDigimon: Digimon = {
+            id: uuidv4(),
+            name: template.name,
+            displayName: template.displayName,
+            type: template.type,
+            digivolutionStage: template.digivolutionStage,
+            level: 1,
+            exp: 0,
+            expToNextLevel: 100, // calculate this based on game logic
+            hp: template.baseHp,
+            maxHp: template.baseHp,
+            attack: template.baseAttack,
+            healing: template.baseHealing,
+            evasion: template.baseEvadeChance,
+            critChance: template.baseCritChance,
+            accuracy: template.baseAccuracy,
+            corruptionResistance: template.baseCorruptionResistance,
+            buggedResistance: template.baseBuggedResistance,
+            shield: 0,
+            statusEffects: [],
+            passiveSkill: template.passiveSkill,
+            deck: [{ ...template.startingCard, instanceId: uuidv4(), ownerDigimonIndex: 0 }],
+            nickname: undefined,
+            dateObtained: new Date(),
+            age: 'Young',
+            lifespan: 50,
+            rebirthCount: 0
+          };
+          
+          onAuthSuccess(user, starterDigimon);
+        }
       } else {
         const { user, error } = await signIn(email, password);
         if (error) throw new Error(error);
@@ -98,7 +133,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
           </div>
           {isSignUp && (
             <div className="dq-digimon-selection">
-              <h3>Choose a Partner</h3>
+              <h3>Choose Your Partner</h3>
               <div className="dq-digimon-options">
                 {starters.map((digimon) => {
                   const template = getDigimonTemplate(digimon);
