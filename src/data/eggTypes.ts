@@ -7,6 +7,17 @@ export interface EggType {
   possibleOutcomes: string[]; 
 }
 
+export const getEggTypeForDigimon = (digimonName: string): EggType => {
+  // placeholder version. determines what egg a digimon will rebirth into
+  const eggMapping: { [key: string]: number } = {
+    'agumon': 0, // Red Egg
+    'gabumon': 0,
+  };
+
+  const eggTypeId = eggMapping[digimonName.toLowerCase()] || 0; // Default to Red Egg if not found
+  return EggTypes[eggTypeId];
+};
+
 export const EggTypes: EggType[] = [
   {
     id: 0,

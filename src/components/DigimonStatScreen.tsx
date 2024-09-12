@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import DigimonSprite from './DigimonSprite';
 import { Digimon, TYPE_COLORS } from '../shared/types';
 import './DigimonStatScreen.css';
+import { calculateAgeCategory } from '../data/digimon';
 
 interface DigimonStatScreenProps {
   digimon: Digimon;
@@ -13,6 +14,7 @@ const DigimonStatScreen: React.FC<DigimonStatScreenProps> = ({ digimon, isObtain
   const containerRef = useRef<HTMLDivElement>(null);
   const [spriteScale, setSpriteScale] = useState(1);
   const expPercentage = (digimon.exp / digimon.expToNextLevel) * 100;
+  const ageCategory = calculateAgeCategory(digimon.lifespan, 50);
 
   useEffect(() => {
     const updateSpriteScale = () => {
@@ -35,7 +37,10 @@ const DigimonStatScreen: React.FC<DigimonStatScreenProps> = ({ digimon, isObtain
   return (
     <div className="dss-container" ref={containerRef}>
       <div className="dss-header">
-        <h2 className="dss-digimon-name">{digimon.displayName}</h2>
+      <h2 className="dss-digimon-name">
+          {digimon.displayName}
+          {digimon.rebirthCount > 0 && <span className="rebirth-count">+{digimon.rebirthCount}</span>}
+        </h2>
         <div className="dss-digimon-type" style={{ backgroundColor: typeColor }}>{digimon.type}</div>
       </div>
       
@@ -58,6 +63,14 @@ const DigimonStatScreen: React.FC<DigimonStatScreenProps> = ({ digimon, isObtain
               <span>EXP: {digimon.exp} / {digimon.expToNextLevel}</span>
             </div>
           </div>
+          <div className="dss-info-item">
+          <span className="dss-info-label">Age:</span>
+          <span className="dss-info-value">{ageCategory}</span>
+        </div>
+        <div className="dss-info-item">
+          <span className="dss-info-label">Rebirths:</span>
+          <span className="dss-info-value">{digimon.rebirthCount}</span>
+        </div>
               <div className="dss-info-item">
                 <span className="dss-info-label">Stage:</span>
                 <span className="dss-info-value">{digimon.digivolutionStage}</span>

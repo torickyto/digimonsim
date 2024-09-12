@@ -6,8 +6,6 @@ import { calculateExpRequirement } from '../game/expSystem';
 import { calculateBaseStat } from '../shared/statCalculations';
 
 
-
-
 export function createDigimon(template: DigimonTemplate, level: number = 1): Digimon {
   const digimonState: DigimonState = {
     id: uuidv4(),
@@ -35,7 +33,11 @@ export function createDigimon(template: DigimonTemplate, level: number = 1): Dig
     
     passiveSkill: template.passiveSkill,
     nickname: undefined, 
-    dateObtained: new Date()  
+    dateObtained: new Date(),
+    
+    age: 'Young',
+    lifespan: 50,
+    rebirthCount: 0
   };
 
   const digimon: Digimon = {
@@ -43,7 +45,7 @@ export function createDigimon(template: DigimonTemplate, level: number = 1): Dig
     expToNextLevel: calculateExpRequirement(level),
     deck: [
       { ...template.startingCard, instanceId: uuidv4(), ownerDigimonIndex: 0 },
-      ...getStarterDeck(template.name).map(card => ({ ...card, ownerDigimonIndex: 0 }))
+      ...getStarterDeck(template.name).map(card => ({ ...card, instanceId: uuidv4(), ownerDigimonIndex: 0 }))
     ]
   };
 
