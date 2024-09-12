@@ -3,8 +3,8 @@ import HomeScreen from './components/HomeScreen';
 import BattleScreen from './components/BattleScreen';
 import ZoneMap from './components/ZoneMap';
 import AuthForm from './components/AuthForm';
-import { Digimon, DigimonEgg, DigimonTemplate } from './shared/types';
-import { createUniqueDigimon } from './data/digimon';
+import { Digimon, DigimonEgg, Card, DigimonTemplate } from './shared/types';
+import { createUniqueDigimon, rebirthDigimon  } from './data/digimon';
 import './App.css';
 import { EggTypes, getRandomOutcome } from './data/eggTypes';
 import { generateEnemyTeam } from './data/enemyManager';
@@ -56,19 +56,36 @@ const App: React.FC = () => {
     loadGameData(user.id);
   }; */
 
+  const selectInheritedCards = (digimon: Digimon): Card[] => {
+    // For now, we'll just select the first 3 cards (or less if the deck is smaller)
+    // In the real implementation it should show a UI for the player to choose
+    const maxInheritedCards = Math.min(3 + digimon.rebirthCount, 5);
+    return digimon.deck.slice(0, maxInheritedCards);
+  };
+
   const handleEndDay = useCallback(async () => {
     setSelectedZone(null);
     setCurrentNode(null);
     setGameState('home');
     setDayCount(prevDay => prevDay + 1);
     
-    // Perform end-of-day actions
-    const updatedPlayerTeam = playerTeam.map(digimon => ({
-      ...digimon,
-      hp: digimon.maxHp,
-    }));
+    let newEggs: DigimonEgg[] = [];
+  
+    const updatedPlayerTeam = playerTeam.filter(digimon => {
+      const updatedDigimon = { ...digimon, lifespan: digimon.lifespan - 1 };
+      
+      if (updatedDigimon.lifespan <= 0) {
+        // Trigger rebirth process
+        const newEgg = rebirthDigimon(updatedDigimon, selectInheritedCards(updatedDigimon));
+        newEggs.push(newEgg);
+        return false; // Remove the Digimon from the team
+      }
+      
+      return true;
+    });
 
-    const updatedEggs = eggs.map(egg => ({
+    // Update existing eggs and add new eggs from rebirth
+    const updatedEggs = [...eggs, ...newEggs].map(egg => ({
       ...egg,
       hatchTime: Math.max(0, egg.hatchTime - 1)
     }));
@@ -76,24 +93,25 @@ const App: React.FC = () => {
     const newlyHatchedEggs = updatedEggs.filter(egg => egg.hatchTime <= 0);
     const remainingEggs = updatedEggs.filter(egg => egg.hatchTime > 0);
 
+    // Handle newly hatched eggs (you might want to prompt the user instead of automatically adding to the team)
     const newDigimon = newlyHatchedEggs.map(egg => {
       const eggType = EggTypes.find(type => type.id === egg.typeId);
       if (eggType) {
         const newDigimonTemplate = getRandomOutcome(eggType);
         if (newDigimonTemplate) {
-          return createUniqueDigimon(newDigimonTemplate.name);
+          return createUniqueDigimon(newDigimonTemplate.name, 1, egg);
         }
       }
       return null;
     }).filter((digimon): digimon is Digimon => digimon !== null);
 
     const updatedOwnedDigimon = [...ownedDigimon, ...newDigimon];
-
+  
     // Update state
     setPlayerTeam(updatedPlayerTeam);
     setEggs(remainingEggs);
     setOwnedDigimon(updatedOwnedDigimon);
-
+  
     // Save updated game data
     if (user) {
       const gameData: PlayerData = {
@@ -270,13 +288,14 @@ const App: React.FC = () => {
 
   const generateNewEgg = () => {
     const newEgg: DigimonEgg = {
-      id: Date.now(), // Use timestamp as a simple unique id
+      id: Date.now(),
       typeId: Math.floor(Math.random() * EggTypes.length),
-      hatchTime: Math.floor(Math.random() * 10) + 5, // replace with actual hatch mechanic
+      hatchTime: Math.floor(Math.random() * 10) + 5,
+      rebirthCount: 0,
+      inheritedCards: [],
     };
     setEggs(prevEggs => [...prevEggs, newEgg]);
   };
-
   const hatchEgg = (eggId: number): Digimon | null => {
     const eggToHatch = eggs.find(egg => egg.id === eggId);
     if (eggToHatch) {
@@ -368,6 +387,8 @@ const App: React.FC = () => {
               id: Date.now(),
               typeId: eggTypeId,
               hatchTime: Math.floor(Math.random() * 10) + 5,
+              rebirthCount: 0,
+              inheritedCards: [],
             };
             setEggs(prevEggs => [...prevEggs, newEgg]);
           }}
