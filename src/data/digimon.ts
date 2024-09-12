@@ -4,15 +4,32 @@
  * It works in conjunction with DigimonTemplate.ts to create and manage Digimon.
  */
 
-import { Digimon, Card, DigimonType, GameState, StatusEffect } from '../shared/types';
+import { Digimon, Card, DigimonType, GameState, StatusEffect, DigimonEgg } from '../shared/types';
 import { getStarterDeck } from '../shared/cardCollection';
 import { calculateBaseStat } from '../shared/statCalculations';
 import { DigimonTemplates, getDigimonTemplate, getAllDigimonTemplates } from './DigimonTemplate';
 import { BASE_EXP_REQUIREMENT, EXP_SCALE_FACTOR, MAX_LEVEL, DAMAGE_MULTIPLIERS } from '../game/gameConstants';
 import { v4 as uuidv4 } from 'uuid';
 import { calculateExpRequirement } from '../game/expSystem';
+import { getEggTypeForDigimon } from './eggTypes';
 
-export const createUniqueDigimon = (templateName: string, level: number = 1): Digimon => {
+export const rebirthDigimon = (digimon: Digimon, selectedCards: Card[]): DigimonEgg => {
+  const eggType = getEggTypeForDigimon(digimon.name);
+  const newRebirthCount = digimon.rebirthCount + 1;
+
+  const egg: DigimonEgg = {
+    id: Date.now(),
+    typeId: eggType.id,
+    hatchTime: 5, // Set an appropriate hatch time
+    nickname: digimon.nickname,
+    rebirthCount: newRebirthCount,
+    inheritedCards: selectedCards,
+  };
+
+  return egg;
+};
+
+export const createUniqueDigimon = (templateName: string, level: number = 1, egg?: DigimonEgg): Digimon => {
   const template = getDigimonTemplate(templateName);
   if (!template) throw new Error(`No template found for ${templateName}`);
 
@@ -34,12 +51,24 @@ export const createUniqueDigimon = (templateName: string, level: number = 1): Di
     statusEffects: [],
     exp: 0,
     expToNextLevel: calculateExpRequirement(level),
-    deck: getStarterDeck(templateName),
-    nickname: undefined,
-    dateObtained: new Date()
+    deck: egg?.inheritedCards || getStarterDeck(templateName),
+    nickname: egg?.nickname,
+    dateObtained: new Date(),
+    age: 'Young',
+    lifespan: 50,
+    rebirthCount: egg ? egg.rebirthCount : 0,
   };
 
   return digimon;
+};
+
+export const calculateAgeCategory = (currentLifespan: number, totalLifespan: number): string => {
+  const percentage = (currentLifespan / totalLifespan) * 100;
+  if (percentage > 80) return 'Young';
+  if (percentage > 60) return 'Adult';
+  if (percentage > 40) return 'Mature';
+  if (percentage > 20) return 'Old';
+  return 'Ancient';
 };
 
 export const gainExperience = (digimon: Digimon, expGained: number): Digimon => {

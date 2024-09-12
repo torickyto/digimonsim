@@ -1,146 +1,254 @@
-.auth-body {
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    font-family: 'Comfortaa', sans-serif;
-  }
-  
-  .auth-container {
-    width: 100vw;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-  }
-  /*
-  .auth-background {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: url('../assets/images/digiworld-background.jpg');
-    background-size: cover;
-    background-position: center;
-    filter: brightness(0.7);
-    animation: backgroundPan 60s linear infinite alternate;
-  } */
-  
-  @keyframes backgroundPan {
-    0% { background-position: 0% 50%; }
-    100% { background-position: 100% 50%; }
-  }
-  
-  .auth-content {
-    position: relative;
-    z-index: 1;
-    background: rgba(26, 26, 46, 0.8);
-    padding: 40px;
-    border-radius: 20px;
-    box-shadow: 0 0 50px rgba(0, 168, 255, 0.3);
-    max-width: 400px;
-    width: 90%;
-  }
-  
-  .auth-logo {
-    display: block;
-    margin: 0 auto 30px;
-    max-width: 200px;
-    filter: drop-shadow(0 0 10px #5efdf7);
-  }
-  
-  .auth-form h2 {
-    color: #4ab9a3;
-    text-align: center;
-    margin-bottom: 30px;
-    font-size: 24px;
-    letter-spacing: 2px;
-    text-shadow: 0 0 1px #5efdf7;
-  }
-  
-  .input-group {
-    margin-bottom: 20px;
-  }
-  
-  .auth-form input {
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 5px;
-    background: rgba(255, 255, 255, 0.1);
-    color: #4ab9a3;
-    font-size: 16px;
-    transition: all 0.3s ease;
-  }
-  
-  .auth-form input:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px #5efdf7;
-  }
-  
-  .auth-form button {
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 10px;
-  }
-  
-  .submit-btn {
-    background: linear-gradient(45deg, #5dc190, #4ab9a3);
-    color: #32313b;
-    font-weight: bold;
-  }
-  
-  .submit-btn:hover {
-    background: linear-gradient(45deg, #4593a5, #4ab9a3);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px #5efdf730;
-  }
-  
-  .toggle-btn {
-    background: transparent;
-    color: #5efdf7;
-    border: 1px solid #4ac8fa;
-  }
-  
-  .toggle-btn:hover {
-    background: rgba(74, 200, 250, 0.1);
-  }
-  
-  .error {
-    color: #ff6b6b;
-    text-align: center;
-    margin-bottom: 15px;
-  }
-  
-  .auth-footer {
-    position: absolute;
-    bottom: 20px;
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 14px;
-  }
-  
-  @keyframes floatAnimation {
-    0% { transform: translateY(0); }
-    50% { transform: translateY(-2px); }
-    100% { transform: translateY(0); }
-  }
-  @keyframes glitch {
-    0%, 100% { transform: translate(0, 0); opacity: 1; }
-    92% { transform: translate(1px, 1px); opacity: 0.75; }
-    94% { transform: translate(-1px, -1px); opacity: 0.75; }
-    96% { transform: translate(2px, -2px); opacity: 0.75; }
-    98% { transform: translate(-2px, 2px); opacity: 0.75; }
-  }
+@import url('https://fonts.googleapis.com/css2?family=Exo:wght@300;400;700&display=swap');
 
-  .auth-logo {
-    animation: glitch 1s ease-in-out infinite;
-  }
+:root {
+  --primary-color: #5fc9e7;
+  --secondary-color: #ca60ae;
+  --background-dark: #0a0e17;
+  --background-light: #1a2638;
+  --text-color: #ffffff;
+  --accent-color: #ffd700;
+}
+
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: 'Exo', sans-serif;
+  background: var(--background-dark);
+  color: var(--text-color);
+  overflow: hidden;
+}
+
+.dq-auth-container {
+  display: flex;
+  height: 100vh;
+}
+
+.dq-auth-visual {
+  flex: 1.5;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--background-dark), var(--background-light));
+}
+
+.dq-auth-logo {
+  width: 60%;
+  max-width: 400px;
+  filter: drop-shadow(0 0 20px var(--primary-color));
+  animation: dqLogoFloat 8s ease-in-out infinite;
+  z-index: 2;
+}
+
+@keyframes dqLogoFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+.dq-dynamic-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at center, var(--background-light) 0%, transparent 70%);
+  opacity: 0.5;
+  animation: dqPulse 4s ease-in-out infinite;
+}
+
+@keyframes dqPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.dq-particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.dq-particle {
+  position: absolute;
+  background: var(--primary-color);
+  border-radius: 50%;
+  opacity: 0.5;
+  animation: dqParticleFloat 10s infinite linear;
+}
+
+@keyframes dqParticleFloat {
+  0% { transform: translateY(0) rotate(0deg); }
+  100% { transform: translateY(-100vh) rotate(360deg); }
+}
+
+.dq-auth-form-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 3rem;
+  position: relative;
+  background: var(--background-dark);
+}
+
+.dq-grid-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    linear-gradient(to right, var(--primary-color) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--primary-color) 1px, transparent 1px);
+  background-size: 50px 50px;
+  opacity: 0.1;
+}
+
+.dq-auth-form {
+  position: relative;
+  z-index: 1;
+}
+
+.dq-auth-form h2 {
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  color: var(--primary-color);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-align: center;
+}
+
+.dq-input-group {
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.dq-auth-form input {
+  width: 100%;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: none;
+  border-bottom: 2px solid var(--primary-color);
+  color: var(--text-color);
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.dq-auth-form input:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dq-digimon-selection {
+  margin-bottom: 2rem;
+}
+
+.dq-digimon-selection h3 {
+  font-size: 1.2rem;
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.dq-digimon-options {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.dq-digimon-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.dq-digimon-option img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  margin-bottom: 0.5rem;
+}
+
+.dq-digimon-option span {
+  font-size: 0.9rem;
+  color: var(--text-color);
+}
+
+.dq-digimon-option.selected {
+  transform: scale(1.1);
+}
+
+.dq-digimon-option.selected img {
+  filter: drop-shadow(0 0 5px var(--accent-color));
+}
+
+.dq-auth-form button {
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.dq-submit-btn {
+  background: var(--primary-color);
+  color: var(--background-dark);
+}
+
+.dq-submit-btn::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    to bottom right,
+    rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0.05),
+    rgba(255, 255, 255, 0.2)
+  );
+  transform: rotate(45deg);
+  z-index: 0;
+  transition: 0.5s;
+}
+
+.dq-submit-btn:hover::before {
+  left: 100%;
+}
+
+.dq-toggle-btn {
+  background: transparent;
+  color: var(--secondary-color);
+  border: 1px solid var(--secondary-color);
+}
+
+.dq-toggle-btn:hover {
+  background: #463c5e;
+}
+
+.dq-error {
+  color: var(--secondary-color);
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.dq-auth-footer {
+  position: absolute;
+  bottom: 1rem;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-color);
+  opacity: 0.7;
+}

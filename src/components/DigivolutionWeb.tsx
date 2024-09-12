@@ -37,6 +37,7 @@ export const getDigivolutionConnections = (): DigivolutionConnection[] => {
     { from: 'koromon', to: 'kamemon' },
     { from: 'koromon', to: 'monodramon' },
     { from: 'koromon', to: 'veemon' },
+    { from: 'koromon', to: 'guilmon' },
 
 
 
@@ -80,6 +81,10 @@ export const getDigivolutionConnections = (): DigivolutionConnection[] => {
 
     { from: 'patamon', to: 'angemon' },
 
+    { from: 'tentomon', to: 'kuwagamon' },
+    { from: 'kunemon', to: 'kuwagamon' },
+
+    { from: 'mushmon', to: 'veggiemon' },
 
     { from: 'terriermon', to: 'gargomon' },
 

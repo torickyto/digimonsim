@@ -228,6 +228,10 @@ export interface DigimonState {
   passiveSkill: PassiveSkill | null;
   nickname?: string;
   dateObtained: Date;
+  
+  age: string;
+  lifespan: number;
+  rebirthCount: number;
 }
 
 export interface DigimonTemplate {
@@ -260,6 +264,9 @@ export interface DigimonEgg {
   id: number;
   typeId: number;
   hatchTime: number;
+  nickname?: string;  // not all eggs have a nickname
+  rebirthCount: number;
+  inheritedCards: Card[];
 }
 
 // Battle-related interfaces

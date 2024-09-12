@@ -3,8 +3,8 @@ import HomeScreen from './components/HomeScreen';
 import BattleScreen from './components/BattleScreen';
 import ZoneMap from './components/ZoneMap';
 import AuthForm from './components/AuthForm';
-import { Digimon, DigimonEgg, DigimonTemplate } from './shared/types';
-import { createUniqueDigimon } from './data/digimon';
+import { Digimon, DigimonEgg, Card, DigimonTemplate } from './shared/types';
+import { createUniqueDigimon, rebirthDigimon  } from './data/digimon';
 import './App.css';
 import { EggTypes, getRandomOutcome } from './data/eggTypes';
 import { generateEnemyTeam } from './data/enemyManager';
@@ -56,9 +56,95 @@ const App: React.FC = () => {
     loadGameData(user.id);
   }; */
 
-  const handleAuthSuccess = (user: any) => {
+  const selectInheritedCards = (digimon: Digimon): Card[] => {
+    // For now, we'll just select the first 3 cards (or less if the deck is smaller)
+    // In the real implementation it should show a UI for the player to choose
+    const maxInheritedCards = Math.min(3 + digimon.rebirthCount, 5);
+    return digimon.deck.slice(0, maxInheritedCards);
+  };
+
+  const handleEndDay = useCallback(async () => {
+    setSelectedZone(null);
+    setCurrentNode(null);
+    setGameState('home');
+    setDayCount(prevDay => prevDay + 1);
+    
+    let newEggs: DigimonEgg[] = [];
+  
+    const updatedPlayerTeam = playerTeam.filter(digimon => {
+      const updatedDigimon = { ...digimon, lifespan: digimon.lifespan - 1 };
+      
+      if (updatedDigimon.lifespan <= 0) {
+        // Trigger rebirth process
+        const newEgg = rebirthDigimon(updatedDigimon, selectInheritedCards(updatedDigimon));
+        newEggs.push(newEgg);
+        return false; // Remove the Digimon from the team
+      }
+      
+      return true;
+    });
+
+    // Update existing eggs and add new eggs from rebirth
+    const updatedEggs = [...eggs, ...newEggs].map(egg => ({
+      ...egg,
+      hatchTime: Math.max(0, egg.hatchTime - 1)
+    }));
+
+    const newlyHatchedEggs = updatedEggs.filter(egg => egg.hatchTime <= 0);
+    const remainingEggs = updatedEggs.filter(egg => egg.hatchTime > 0);
+
+    // Handle newly hatched eggs (you might want to prompt the user instead of automatically adding to the team)
+    const newDigimon = newlyHatchedEggs.map(egg => {
+      const eggType = EggTypes.find(type => type.id === egg.typeId);
+      if (eggType) {
+        const newDigimonTemplate = getRandomOutcome(eggType);
+        if (newDigimonTemplate) {
+          return createUniqueDigimon(newDigimonTemplate.name, 1, egg);
+        }
+      }
+      return null;
+    }).filter((digimon): digimon is Digimon => digimon !== null);
+
+    const updatedOwnedDigimon = [...ownedDigimon, ...newDigimon];
+  
+    // Update state
+    setPlayerTeam(updatedPlayerTeam);
+    setEggs(remainingEggs);
+    setOwnedDigimon(updatedOwnedDigimon);
+  
+    // Save updated game data
+    if (user) {
+      const gameData: PlayerData = {
+        owned_digimon: updatedOwnedDigimon,
+        player_team: updatedPlayerTeam,
+        eggs: remainingEggs,
+        bits,
+        day_count: dayCount + 1
+      };
+      await savePlayerData(user.id, gameData);
+    }
+  }, [playerTeam, eggs, ownedDigimon, bits, dayCount, user, setSelectedZone, setCurrentNode, setGameState, setDayCount, setPlayerTeam, setEggs, setOwnedDigimon]);
+
+  const handleAuthSuccess = async (user: any, starterDigimon?: Digimon) => {
     setUser(user);
-    loadGameData(user.id);
+    if (starterDigimon) {
+      // New user with starter Digimon
+      const initialGameData: PlayerData = {
+        owned_digimon: [starterDigimon],
+        player_team: [starterDigimon],
+        eggs: [],
+        bits: 0,
+        day_count: 1
+      };
+      await savePlayerData(user.id, initialGameData);
+      setOwnedDigimon([starterDigimon]);
+      setPlayerTeam([starterDigimon]);
+      setBits(0);
+      setDayCount(1);
+    } else {
+      // Existing user, load their data
+      loadGameData(user.id);
+    }
   };
 
   const saveData = useCallback(() => {
@@ -111,35 +197,9 @@ const App: React.FC = () => {
       setDayCount(data.day_count);
     } else if (error) {
       console.error('Error loading game data:', error.message);
-      initializeNewUserData(userId);
-    } else {
-      // No data found for the user, initialize new user data
-      initializeNewUserData(userId);
+      // Don't initialize new user data here, as it should have been done during sign-up
     }
   };
-
-   const initializeNewUserData = async (userId: string) => {
-    const starterDigimon = [
-      createUniqueDigimon('agumon'),
-      createUniqueDigimon('gabumon')
-    ];
-    setOwnedDigimon(starterDigimon);
-    setPlayerTeam(starterDigimon.slice(0, 2));
-    
-    const initialGameData: PlayerData = {
-      owned_digimon: starterDigimon,
-      player_team: starterDigimon.slice(0, 2),
-      eggs: [],
-      bits: 0,
-      day_count: 1
-    };
-    
-    await savePlayerData(userId, initialGameData);
-  };
-
-  if (!user) {
-    return <AuthForm onAuthSuccess={handleAuthSuccess} />;
-  }
 
   const handleUpdateDayCount = (newDayCount: number) => {
     setDayCount(newDayCount);
@@ -219,13 +279,14 @@ const App: React.FC = () => {
 
   const generateNewEgg = () => {
     const newEgg: DigimonEgg = {
-      id: Date.now(), // Use timestamp as a simple unique id
+      id: Date.now(),
       typeId: Math.floor(Math.random() * EggTypes.length),
-      hatchTime: Math.floor(Math.random() * 10) + 5, // replace with actual hatch mechanic
+      hatchTime: Math.floor(Math.random() * 10) + 5,
+      rebirthCount: 0,
+      inheritedCards: [],
     };
     setEggs(prevEggs => [...prevEggs, newEgg]);
   };
-
   const hatchEgg = (eggId: number): Digimon | null => {
     const eggToHatch = eggs.find(egg => egg.id === eggId);
     if (eggToHatch) {
@@ -258,31 +319,6 @@ const App: React.FC = () => {
     setAvailableNodes([]);
   };
 
-  const handleEndDay = () => {
-    setSelectedZone(null);
-    setCurrentNode(null);
-    setGameState('home');
-    setDayCount(prevDay => prevDay + 1);
-    
-    // Perform end-of-day actions
-    setPlayerTeam(prevTeam => prevTeam.map(digimon => ({
-      ...digimon,
-      hp: digimon.maxHp,
-    })));
-
-          //temporary egg hatching logic
-          setEggs(prevEggs => prevEggs.map(egg => ({
-            ...egg,
-            hatchTime: Math.max(0, egg.hatchTime - 1)
-          })));
-      
-          eggs.forEach(egg => {
-            if (egg.hatchTime <= 0) {
-              hatchEgg(egg.id);
-            }
-          });
-          saveData();
-        };
 
   const handleExitZone = () => {
     setSelectedZone(null);
@@ -337,11 +373,13 @@ const App: React.FC = () => {
           onUpdateAvailableNodes={handleUpdateAvailableNodes}
           onUpdateCurrentNode={handleUpdateCurrentNode}
           onUpdatePlayerTeam={handleUpdatePlayerTeam}
-          onAddEgg={(eggType) => {
+          onAddEgg={(eggTypeId: number) => {
             const newEgg: DigimonEgg = {
               id: Date.now(),
-              typeId: EggTypes.find(egg => egg.name === eggType)?.id || 0,
+              typeId: eggTypeId,
               hatchTime: Math.floor(Math.random() * 10) + 5,
+              rebirthCount: 0,
+              inheritedCards: [],
             };
             setEggs(prevEggs => [...prevEggs, newEgg]);
           }}

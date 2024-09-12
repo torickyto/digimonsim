@@ -488,11 +488,12 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
 
   return (
     <div className="home-screen">
-       <button onClick={onLogout}>Logout</button>
       <div className="digivice">
+
         <div className="digivice-content">
+        <div className="day-counter">{dayCount.toString().padStart(3, '0')}</div>
           <div className="screen-wrapper">
-          <p>Day: {dayCount}</p>
+          
             <div className="screen" ref={screenRef}>
               <div className="screen-content">
                 <div className="digimon-display">
@@ -651,8 +652,11 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
           <button className="dev-button" onClick={() => toggleScreen('devPartyBox')}>DEV: Party Box</button>
           <button className="test-arena-button" onClick={() => toggleScreen('testArena')}>DEV: Test Battle</button>
         </div>
+        
       </div>
+      <button className="logout-button" onClick={onLogout} title="Power Off"></button>
         </div>
+        
       </div>
 
       {showZoneModal && (

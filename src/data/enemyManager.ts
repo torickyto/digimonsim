@@ -11,7 +11,7 @@ interface EnemyPool {
 
 const enemyPool: EnemyPool = {
   'Label Forest': {
-    enemies: ['koromon', 'tokomon'],
+    enemies: ['minomon', 'kunemon', 'mushmon', 'veggiemon'],
     bosses: ['greymon', 'garurumon']
   },
   // Add more zones here as they are implemented

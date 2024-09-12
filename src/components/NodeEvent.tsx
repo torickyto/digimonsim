@@ -14,7 +14,7 @@ interface NodeEventProps {
     onClose: () => void;
     onUpdatePlayerTeam: (updatedTeam: Digimon[]) => void;
     playerTeam: Digimon[];
-    onAddEgg: (eggType: string) => void;
+    onAddEgg: (eggTypeId: number) => void;
     onUpdateBits: (amount: number) => void;
   }
   
@@ -103,7 +103,7 @@ const NodeEvent: React.FC<NodeEventProps> = ({ type, onClose, onUpdatePlayerTeam
         <p>You found a data cluster resembling a digimon egg.</p>
         <div className="event-options">
           <button onClick={() => {
-            onAddEgg('Red');
+            onAddEgg(0);
             onClose();
           }}>
             Scan
