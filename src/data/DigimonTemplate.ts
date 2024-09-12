@@ -174,6 +174,40 @@ export const DigimonTemplates: Record<string, DigimonTemplate> = {
     startingCard: CardCollection.PEPPER_BREATH,
     passiveSkill: nullPassiveSkill
   },
+
+  dorimon: {
+    name: 'dorimon',
+    displayName: 'Dorimon',
+    type: 'FREE' as DigimonType,
+    digivolutionStage: 'In-Training' as DigivolutionStage,
+    baseHp: 35,
+    baseAttack: 4,
+    baseHealing: 2,
+    baseEvadeChance: 0.05,
+    baseCritChance: 0.05,
+    baseAccuracy: 1,
+    baseCorruptionResistance: 0.2,
+    baseBuggedResistance: 0.2,
+    startingCard: CardCollection.PEPPER_BREATH,
+    passiveSkill: nullPassiveSkill
+  },
+
+  wanyamon: {
+    name: 'waynamon',
+    displayName: 'Waynamon',
+    type: 'FREE' as DigimonType,
+    digivolutionStage: 'In-Training' as DigivolutionStage,
+    baseHp: 35,
+    baseAttack: 4,
+    baseHealing: 2,
+    baseEvadeChance: 0.05,
+    baseCritChance: 0.05,
+    baseAccuracy: 1,
+    baseCorruptionResistance: 0.2,
+    baseBuggedResistance: 0.2,
+    startingCard: CardCollection.PEPPER_BREATH,
+    passiveSkill: nullPassiveSkill
+  },
   gummymon: {
     name: 'gummymon',
     displayName: 'Gummymon',
@@ -210,6 +244,23 @@ export const DigimonTemplates: Record<string, DigimonTemplate> = {
     name: 'agumon',
     displayName: 'Agumon',
     type: 'VACCINE' as DigimonType,
+    digivolutionStage: 'Rookie' as DigivolutionStage,
+    baseHp: 50,
+    baseAttack: 8,
+    baseHealing: 4,
+    baseEvadeChance: 0.05,
+    baseCritChance: 0.05,
+    baseAccuracy: 1,
+    baseCorruptionResistance: 0.2,
+    baseBuggedResistance: 0.2,
+    startingCard: CardCollection.PEPPER_BREATH,
+    passiveSkill: nullPassiveSkill
+  },
+
+  bearmon: {
+    name: 'bearmon',
+    displayName: 'Bearmon',
+    type: 'DATA' as DigimonType,
     digivolutionStage: 'Rookie' as DigivolutionStage,
     baseHp: 50,
     baseAttack: 8,
@@ -268,6 +319,40 @@ export const DigimonTemplates: Record<string, DigimonTemplate> = {
     baseCorruptionResistance: 0.2,
     baseBuggedResistance: 0.2,
     startingCard: CardCollection.BLUE_BLASTER,
+    passiveSkill: nullPassiveSkill
+  },
+
+  gotsumon: {
+    name: 'gotsumon',
+    displayName: 'Gotsumon',
+    type: 'DATA' as DigimonType,
+    digivolutionStage: 'Rookie' as DigivolutionStage,
+    baseHp: 55,
+    baseAttack: 7,
+    baseHealing: 5,
+    baseEvadeChance: 0.05,
+    baseCritChance: 0.05,
+    baseAccuracy: 0.9,
+    baseCorruptionResistance: 0.2,
+    baseBuggedResistance: 0.2,
+    startingCard: CardCollection.BLUE_BLASTER,
+    passiveSkill: nullPassiveSkill
+  },
+
+  biyomon: {
+    name: 'biyomon',
+    displayName: 'Biyomon',
+    type: 'DATA' as DigimonType,
+    digivolutionStage: 'Rookie' as DigivolutionStage,
+    baseHp: 35,
+    baseAttack: 4,
+    baseHealing: 2,
+    baseEvadeChance: 0.05,
+    baseCritChance: 0.05,
+    baseAccuracy: 1,
+    baseCorruptionResistance: 0.2,
+    baseBuggedResistance: 0.2,
+    startingCard: CardCollection.PEPPER_BREATH,
     passiveSkill: nullPassiveSkill
   },
   monodramon: {
