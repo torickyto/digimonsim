@@ -27,6 +27,36 @@ const createCard = (
 });
 
 export const CardCollection: Record<string, Card> = {
+  WARP_DIGIVOLVE: createCard(
+    'WARP_DIGIVOLVE',
+    'Warp Digivolve',
+    'special',
+    8,
+    'FREE',
+    '',
+    'self',
+    [{
+      description: "Digivolve to a Mega for one battle",
+      //can be used once per battle
+
+    }]
+  ),
+
+  DIGIVOLVE: createCard(
+    'DIGIVOLVE',
+    'Digivolve',
+    'special',
+    5,
+    'FREE',
+    '',
+    'self',
+    [{
+      description: "Digivolve for one battle",
+      //can be used once per battle
+
+    }]
+  ),
+
   PUNCH_BASIC: createCard(
     'PUNCH_BASIC',
     'Punch',
@@ -75,6 +105,42 @@ export const CardCollection: Record<string, Card> = {
         target: 'self',
         formula: 'LIGHT_HEAL'
       }
+    }]
+  ),
+
+  // Guilmon
+  PYRO_SHOT: createCard(
+    'PYRO_SHOT',
+    'Pyro Shot',
+    'attack',
+    2,
+    'VIRUS',
+    '',
+    'enemy',
+    [{
+      description: "",
+      damage: {
+        formula: 'STRONG2',
+        target: 'random_enemy'
+      }
+    }]
+  ),
+
+  ROCK_BREAKER: createCard(
+    'ROCK_BREAKER',
+    'Rock Breaker',
+    'attack',
+    1,
+    'VIRUS',
+    '',
+    'enemy',
+    [{
+      description: "Deals double damage to shields",
+      damage: {
+        formula: 'BASIC',
+        target: 'enemy'
+      },
+      requireEnemyShield: true
     }]
   ),
 

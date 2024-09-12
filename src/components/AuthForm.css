@@ -12,18 +12,18 @@
 body, html {
   margin: 0;
   padding: 0;
-  font-family: 'Comfortaa', sans-serif;
+  font-family: 'Exo', sans-serif;
   background: var(--background-dark);
   color: var(--text-color);
   overflow: hidden;
 }
 
-.auth-container {
+.dq-auth-container {
   display: flex;
   height: 100vh;
 }
 
-.auth-visual {
+.dq-auth-visual {
   flex: 1.5;
   position: relative;
   overflow: hidden;
@@ -33,20 +33,20 @@ body, html {
   background: linear-gradient(135deg, var(--background-dark), var(--background-light));
 }
 
-.auth-logo {
+.dq-auth-logo {
   width: 60%;
   max-width: 400px;
   filter: drop-shadow(0 0 20px var(--primary-color));
-  animation: logoFloat 8s ease-in-out infinite;
+  animation: dqLogoFloat 8s ease-in-out infinite;
   z-index: 2;
 }
 
-@keyframes logoFloat {
+@keyframes dqLogoFloat {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-20px); }
 }
 
-.dynamic-background {
+.dq-dynamic-background {
   position: absolute;
   top: 0;
   left: 0;
@@ -54,15 +54,15 @@ body, html {
   bottom: 0;
   background: radial-gradient(circle at center, var(--background-light) 0%, transparent 70%);
   opacity: 0.5;
-  animation: pulse 4s ease-in-out infinite;
+  animation: dqPulse 4s ease-in-out infinite;
 }
 
-@keyframes pulse {
+@keyframes dqPulse {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.1); }
 }
 
-.particles {
+.dq-particles {
   position: absolute;
   top: 0;
   left: 0;
@@ -70,21 +70,20 @@ body, html {
   bottom: 0;
 }
 
-.particle {
+.dq-particle {
   position: absolute;
   background: var(--primary-color);
   border-radius: 50%;
   opacity: 0.5;
-  animation: particleFloat 10s infinite linear;
+  animation: dqParticleFloat 10s infinite linear;
 }
 
-@keyframes particleFloat {
+@keyframes dqParticleFloat {
   0% { transform: translateY(0) rotate(0deg); }
   100% { transform: translateY(-100vh) rotate(360deg); }
 }
 
-.auth-form-container {
-    font-family: 'Exo', sans-serif;
+.dq-auth-form-container {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -94,7 +93,7 @@ body, html {
   background: var(--background-dark);
 }
 
-.grid-background {
+.dq-grid-background {
   position: absolute;
   top: 0;
   left: 0;
@@ -107,12 +106,12 @@ body, html {
   opacity: 0.1;
 }
 
-.auth-form {
+.dq-auth-form {
   position: relative;
   z-index: 1;
 }
 
-.auth-form h2 {
+.dq-auth-form h2 {
   font-size: 2.5rem;
   margin-bottom: 2rem;
   color: var(--primary-color);
@@ -121,13 +120,12 @@ body, html {
   text-align: center;
 }
 
-.input-group {
+.dq-input-group {
   margin-bottom: 1.5rem;
   position: relative;
 }
 
-.auth-form input {
-    font-family: 'Exo', sans-serif;
+.dq-auth-form input {
   width: 100%;
   padding: 1rem;
   background: rgba(255, 255, 255, 0.05);
@@ -138,12 +136,56 @@ body, html {
   transition: all 0.3s ease;
 }
 
-.auth-form input:focus {
+.dq-auth-form input:focus {
   outline: none;
   background: rgba(255, 255, 255, 0.1);
 }
 
-.auth-form button {
+.dq-digimon-selection {
+  margin-bottom: 2rem;
+}
+
+.dq-digimon-selection h3 {
+  font-size: 1.2rem;
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.dq-digimon-options {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.dq-digimon-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.dq-digimon-option img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  margin-bottom: 0.5rem;
+}
+
+.dq-digimon-option span {
+  font-size: 0.9rem;
+  color: var(--text-color);
+}
+
+.dq-digimon-option.selected {
+  transform: scale(1.1);
+}
+
+.dq-digimon-option.selected img {
+  filter: drop-shadow(0 0 5px var(--accent-color));
+}
+
+.dq-auth-form button {
   width: 100%;
   padding: 1rem;
   border: none;
@@ -157,12 +199,12 @@ body, html {
   overflow: hidden;
 }
 
-.submit-btn {
+.dq-submit-btn {
   background: var(--primary-color);
   color: var(--background-dark);
 }
 
-.submit-btn::before {
+.dq-submit-btn::before {
   content: '';
   position: absolute;
   top: -50%;
@@ -180,27 +222,27 @@ body, html {
   transition: 0.5s;
 }
 
-.submit-btn:hover::before {
+.dq-submit-btn:hover::before {
   left: 100%;
 }
 
-.toggle-btn {
+.dq-toggle-btn {
   background: transparent;
   color: var(--secondary-color);
   border: 1px solid var(--secondary-color);
 }
 
-.toggle-btn:hover {
-  background:#463c5e;
+.dq-toggle-btn:hover {
+  background: #463c5e;
 }
 
-.error {
+.dq-error {
   color: var(--secondary-color);
   text-align: center;
   margin-bottom: 1rem;
 }
 
-.auth-footer {
+.dq-auth-footer {
   position: absolute;
   bottom: 1rem;
   left: 0;

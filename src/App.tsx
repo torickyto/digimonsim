@@ -125,9 +125,27 @@ const App: React.FC = () => {
     }
   }, [playerTeam, eggs, ownedDigimon, bits, dayCount, user, setSelectedZone, setCurrentNode, setGameState, setDayCount, setPlayerTeam, setEggs, setOwnedDigimon]);
 
-  const handleAuthSuccess = (user: any) => {
+  const handleAuthSuccess = async (user: any, starterDigimonName?: string) => {
     setUser(user);
-    loadGameData(user.id);
+    if (starterDigimonName) {
+      // New user with starter Digimon
+      const starterDigimon = createUniqueDigimon(starterDigimonName);
+      const initialGameData: PlayerData = {
+        owned_digimon: [starterDigimon],
+        player_team: [starterDigimon],
+        eggs: [],
+        bits: 0,
+        day_count: 1
+      };
+      await savePlayerData(user.id, initialGameData);
+      setOwnedDigimon([starterDigimon]);
+      setPlayerTeam([starterDigimon]);
+      setBits(0);
+      setDayCount(1);
+    } else {
+      // Existing user, load their data
+      loadGameData(user.id);
+    }
   };
 
   const saveData = useCallback(() => {
@@ -180,35 +198,9 @@ const App: React.FC = () => {
       setDayCount(data.day_count);
     } else if (error) {
       console.error('Error loading game data:', error.message);
-      initializeNewUserData(userId);
-    } else {
-      // No data found for the user, initialize new user data
-      initializeNewUserData(userId);
+      // Don't initialize new user data here, as it should have been done during sign-up
     }
   };
-
-   const initializeNewUserData = async (userId: string) => {
-    const starterDigimon = [
-      createUniqueDigimon('agumon'),
-      createUniqueDigimon('gabumon')
-    ];
-    setOwnedDigimon(starterDigimon);
-    setPlayerTeam(starterDigimon.slice(0, 2));
-    
-    const initialGameData: PlayerData = {
-      owned_digimon: starterDigimon,
-      player_team: starterDigimon.slice(0, 2),
-      eggs: [],
-      bits: 0,
-      day_count: 1
-    };
-    
-    await savePlayerData(userId, initialGameData);
-  };
-
-  if (!user) {
-    return <AuthForm onAuthSuccess={handleAuthSuccess} />;
-  }
 
   const handleUpdateDayCount = (newDayCount: number) => {
     setDayCount(newDayCount);

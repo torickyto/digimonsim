@@ -1,17 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { signUp, signIn } from '../auth';
+import { Digimon } from '../shared/types';
+import { getDigimonTemplate } from '../data/DigimonTemplate';
+import DigimonSprite from './DigimonSprite';
 import './AuthForm.css';
 
 interface AuthFormProps {
-  onAuthSuccess: (user: any) => void;
+  onAuthSuccess: (user: any, starterDigimon?: string) => void;
 }
 
 const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [selectedDigimon, setSelectedDigimon] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  const starters = ['guilmon', 'agumon', 'veemon', 'impmon'];
 
   useEffect(() => {
     createParticles();
@@ -26,9 +32,12 @@ const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
 
     try {
       if (isSignUp) {
+        if (!selectedDigimon) {
+          throw new Error("Please select a starter Digimon");
+        }
         const { user, error } = await signUp({ email, password });
         if (error) throw new Error(error);
-        if (user) onAuthSuccess(user);
+        if (user) onAuthSuccess(user, selectedDigimon);
       } else {
         const { user, error } = await signIn(email, password);
         if (error) throw new Error(error);
@@ -42,11 +51,11 @@ const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
   };
 
   const createParticles = () => {
-    const particlesContainer = document.querySelector('.particles');
+    const particlesContainer = document.querySelector('.dq-particles');
     if (particlesContainer) {
       for (let i = 0; i < 50; i++) {
         const particle = document.createElement('div');
-        particle.classList.add('particle');
+        particle.classList.add('dq-particle');
         particle.style.left = `${Math.random() * 100}%`;
         particle.style.top = `${Math.random() * 100}%`;
         particle.style.width = `${Math.random() * 3 + 1}px`;
@@ -59,17 +68,17 @@ const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-visual">
-        <div className="dynamic-background"></div>
-        <div className="particles"></div>
-        <img src={digimonQuestLogo} alt="DigimonQuest Logo" className="auth-logo" />
+    <div className="dq-auth-container">
+      <div className="dq-auth-visual">
+        <div className="dq-dynamic-background"></div>
+        <div className="dq-particles"></div>
+        <img src={digimonQuestLogo} alt="DigimonQuest Logo" className="dq-auth-logo" />
       </div>
-      <div className="auth-form-container">
-        <div className="grid-background"></div>
-        <form onSubmit={handleSubmit} className="auth-form">
+      <div className="dq-auth-form-container">
+        <div className="dq-grid-background"></div>
+        <form onSubmit={handleSubmit} className="dq-auth-form">
           <h2>{isSignUp ? 'Create Tamer Profile' : 'Login'}</h2>
-          <div className="input-group">
+          <div className="dq-input-group">
             <input
               type="email"
               placeholder="Tamer ID (Email)"
@@ -78,7 +87,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
               required
             />
           </div>
-          <div className="input-group">
+          <div className="dq-input-group">
             <input
               type="password"
               placeholder="Password"
@@ -87,15 +96,35 @@ const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
               required
             />
           </div>
-          {error && <p className="error">{error}</p>}
-          <button type="submit" className="submit-btn" disabled={isLoading}>
+          {isSignUp && (
+            <div className="dq-digimon-selection">
+              <h3>Choose a Partner</h3>
+              <div className="dq-digimon-options">
+                {starters.map((digimon) => {
+                  const template = getDigimonTemplate(digimon);
+                  return (
+                    <div
+                      key={digimon}
+                      className={`dq-digimon-option ${selectedDigimon === digimon ? 'selected' : ''}`}
+                      onClick={() => setSelectedDigimon(digimon)}
+                    >
+                      <DigimonSprite name={digimon} scale={1} />
+                      <span>{template?.displayName}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          {error && <p className="dq-error">{error}</p>}
+          <button type="submit" className="dq-submit-btn" disabled={isLoading}>
             {isLoading ? 'Initializing...' : (isSignUp ? 'Initialize Tamer' : 'CONNECT')}
           </button>
-          <button type="button" className="toggle-btn" onClick={() => setIsSignUp(!isSignUp)}>
+          <button type="button" className="dq-toggle-btn" onClick={() => setIsSignUp(!isSignUp)}>
             {isSignUp ? 'Existing Tamer? Log In' : 'New Tamer? Sign Up'}
           </button>
         </form>
-        <div className="auth-footer">
+        <div className="dq-auth-footer">
           <p>DigimonQuest v0.1 | A Fan Game</p>
         </div>
       </div>
