@@ -8,8 +8,16 @@
   background-image: url('../assets/images/koromon-sprite.png');
 }
 
+.caprimon {
+  background-image: url('../assets/images/caprimon-sprite.png');
+}
+
 .tsunomon {
   background-image: url('../assets/images/tsunomon-sprite.png');
+}
+
+.gigimon {
+  background-image: url('../assets/images/gigimon-sprite.png');
 }
 
 .pagumon {
@@ -31,9 +39,16 @@
   background-image: url('../assets/images/tsumemon-sprite.png');
 }
 
+.chicchimon {
+  background-image: url('../assets/images/chicchimon-sprite.png');
+}
+
+
   .agumon {
     background-image: url('../assets/images/agumon-sprite.png');
   }
+
+  
 
   .gabumon {
     background-image: url('../assets/images/gabumon-sprite.png');
@@ -90,6 +105,9 @@
     background-image: url('../assets/images/kuwagamon-sprite.png');
   }
 
+  .tanemon {
+    background-image: url('../assets/images/tanemon-sprite.png');
+  }
 
 
 
@@ -201,23 +219,23 @@
     transition: none !important;
   }
   /* small spritesheets */
-  .tsumemon, .koromon, .mushmon, .tsunomon, .budmon, .kunemon, .gummymon, .minomon, .veemon, .guilmon, .tokomon, .pagumon, .agumon, .gabumon, .impmon, .patamon, .tentomon, .kamemon {
+  .tsumemon, .koromon, .tanemon, .chicchimon, .mushmon, .caprimon, .tsunomon, .gigimon, .budmon, .kunemon, .gummymon, .minomon, .veemon, .guilmon, .tokomon, .pagumon, .agumon, .gabumon, .impmon, .patamon, .tentomon, .kamemon {
     width: 64px;
     height: 80px;
   }
 
-  .tsumemon.breathing, .mushmon.breathing, .koromon.breathing, .budmon.breathing, .kunemon.breathing, .tsunomon.breathing, .guilmon.breathing, .veemon.breathing, .gummymon.breathing, .minomon.breathing, .tokomon.breathing, .pagumon.breathing, .agumon.breathing, .gabumon.breathing, .impmon.breathing, .patamon.breathing, .tentomon.breathing, .kamemon.breathing {
+  .tsumemon.breathing, .tanemon.breathing, .chicchimon.breathing, .mushmon.breathing, .caprimon.breathing, .gigimon.breathing, .koromon.breathing, .budmon.breathing, .kunemon.breathing, .tsunomon.breathing, .guilmon.breathing, .veemon.breathing, .gummymon.breathing, .minomon.breathing, .tokomon.breathing, .pagumon.breathing, .agumon.breathing, .gabumon.breathing, .impmon.breathing, .patamon.breathing, .tentomon.breathing, .kamemon.breathing {
     animation: breathe-small 1.5s steps(1, end) infinite;
   }
 
-  .tsumemon.onHit, .koromon.onHit, .mushmon.onHit, .tsunomon.onHit, .budmon.onHit, .pagumon.onHit, .kunemon.onHit, .veemon.onHit, .guilmon.onHit, .gummymon.onHit, .minomon.onHit, .tokomon.onHit, .agumon.onHit, .gabumon.onHit, .impmon.onHit, .patamon.onHit, .tentomon.onHit, .kamemon.onHit {
+  .tsumemon.onHit, .tanemon.onHit, .koromon.onHit, .chicchimon.onHit, .mushmon.onHit, .caprimon.onHit, .gigimon.onHit, .tsunomon.onHit, .budmon.onHit, .pagumon.onHit, .kunemon.onHit, .veemon.onHit, .guilmon.onHit, .gummymon.onHit, .minomon.onHit, .tokomon.onHit, .agumon.onHit, .gabumon.onHit, .impmon.onHit, .patamon.onHit, .tentomon.onHit, .kamemon.onHit {
     background-size: 192px 160px; 
     background-position: 0 -80px; 
     width: 96px; 
     height: 80px;
   }
 
-  .tsumemon.attacking, .koromon.attacking, .mushmon.onHit, .budmon.attacking, .tsunomon.attacking, .veemon.attacking, .kune.attacking, .guilmon.attacking, .gummymon.attacking, .minomon.attacking, .tokomon.attacking, .pagumon.attacking, .agumon.attacking, .gabumon.attacking, .impmon.attacking, .patamon.attacking, .tentomon.attacking, .kamemon.attacking {
+  .tsumemon.attacking, .koromon.attacking, .tanemon.attacking, .chicchimon.attacking, .caprimon.attacking, .mushmon.attacking, .gigimon.attacking, .budmon.attacking, .tsunomon.attacking, .veemon.attacking, .kune.attacking, .guilmon.attacking, .gummymon.attacking, .minomon.attacking, .tokomon.attacking, .pagumon.attacking, .agumon.attacking, .gabumon.attacking, .impmon.attacking, .patamon.attacking, .tentomon.attacking, .kamemon.attacking {
     background-size: 192px 160px; 
     background-position: -96px -80px;
     width: 96px; 
