@@ -10,8 +10,7 @@ import { calculateBaseStat } from '../shared/statCalculations';
 import { v4 as uuidv4 } from 'uuid';
 import DeckViewModal from './DeckViewModal';
 
-type NodeType = 'start' | 'monster' | 'chest' | 'event' | 'boss' | 'empty' | 'rest';
-
+type NodeType = 'start' | 'normal_enemy' | 'hard_enemy' | 'chest' | 'event' | 'boss' | 'empty' | 'rest';
 interface MapNode {
   type: NodeType;
   connections: number[];
@@ -275,10 +274,14 @@ const ZoneMap: React.FC<ZoneMapProps> = ({
 
   const chooseNodeType = (row: number, totalRows: number): NodeType => {
     const progress = row / totalRows;
-    const types: NodeType[] = ['monster', 'chest', 'event', 'rest'];
+    const types: NodeType[] = ['normal_enemy', 'hard_enemy', 'chest', 'event', 'rest'];
     
-    if (progress < 0.3) return 'monster';
-    if (progress > 0.7) return types[Math.floor(Math.random() * 3)];
+    if (progress < 0.3) return 'normal_enemy';
+    if (progress > 0.7) {
+      const randomType = Math.random();
+      if (randomType < 0.4) return 'hard_enemy';
+      return types[Math.floor(Math.random() * types.length)];
+    }
     return types[Math.floor(Math.random() * types.length)];
   };
 
@@ -306,7 +309,8 @@ const ZoneMap: React.FC<ZoneMapProps> = ({
     if (availableNodes.includes(nodeIndex) && !map[row][col].completed) {
       const nodeType = map[row][col].type;
       switch (nodeType) {
-        case 'monster':
+        case 'normal_enemy':
+        case 'hard_enemy':
         case 'boss':
           const playerLevel = Math.max(...playerTeam.map(d => d.level));
           const enemyTeam = generateEnemyTeam(zoneName, nodeType, playerLevel, nodeType === 'boss' ? 1 : 2);
@@ -351,11 +355,11 @@ const ZoneMap: React.FC<ZoneMapProps> = ({
     } else {
       nodeClass += ' zm-empty';
     }
-
     const getNodeIcon = (type: NodeType) => {
       switch (type) {
         case 'start': return '▶️';
-        case 'monster': return '👾';
+        case 'normal_enemy': return '👾';
+        case 'hard_enemy': return '👹';
         case 'chest': return '🎁';
         case 'event': return '❓';
         case 'boss': return '💀';

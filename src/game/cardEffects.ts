@@ -153,11 +153,15 @@ function resolveCardEffects(card: Card, gameState: GameState, targetInfo: Target
       updatedState = gainRamFromDiscardedCards(effect.gainRam, updatedState);
     }
 
+    
+
     if (effect.removeEnemyShield) updatedState = removeEnemyShield(updatedState);
     if (effect.removeAllShield) updatedState = removeAllShield(updatedState);
     if (effect.removeAilments) updatedState = removeAilments(updatedState);
     if (effect.modifyCost) updatedState = modifyCost(effect.modifyCost, updatedState);
-    if (effect.modifyStatMultiplier) updatedState = modifyStatMultiplier(effect.modifyStatMultiplier, updatedState);
+    if (effect.modifyStatMultiplier) {
+      updatedState = modifyStatMultiplier(effect.modifyStatMultiplier, updatedState);
+    }
     if (effect.scaling) updatedState = applyScalingEffect(effect.scaling, updatedState, targetInfo, enemiesHit);
   });
 
@@ -400,26 +404,22 @@ function modifyCost(modifyCostEffect: CardEffect['modifyCost'], gameState: GameS
 }
 
 
-function modifyStatMultiplier(modifyStatEffect: CardEffect['modifyStatMultiplier'], gameState: GameState): GameState {
-  if (!modifyStatEffect) return gameState;
+function modifyStatMultiplier(effect: CardEffect['modifyStatMultiplier'], gameState: GameState): GameState {
+  if (!effect) return gameState;
 
-  const { stat, multiplier, duration } = modifyStatEffect;
+  const { stat, multiplier, duration } = effect;
   return {
     ...gameState,
     temporaryEffects: {
       ...gameState.temporaryEffects,
       statMultipliers: [
         ...(gameState.temporaryEffects.statMultipliers || []),
-        { stat, multiplier, duration, turnsRemaining: duration } as {
-          stat: StatType;
-          multiplier: number;
-          duration: number;
-          turnsRemaining: number;
-        }
+        { stat, multiplier, duration, turnsRemaining: duration }
       ]
     }
   };
 }
+
 
 
 function applyScalingEffect(scalingEffect: CardEffect['scaling'], gameState: GameState, targetInfo: TargetInfo, enemiesHit: number): GameState {

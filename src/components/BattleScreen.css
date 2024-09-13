@@ -322,7 +322,7 @@
 }
 
 .enemy-turn-indicator {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
@@ -331,10 +331,36 @@
   color: white;
   font-weight: bold;
   text-align: center;
-  z-index: 10;
+  z-index: 1000;
   box-shadow: 0 0 20px 5px rgba(255, 0, 0, 0.7);
-  animation: slide-down 0.5s ease-out, pulse 1.5s infinite alternate;
+  animation: enemy-turn-slide-down 0.5s ease-out, enemy-turn-pulse 1.5s infinite alternate;
 }
+
+.enemy-turn-text {
+  font-size: 1.5em;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes enemy-turn-slide-down {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes enemy-turn-pulse {
+  0% {
+    background-color: rgba(200, 0, 0, 0.9);
+  }
+  100% {
+    background-color: rgba(255, 0, 0, 0.9);
+  }
+}
+
 .danger-flash {
   position: absolute;
   top: 0;
@@ -345,31 +371,6 @@
   z-index: 6;
   pointer-events: none;
   animation: flash 1s infinite;
-}
-
-.enemy-turn-text {
-  font-size: 1.5em;
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-@keyframes pulse {
-  0% {
-    background-color: rgba(200, 0, 0, 0.9);
-  }
-  100% {
-    background-color: rgba(255, 0, 0, 0.9);
-  }
-}
-
-@keyframes slide-down {
-  0% {
-    transform: translateY(-100%);
-  }
-  100% {
-    transform: translateY(0);
-  }
 }
 
 @keyframes flash {

@@ -787,6 +787,22 @@ export const DigimonTemplates: Record<string, DigimonTemplate> = {
     startingCard: CardCollection.DJ_SHOOTER,
     passiveSkill: nullPassiveSkill //LANDING A CRIT GIVES +1 RAM. BASE RAM VALUE + 1
   },
+  vademon: {
+    name: 'vademon',
+    displayName: 'Vademon',
+    type: 'VIRUS' as DigimonType,
+    digivolutionStage: 'Ultimate' as DigivolutionStage,
+    baseHp: 74,
+    baseAttack: 19,
+    baseHealing: 19,
+    baseEvadeChance: 0.2,
+    baseCritChance: 0.1,
+    baseAccuracy: 1,
+    baseCorruptionResistance: 0.5,
+    baseBuggedResistance: 0.5,
+    startingCard: CardCollection.DJ_SHOOTER,
+    passiveSkill: nullPassiveSkill //Landing a last hit gives 3 ram.  BASE RAM VALUE + 1
+  },
   matadormon: {
     name: 'matadormon',
     displayName: 'Matadormon',

@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Card, CardEffect, CardEffectType, DigimonType, Digimon, TargetType, DigimonState } from './types';
+import { Card, CardEffect, CardEffectType, DigimonType, Digimon, GameState, TargetType, DigimonState } from './types';
 import { DamageCalculations } from './damageCalculations';
 
 const createCard = (
@@ -108,10 +108,71 @@ export const CardCollection: Record<string, Card> = {
     }]
   ),
 
+  // In Training
+
+  POISON_BUBBLE: createCard(
+    'POISON_BUBBLE',
+    'Poison Bubble',
+    'attack',
+    0,
+    'FREE',
+    'Deal {damage} damage to an enemy. 25% chance to apply 1 stack of corruption.',
+    'enemy',
+    [{
+      description: "Fires poisonous bubbles.",
+      damage: {
+        formula: 'LIGHT',
+        target: 'enemy'
+      },
+      applyStatus: {
+        type: 'corruption',
+        duration: -1,
+        value: 1,
+        chance: 0.25,
+        isResistable: true
+      }
+    }]
+  ),
+
+  BITE: createCard(
+    'BITE',
+    'Bite',
+    'attack',
+    0,
+    'FREE',
+    'Deal {damage} damage to an enemy.',
+    'enemy',
+    [{
+      description: "Bites the enemy with its sharp teeth.",
+      damage: {
+        formula: 'LIGHT2',
+        target: 'enemy'
+      }
+    }]
+  ),
+
+  DOUBLE_BUBBLE: createCard(
+    'DOUBLE_BUBBLE',
+    'Double Bubble',
+    'attack',
+    0,
+    'FREE',
+    'Deal {damage} damage to an enemy twice.',
+    'enemy',
+    [{
+      description: "Fires two bubbles in quick succession.",
+      damage: {
+        formula: 'LIGHT',
+        target: 'enemy'
+      },
+      repeat: 2
+    }]
+  ),
+
   // Guilmon
-  PYRO_SHOT: createCard(
-    'PYRO_SHOT',
-    'Pyro Shot',
+  PYRO_SPHERE: createCard(
+    'PYRO_SPHERE',
+    'Pyro Sphere',
     'attack',
     2,
     'VIRUS',
@@ -132,14 +193,24 @@ export const CardCollection: Record<string, Card> = {
     'attack',
     1,
     'VIRUS',
-    '',
+    'Deal {damage} damage to an enemy. Deals double damage to shields.',
     'enemy',
     [{
-      description: "Deals double damage to shields",
+      description: "Deals basic damage.",
       damage: {
         formula: 'BASIC',
         target: 'enemy'
       },
+      conditional: {
+        condition: (state, targetInfo) => state.enemy.digimon[targetInfo.targetDigimonIndex].shield > 0,
+        effect: {
+          description: "Deals more damage to shields",
+          damage: {
+            formula: 'STRONG',
+            target: 'enemy'
+          }
+        }
+      }
     }]
   ),
 
@@ -187,32 +258,37 @@ export const CardCollection: Record<string, Card> = {
     'attack',
     3,
     'DATA',
-    '',
+    'Deal {damage} damage to all enemies. Can only be used once per battle.',
     'all_enemies',
     [{
-      description: "",
+      description: "Deal damage to all enemies.",
       damage: {
         formula: 'STRONG',
         target: 'all_enemies'
       },
-      //can be used once per battle
+      once: true
     }]
   ),
+
   BUNNY_BLAST: createCard(
     'BUNNY_BLAST',
     'Bunny Blast',
     'attack',
     1,
     'DATA',
-    '',
+    'Deal {damage} damage to an enemy and lower their attack by 20% for 1 turn.',
     'enemy',
     [{
-      description: "",
+      description: "Deal damage and lower enemy attack.",
       damage: {
         formula: 'BASIC',
         target: 'enemy'
       },
-      //lowers enemy attack
+      modifyStatMultiplier: {
+        stat: 'attack',
+        multiplier: 0.8,
+        duration: 1
+      }
     }]
   ),
 
@@ -222,11 +298,18 @@ export const CardCollection: Record<string, Card> = {
     'special',
     1,
     'DATA',
-    '',
+    'Draw a card and gain {shield} shield.',
     'self',
     [{
-      description: "",
-      //DRAW A CARD, GAIN BASIC SHIELD ON SELF
+      description: "Draw a card.",
+      drawCards: 1
+    },
+    {
+      description: "Gain shield.",
+      shield: {
+        formula: 'BASIC',
+        target: 'self'
+      }
     }]
   ),
 
@@ -274,19 +357,153 @@ export const CardCollection: Record<string, Card> = {
     'special',
     1,
     'VIRUS',
-    '',
+    'Draw a card. If it\'s not an attack card, discard it.',
     'none',
     [{
-      description: "Draw a card, if the card is not an attack card then discard it.",
+      description: "Draw a card and potentially discard it.",
       drawCards: 1,
       conditional: {
-        condition: (state) => state.player.hand[state.player.hand.length - 1].type !== 'attack',
+        condition: (state) => {
+          const drawnCard = state.player.hand[state.player.hand.length - 1];
+          return drawnCard.type !== 'attack';
+        },
         effect: {
-          description: "Discard it if it\'s not an attack card.",
-          discardCards: 1 //fix this to make it discard to drawn card
+          description: "Discard the drawn card if it's not an attack card.",
+          customEffect: (state) => {
+            const drawnCard = state.player.hand.pop();
+            if (drawnCard) {
+              state.player.discardPile.push(drawnCard);
+              state.cardsDiscardedThisTurn++;
+              state.cardsDiscardedThisBattle++;
+            }
+            return state;
+          }
         }
       },
       recompile: true
+    }]
+  ),
+
+  NIGHT_OF_BLIZZARDS: createCard(
+    'NIGHT_OF_BLIZZARDS',
+    'Night of Blizzards',
+    'attack',
+    4,
+    'VIRUS',
+    'Deal {damage} damage to an enemy. If you discard a card, deal {bonusDamage} additional damage and draw a card.',
+    'enemy',
+    [{
+      description: "Unleash a freezing attack on the enemy.",
+      damage: {
+        formula: 'STRONG',
+        target: 'enemy'
+      },
+      discardCards: 1,
+      conditional: {
+        condition: (state) => state.cardsDiscardedThisTurn > 0,
+        effect: {
+          description: "Deal additional damage and draw a card.",
+          damage: {
+            formula: 'BASIC2',
+            target: 'enemy'
+          },
+          drawCards: 1
+        }
+      }
+    }]
+  ),
+
+  // Kunemon
+  ELECTRIC_THREAD: createCard(
+    'ELECTRIC_THREAD',
+    'Electric Thread',
+    'attack',
+    1,
+    'VIRUS',
+    'Deal {damage} damage to an enemy. 30% chance to apply Bugged for 1 turn.',
+    'enemy',
+    [{
+      description: "Shoots an electrified thread at the enemy.",
+      damage: {
+        formula: 'LIGHT2',
+        target: 'enemy'
+      },
+      applyStatus: {
+        type: 'bugged',
+        duration: 1,
+        value: 1,
+        chance: 0.3
+      }
+    }]
+  ),
+
+  POISON_RIDE: createCard(
+    'POISON_RIDE',
+    'Poison Ride',
+    'attack',
+    2,
+    'VIRUS',
+    'Deal {damage} damage to an enemy and apply 1 stack of corruption.',
+    'enemy',
+    [{
+      description: "Rides on the enemy while secreting poison.",
+      damage: {
+        formula: 'BASIC',
+        target: 'enemy'
+      },
+      applyStatus: {
+        type: 'corruption',
+        duration: -1,
+        value: 1,
+        isResistable: true
+      }
+    }]
+  ),
+
+  // Mushmon
+  POISON_SMASH: createCard(
+    'POISON_SMASH',
+    'Poison Smash',
+    'attack',
+    2,
+    'VIRUS',
+    'Deal {damage} damage to an enemy. If the enemy has a status effect, deal {bonusDamage} instead.',
+    'enemy',
+    [{
+      description: "Strikes the enemy with a poisonous blow.",
+      damage: {
+        formula: 'BASIC2',
+        target: 'enemy'
+      },
+      conditional: {
+        condition: (state, targetInfo) => state.enemy.digimon[targetInfo.targetDigimonIndex].statusEffects.length > 0,
+        effect: {
+          description: "Strikes the enemy with a poisonous blow.",
+          damage: {
+            formula: 'STRONG',
+            target: 'enemy'
+          }
+        }
+      }
+    }]
+  ),
+
+  LAUGHING_SPORES: createCard(
+    'LAUGHING_SPORES',
+    'Laughing Spores',
+    'special',
+    3,
+    'VIRUS',
+    'Apply Bugged to an enemy for 1 turn. Gain 1 RAM.',
+    'enemy',
+    [{
+      description: "Releases spores that cause uncontrollable laughter.",
+      applyStatus: {
+        type: 'bugged',
+        duration: 1,
+        value: 1
+      },
+      gainRam: 1
     }]
   ),
 
@@ -333,35 +550,25 @@ export const CardCollection: Record<string, Card> = {
     }]
   ),
 
-  NETWORK_FLAPPING: createCard(
-    'NETWORK_FLAPPING',
-    'Network Flapping',
-    'special',
-    0,
-    'VIRUS',
-    '',
-    'all_enemies',
-    [{
-      description: "",
-      //discard 3 random cards, draw 3 cards
-    }]
-  ),
-
   // Monodramon
   CRACKING_BITE: createCard(
     'CRACKING_BITE',
     'Cracking Bite',
     'attack',
-    1,
+    2,
     'VACCINE',
-    '',
+    'Deal {damage} damage to an enemy and lower their attack by 20% for 2 turns.',
     'enemy',
     [{
-      description: "",
+      description: "Deal damage and lower enemy attack",
       damage: {
         formula: 'BASIC',
         target: 'enemy'
-      //lowers enemy attack
+      },
+      modifyStatMultiplier: {
+        stat: 'attack',
+        multiplier: 0.8,
+        duration: 2
       }
     }]
   ),
@@ -372,46 +579,72 @@ export const CardCollection: Record<string, Card> = {
     'attack',
     2,
     'VACCINE',
-    '',
+    'Deal {damage} damage to an enemy and increase your attack by 20% for 1 turn.',
     'enemy',
     [{
-      description: "",
+      description: "Deal damage and increase own attack",
       damage: {
         formula: 'BASIC2',
         target: 'enemy'
-      //increases own attack
+      },
+      modifyStatMultiplier: {
+        stat: 'attack',
+        multiplier: 1.2,
+        duration: 1
       }
     }]
   ),
 
   // Kamemon
 
-  ARMORED_ARROW: createCard(
+  /*ARMORED_ARROW: createCard(
     'ARMORED_ARROW',
     'Armored Arrow',
     'attack',
-    1,
-    'VACCINE',
-    '',
+    2,
+    'DATA',
+    'Deal damage equal to your current shield to an enemy.',
     'enemy',
     [{
-      description: "",
-      //deals damage based on users shield
-      
+      description: "Deal damage based on current shield.",
+      damage: {
+        formula: 'CUSTOM',
+        target: 'enemy'
+      },
+      scaling: {
+        factor: 'userShield',
+        effect: (value) => ({
+          damage: {
+            formula: 'CUSTOM',
+            target: 'enemy',
+            customValue: value
+          }
+        })
+      }
     }]
-  ),
+  ),*/
 
   TORTO_TACKLE: createCard(
     'TORTO_TACKLE',
     'Torto-Tackle',
     'attack',
     2,
-    'VACCINE',
-    '',
+    'DATA',
+    'Deal {damage} damage to an enemy and gain {shield} shield.',
     'enemy',
     [{
-      description: "",
-      //deals basic damage, gain basic shield
+      description: "Deal damage to an enemy.",
+      damage: {
+        formula: 'BASIC',
+        target: 'enemy'
+      }
+    },
+    {
+      description: "Gain shield.",
+      shield: {
+        formula: 'BASIC',
+        target: 'self'
+      }
     }]
   ),
 
@@ -742,12 +975,513 @@ GOBURI_RUSH: createCard(
     burst: true
   }]
 ),
+// vilemon
+
+NIGHTMARE_SHOCK: createCard(
+  'NIGHTMARE_SHOCK',
+  'Nightmare Shock',
+  'attack',
+  2,
+  'VIRUS',
+  'Deal {damage} damage to an enemy. If the enemy is affected by a status effect, gain 2 RAM.',
+  'enemy',
+  [{
+    description: "Releases a wave of dark energy.",
+    damage: {
+      formula: 'BASIC2',
+      target: 'enemy'
+    },
+    conditional: {
+      condition: (state, targetInfo) => state.enemy.digimon[targetInfo.targetDigimonIndex].statusEffects.length > 0,
+      effect: {
+        description: "Releases a wave of dark energy.",
+        gainRam: 2
+      }
+    }
+  }]
+),
+
+DEMONS_CURSE: createCard(
+  'DEMONS_CURSE',
+  'Demons Curse',
+  'special',
+  3,
+  'VIRUS',
+  'Apply 2 stacks of corruption to an enemy. Draw a card.',
+  'enemy',
+  [{
+    description: "Casts a powerful curse on the enemy.",
+    applyStatus: {
+      type: 'corruption',
+      duration: -1,
+      value: 2,
+      isResistable: true
+    },
+    drawCards: 1
+  }]
+),
+
+// chrysalimon
+
+DATA_CRUSHER: createCard(
+  'DATA_CRUSHER',
+  'Data Crusher',
+  'attack',
+  2,
+  'VIRUS',
+  'Deal {damage} damage to an enemy. Discard a random card from your hand, then draw a card.',
+  'enemy',
+  [{
+    description: "Crushes and absorbs enemy data.",
+    damage: {
+      formula: 'STRONG',
+      target: 'enemy'
+    },
+    discardCards: 1,
+    drawCards: 1
+  }]
+),
+
+NETWORK_FLAPPING: createCard(
+  'NETWORK_FLAPPING',
+  'Network Flapping',
+  'special',
+  3,
+  'VIRUS',
+  'Apply Bugged to an enemy for 1 turn. If you have 4 or more cards in hand, apply it for 2 turns instead.',
+  'enemy',
+  [{
+    description: "Disrupts the enemy's data with rapid movements.",
+    applyStatus: {
+      type: 'bugged',
+      duration: 1,
+      value: 1
+    },
+    conditional: {
+      condition: (state) => state.player.hand.length >= 4,
+      effect: {
+        description: "Disrupts the enemy's data with rapid movements.",
+        applyStatus: {
+          type: 'bugged',
+          duration: 2,
+          value: 1
+        }
+      }
+    }
+  }]
+),
+
+// garurumon
+
+HOWLING_BLASTER: createCard(
+  'HOWLING_BLASTER',
+  'Howling Blaster',
+  'attack',
+  3,
+  'DATA',
+  'Deal {damage} damage to an enemy. If your shield is greater than 0, deal {bonusDamage} instead.',
+  'enemy',
+  [{
+    description: "Fires a blast of blue energy from its mouth.",
+    damage: {
+      formula: 'STRONG2',
+      target: 'enemy'
+    },
+    conditional: {
+      condition: (state, targetInfo) => state.player.digimon[targetInfo.sourceDigimonIndex].shield > 0,
+      effect: {
+        description: "Fires a blast of blue energy from its mouth.",
+        damage: {
+          formula: 'HEAVY',
+          target: 'enemy'
+        }
+      }
+    }
+  }]
+),
+
+FREEZE_FANG: createCard(
+  'FREEZE_FANG',
+  'Freeze Fang',
+  'attack',
+  2,
+  'DATA',
+  'Deal {damage} damage to an enemy and gain {shield} shield. 30% chance to apply Bugged for 1 turn.',
+  'enemy',
+  [{
+    description: "Bites the enemy with freezing fangs.",
+    damage: {
+      formula: 'BASIC2',
+      target: 'enemy'
+    },
+    shield: {
+      formula: 'BASIC',
+      target: 'self'
+    },
+    applyStatus: {
+      type: 'bugged',
+      duration: 1,
+      value: 1,
+      chance: 0.3
+    }
+  }]
+),
+
+SUBZERO_ICE_FANG: createCard(
+  'SUBZERO_ICE_FANG',
+  'Subzero Ice Fang',
+  'attack',
+  4,
+  'DATA',
+  'Deal {damage} damage to all enemies. Gain {shield} shield.',
+  'all_enemies',
+  [{
+    description: "Unleashes a widespread freezing attack.",
+    damage: {
+      formula: 'BASIC',
+      target: 'all_enemies'
+    },
+    shield: {
+      formula: 'BASIC2',
+      target: 'self'
+    }
+  }]
+),
+
+// angemon
+
+HAND_OF_FATE: createCard(
+  'HAND_OF_FATE',
+  'Hand of Fate',
+  'attack',
+  3,
+  'VACCINE',
+  'Deal {damage} damage to an enemy. Heal yourself for half the damage dealt.',
+  'enemy',
+  [{
+    description: "Fires a beam of sacred energy from its fist.",
+    damage: {
+      formula: 'STRONG',
+      target: 'enemy'
+    },
+    heal: {
+      formula: 'BASIC',
+      target: 'self'
+    }
+  }]
+),
+
+ANGEL_ROD: createCard(
+  'ANGEL_ROD',
+  'Angel Rod',
+  'attack',
+  2,
+  'VACCINE',
+  'Deal {damage} damage to an enemy. If the enemy has a status effect, remove it and draw a card.',
+  'enemy',
+  [{
+    description: "Strikes the enemy with a holy staff.",
+    damage: {
+      formula: 'BASIC2',
+      target: 'enemy'
+    },
+    conditional: {
+      condition: (state, targetInfo) => state.enemy.digimon[targetInfo.targetDigimonIndex].statusEffects.length > 0,
+      effect: {
+        description: "Strikes the enemy with a holy staff.",
+        customEffect: (state: GameState) => {
+          const lastPlayCardAction = state.actionQueue
+            .filter(action => action.type === 'PLAY_CARD')
+            .pop();
+          
+          if (lastPlayCardAction && 'targetInfo' in lastPlayCardAction) {
+            const targetIndex = lastPlayCardAction.targetInfo.targetDigimonIndex;
+            if (targetIndex !== undefined && state.enemy.digimon[targetIndex]) {
+              state.enemy.digimon[targetIndex].statusEffects = [];
+            }
+          }
+          return state;
+        },
+        drawCards: 1
+      }
+    }
+  }]
+),
+
+DIVINE_LIGHT: createCard(
+  'DIVINE_LIGHT',
+  'Divine Light',
+  'special',
+  3,
+  'VACCINE',
+  'Remove all status effects from yourself and all allies. Heal {heal} HP to yourself and all allies.',
+  'all_allies',
+  [{
+    description: "Bathes allies in purifying light.",
+    customEffect: (state) => {
+      state.player.digimon.forEach(digimon => {
+        digimon.statusEffects = [];
+      });
+      return state;
+    },
+    heal: {
+      formula: 'BASIC_HEAL',
+      target: 'all_allies'
+    }
+  }]
+),
+
+// kuwagamon
+
+SCISSOR_ARMS: createCard(
+  'SCISSOR_ARMS',
+  'Scissor Arms',
+  'attack',
+  3,
+  'VIRUS',
+  'Deal {damage} damage to an enemy. If the enemy has a shield, deal double damage to it.',
+  'enemy',
+  [{
+    description: "Slashes the enemy with powerful pincers.",
+    damage: {
+      formula: 'STRONG',
+      target: 'enemy'
+    },
+    conditional: {
+      condition: (state, targetInfo) => state.enemy.digimon[targetInfo.targetDigimonIndex].shield > 0,
+      effect: {
+        description: "Slashes the enemy with powerful pincers.",
+        damage: {
+          formula: 'HEAVY',
+          target: 'enemy'
+        }
+      }
+    }
+  }]
+),
+
+POWER_GUILLOTINE: createCard(
+  'POWER_GUILLOTINE',
+  'Power Guillotine',
+  'attack',
+  4,
+  'VIRUS',
+  'Deal {damage} damage to an enemy. Discard a card this turn to deal {bonusDamage} additional damage.',
+  'enemy',
+  [{
+    description: "Performs a powerful cutting attack.",
+    damage: {
+      formula: 'HEAVY',
+      target: 'enemy'
+    },
+    discardCards: 1,
+    conditional: {
+      condition: (state) => state.cardsDiscardedThisTurn > 0,
+      effect: {
+        description: "Performs a powerful cutting attack.",
+        damage: {
+          formula: 'STRONG',
+          target: 'enemy'
+        }
+      }
+    }
+  }]
+),
+
+// veggiemon
+
+SWEET_SCENT: createCard(
+  'SWEET_SCENT',
+  'Sweet Scent',
+  'special',
+  3,
+  'VIRUS',
+  'Apply 2 stacks of corruption to an enemy. Draw a card.',
+  'enemy',
+  [{
+    description: "Releases a deceptively sweet aroma.",
+    applyStatus: {
+      type: 'corruption',
+      duration: -1,
+      value: 2,
+      isResistable: true
+    },
+    drawCards: 1
+  }]
+),
+
+THORN_WHIP: createCard(
+  'THORN_WHIP',
+  'Thorn Whip',
+  'attack',
+  3,
+  'VIRUS',
+  'Deal {damage} damage to an enemy. Gain 1 RAM for each status effect on the target.',
+  'enemy',
+  [{
+    description: "Lashes out with a thorny vine.",
+    damage: {
+      formula: 'STRONG',
+      target: 'enemy'
+    },
+    customEffect: (state: GameState) => {
+      const lastPlayCardAction = state.actionQueue
+        .filter(action => action.type === 'PLAY_CARD')
+        .pop();
+      
+      if (lastPlayCardAction && 'targetInfo' in lastPlayCardAction) {
+        const targetIndex = lastPlayCardAction.targetInfo.targetDigimonIndex;
+        if (targetIndex !== undefined && state.enemy.digimon[targetIndex]) {
+          const statusEffectCount = state.enemy.digimon[targetIndex].statusEffects.length;
+          state.player.ram += statusEffectCount;
+        }
+      }
+      return state;
+    }
+  }]
+),
+
+// greymon
+
+NOVA_BLAST: createCard(
+  'NOVA_BLAST',
+  'Nova Blast',
+  'attack',
+  4,
+  'VACCINE',
+  'Deal {damage} damage to an enemy. If your RAM is 5 or higher, deal {bonusDamage} instead.',
+  'enemy',
+  [{
+    description: "Fires a massive fireball at the enemy.",
+    damage: {
+      formula: 'HEAVY',
+      target: 'enemy'
+    },
+    conditional: {
+      condition: (state) => state.player.ram >= 5,
+      effect: {
+        description: "Fires a massive fireball at the enemy.",
+        damage: {
+          formula: 'MEGA',
+          target: 'enemy'
+        }
+      }
+    }
+  }]
+),
+
+GREAT_HORNS_ATTACK: createCard(
+  'GREAT_HORNS_ATTACK',
+  'Great Horns Attack',
+  'attack',
+  3,
+  'VACCINE',
+  'Deal {damage} damage to an enemy. Gain 2 shield.',
+  'enemy',
+  [{
+    description: "Charges the enemy with powerful horns.",
+    damage: {
+      formula: 'STRONG2',
+      target: 'enemy'
+    },
+    shield: {
+      formula: 'BASIC',
+      target: 'self'
+    }
+  }]
+),
+
+FIRE_WALL: createCard(
+  'FIRE_WALL',
+  'Fire Wall',
+  'attack',
+  5,
+  'VACCINE',
+  'Deal {damage} damage to all enemies. Discard a card.',
+  'all_enemies',
+  [{
+    description: "Unleashes a widespread flame attack.",
+    damage: {
+      formula: 'STRONG',
+      target: 'all_enemies'
+    },
+    discardCards: 1
+  }]
+),
+
+// gargomon 
+
+GARGO_PELLETS: createCard(
+  'GARGO_PELLETS',
+  'Gargo Pellets',
+  'attack',
+  2,
+  'DATA',
+  'Deal {damage} damage to an enemy 3 times.',
+  'enemy',
+  [{
+    description: "Rapid-fires energy bullets from arm cannons.",
+    damage: {
+      formula: 'BASIC',
+      target: 'enemy'
+    },
+    repeat: 3
+  }]
+),
+
+BUNNY_PUMMEL: createCard(
+  'BUNNY_PUMMEL',
+  'Bunny Pummel',
+  'attack',
+  3,
+  'DATA',
+  'Deal {damage} damage to an enemy. If your RAM is 4 or higher, apply Bugged for 1 turn.',
+  'enemy',
+  [{
+    description: "Strikes the enemy with arm cannons.",
+    damage: {
+      formula: 'STRONG',
+      target: 'enemy'
+    },
+    conditional: {
+      condition: (state) => state.player.ram >= 4,
+      effect: {
+        description: "Strikes the enemy with arm cannons.",
+        applyStatus: {
+          type: 'bugged',
+          duration: 1,
+          value: 1
+        }
+      }
+    }
+  }]
+),
+
+GATLING_ARM: createCard(
+  'GATLING_ARM',
+  'Gatling Arm',
+  'attack',
+  5,
+  'DATA',
+  'Deal {damage} damage split randomly among all enemies 5 times.',
+  'random_enemy',
+  [{
+    description: "Unleashes a barrage of bullets at all enemies.",
+    damage: {
+      formula: 'BASIC',
+      target: 'random_enemy'
+    },
+    repeat: 5
+  }]
+),
+
+// devimon
 
 TOUCH_OF_EVIL: createCard(
   'TOUCH_OF_EVIL',
   'Touch of Evil',
   'attack',
-  3,
+  2,
   'VIRUS', 
   'Deal {damage} damage to an enemy and apply 1 stack of CORRUPTION.',
   'enemy',
@@ -943,6 +1677,268 @@ DARK_MIND: createCard(
   }]
 ),
 
+
+// superstarmon
+
+HALLEYS_SQUALL: createCard(
+  'HALLEYS_SQUALL',
+  'Halleys Squall',
+  'attack',
+  5,
+  'DATA',
+  'Deal {damage} damage split randomly among all enemies 5 times.',
+  'random_enemy',
+  [{
+    description: "Summons a meteor shower to strike enemies.",
+    damage: {
+      formula: 'BASIC2',
+      target: 'random_enemy'
+    },
+    repeat: 5
+  }]
+),
+
+GALACTIC_EYES: createCard(
+  'GALACTIC_EYES',
+  'Galactic Eyes',
+  'special',
+  3,
+  'DATA',
+  'Apply Bugged to an enemy for 2 turns. Draw a card.',
+  'enemy',
+  [{
+    description: "Hypnotizes the opponent with cosmic energy.",
+    applyStatus: {
+      type: 'bugged',
+      duration: 2,
+      value: 1
+    },
+    drawCards: 1
+  }]
+),
+
+//vademon
+
+MUTILATOR: createCard(
+  'MUTILATOR',
+  'Mutilator',
+  'attack',
+  3,
+  'VIRUS',
+  'Deal {damage} damage to an enemy. Apply 1 stack of corruption and reduce their attack by 20% for 2 turns.',
+  'enemy',
+  [{
+    description: "",
+    damage: {
+      formula: 'STRONG',
+      target: 'enemy'
+    },
+    applyStatus: {
+      type: 'corruption',
+      duration: -1,
+      value: 1,
+      isResistable: true
+    },
+    modifyStatMultiplier: {
+      stat: 'attack',
+      multiplier: 0.8,
+      duration: 2
+    }
+  }]
+),
+
+ABDUCTION_BEAM: createCard(
+  'ABDUCTION_BEAM',
+  'Abduction Beam',
+  'special',
+  4,
+  'VIRUS',
+  'Apply Bugged to an enemy for 2 turns. Draw 2 cards.',
+  'enemy',
+  [{
+    description: "Fires a mysterious beam that confuses the enemy.",
+    applyStatus: {
+      type: 'bugged',
+      duration: 2,
+      value: 1
+    },
+    drawCards: 2
+  }]
+),
+
+//metalgreymon
+
+GIGA_BLASTER: createCard(
+  'GIGA_BLASTER',
+  'Giga Blaster',
+  'attack',
+  5,
+  'VACCINE',
+  'Deal {damage} damage to an enemy. If your RAM is 6 or higher, deal {bonusDamage} to all enemies instead.',
+  'enemy',
+  [{
+    description: "Fires organic missiles from chest.",
+    damage: {
+      formula: 'HEAVY',
+      target: 'enemy'
+    },
+    conditional: {
+      condition: (state) => state.player.ram >= 6,
+      effect: {
+        description: "Fires organic missiles from chest.",
+        damage: {
+          formula: 'STRONG2',
+          target: 'all_enemies'
+        }
+      }
+    }
+  }]
+),
+
+TRIDENT_ARM: createCard(
+  'TRIDENT_ARM',
+  'Trident Arm',
+  'attack',
+  3,
+  'VACCINE',
+  'Deal {damage} damage to an enemy. If the enemy has a shield, destroy it completely.',
+  'enemy',
+  [{
+    description: "Strikes with a powerful mechanical arm.",
+    damage: {
+      formula: 'STRONG2',
+      target: 'enemy'
+    },
+    customEffect: (state: GameState) => {
+      const lastPlayCardAction = state.actionQueue
+        .filter(action => action.type === 'PLAY_CARD')
+        .pop();
+      
+      if (lastPlayCardAction && 'targetInfo' in lastPlayCardAction) {
+        const targetIndex = lastPlayCardAction.targetInfo.targetDigimonIndex;
+        if (targetIndex !== undefined && state.enemy.digimon[targetIndex]) {
+          state.enemy.digimon[targetIndex].shield = 0;
+        }
+      }
+      return state;
+    }
+  }]
+),
+
+//Shawujingmon
+
+MOON_FANG: createCard(
+  'MOON_FANG',
+  'Moon Fang',
+  'attack',
+  3,
+  'DATA',
+  'Deal {damage} damage to an enemy. If your shield is greater than 0, deal {bonusDamage} instead.',
+  'enemy',
+  [{
+    description: "",
+    damage: {
+      formula: 'STRONG2',
+      target: 'enemy'
+    },
+    conditional: {
+      condition: (state, targetInfo) => state.player.digimon[targetInfo.sourceDigimonIndex].shield > 0,
+      effect: {
+        description: "",
+        damage: {
+          formula: 'HEAVY2',
+          target: 'enemy'
+        }
+      }
+    }
+  }]
+),
+
+// SKULLKNIGHTMON
+
+SPEAR_NEEDLE: createCard(
+  'SPEAR_NEEDLE',
+  'Spear Needle',
+  'attack',
+  3,
+  'VIRUS',
+  'Deal {damage} damage to an enemy. If the enemy has a shield, deal double damage to it.',
+  'enemy',
+  [{
+    description: "Attacks with a powerful spear thrust.",
+    damage: {
+      formula: 'STRONG',
+      target: 'enemy'
+    },
+    conditional: {
+      condition: (state, targetInfo) => state.enemy.digimon[targetInfo.targetDigimonIndex].shield > 0,
+      effect: {
+        description: "Attacks with a powerful spear thrust.",
+        damage: {
+          formula: 'HEAVY',
+          target: 'enemy'
+        }
+      }
+    }
+  }]
+),
+
+DEATH_FLASH: createCard(
+  'DEATH FLASH',
+  'Death Flash',
+  'special',
+  3,
+  'VIRUS',
+  'Deal {damage} damage to all enemies. Apply 1 stack of corruption to all enemies.',
+  'all_enemies',
+  [{
+    description: "Emits a blinding flash.",
+    damage: {
+      formula: 'BASIC2',
+      target: 'all_enemies'
+    },
+    applyStatus: {
+      type: 'corruption',
+      duration: -1,
+      value: 1,
+      isResistable: true
+    }
+  }]
+),
+
+//Matadormon
+
+WAR_DANCE: createCard(
+  'WAR_DANCE',
+  'War Dance',
+  'special',
+  5,
+  'VIRUS',
+  'Deal {damage} damage to all enemies. For each enemy hit, gain 1 RAM and increase your evasion by 5% for 2 turns.',
+  'all_enemies',
+  [{
+    description: "",
+    damage: {
+      formula: 'STRONG',
+      target: 'all_enemies'
+    },
+    customEffect: (state: GameState) => {
+      const hitEnemies = state.enemy.digimon.filter(enemy => enemy.hp > 0).length;
+      state.player.ram += hitEnemies;
+      state.temporaryEffects.statMultipliers.push({
+        stat: 'evasion',
+        multiplier: 1 + (0.05 * hitEnemies),
+        duration: 2,
+        turnsRemaining: 2
+      });
+      return state;
+    }
+  }]
+),
+
+
+
+
 //revolmon
 QUICKSHOT: createCard(
   'QUICKSHOT',
@@ -968,14 +1964,44 @@ RUSSIAN_ROULETTE: createCard(
   'attack',
   1,
   'VACCINE',
-  '',
-  'random_ally',
+  'Deal {damage} damage to a random Digimon (excluding the user).',
+  'none',
   [{
-    description: "Shoot a random digimon (implement logic for random targeting except self).",
+    description: "Deal heavy damage to a random Digimon, excluding the user.",
     damage: {
       formula: 'HEAVY',
-      target: 'enemy'
+      target: 'none'
     },
+    customEffect: (state: GameState) => {
+      const sourceDigimonIndex = state.player.digimon.findIndex(d => d.id === state.currentDigimon);
+      const allTargets = [
+        ...state.player.digimon.filter((_, index) => index !== sourceDigimonIndex),
+        ...state.enemy.digimon
+      ];
+      const availableTargets = allTargets.filter(digimon => digimon.hp > 0);
+      
+      if (availableTargets.length > 0) {
+        const randomIndex = Math.floor(Math.random() * availableTargets.length);
+        const target = availableTargets[randomIndex];
+        
+        // Apply damage to the randomly selected target
+        const damage = DamageCalculations['HEAVY'](state.player.digimon[sourceDigimonIndex]);
+        target.hp = Math.max(0, target.hp - damage);
+        
+        // Add an action to the queue for animation purposes
+        state.actionQueue.push({
+          type: 'APPLY_DAMAGE',
+          target: {
+            targetType: 'none',
+            sourceDigimonIndex: sourceDigimonIndex,
+            targetDigimonIndex: allTargets.indexOf(target)
+          },
+          damage: damage,
+          newHp: target.hp,
+          newShield: target.shield
+        });
+      }
+    }
   }]
 ),
 
@@ -1125,6 +2151,70 @@ BEREJENA: createCard(
   }]
 ),
 
+//wargreymon
+
+TERRA_FORCE: createCard(
+  'TERRA_FORCE',
+  'Terra Force',
+  'attack',
+  8,
+  'VACCINE',
+  'Deal {damage} damage to all enemies. Discard your hand.',
+  'all_enemies',
+  [{
+    description: "Concentrates atmospheric energy into a devastating attack.",
+    damage: {
+      formula: 'MEGA',
+      target: 'all_enemies'
+    },
+    discardCards: 'all'
+  }]
+),
+
+GREAT_TORNADO: createCard(
+  'GREAT_TORNADO',
+  'Great Tornado',
+  'attack',
+  5,
+  'VACCINE',
+  'Deal {damage} damage to an enemy. Gain {shield} shield.',
+  'enemy',
+  [{
+    description: "Spins at tremendous speed, damaging the enemy and creating a protective vortex.",
+    damage: {
+      formula: 'HEAVY2',
+      target: 'enemy'
+    },
+    shield: {
+      formula: 'STRONG',
+      target: 'self'
+    }
+  }]
+),
+
+WAR_DRIVER: createCard(
+  'WAR_DRIVER',
+  'War Driver',
+  'attack',
+  6,
+  'VACCINE',
+  'Deal {damage} damage to an enemy. Gain 1 RAM for each card played this turn.',
+  'enemy',
+  [{
+    description: "Charges energy in claws for a powerful strike.",
+    damage: {
+      formula: 'HEAVY2',
+      target: 'enemy'
+    },
+    customEffect: (state: GameState) => {
+      state.player.ram += state.cardsPlayedThisTurn;
+      return state;
+    }
+  }]
+),
+
+//kimeramon 
+
 DEATH_CLAW: createCard(
   'DEATH_CLAW',
   'Death Claw',
@@ -1172,7 +2262,69 @@ HEAT_VIPER: createCard(
     },
     repeat: 6
   }]
-)}
+),
+
+//lucemon
+
+GRAND_CROSS: createCard(
+  'GRAND_CROSS',
+  'Grand Cross',
+  'attack',
+  8,
+  'VACCINE',
+  'Deal {damage} damage split evenly among all enemies 10 times. Remove all status effects from yourself.',
+  'all_enemies',
+  [{
+    description: "Fires ten super-heated spheres of light in a cruciform pattern.",
+    damage: {
+      formula: 'STRONG',
+      target: 'all_enemies'
+    },
+    repeat: 10,
+    customEffect: (state: GameState) => {
+      const sourceIndex = state.player.digimon.findIndex(d => d.id === state.currentDigimon);
+      if (sourceIndex !== -1) {
+        state.player.digimon[sourceIndex].statusEffects = [];
+      }
+      return state;
+    }
+  }]
+),
+
+DIVINE_FEAT: createCard(
+  'DIVINE_FEAT',
+  'Divine Feat',
+  'attack',
+  6,
+  'VACCINE',
+  'Deal {damage} damage to an enemy. If this attack defeats the enemy, gain 5 RAM and draw 2 cards.',
+  'enemy',
+  [{
+    description: "Creates a great sword of light to pierce the enemy.",
+    damage: {
+      formula: 'MEGA',
+      target: 'enemy'
+    },
+    customEffect: (state: GameState) => {
+      const lastAction = state.actionQueue[state.actionQueue.length - 1];
+      if (lastAction.type === 'APPLY_DAMAGE' && lastAction.newHp <= 0) {
+        state.player.ram += 5;
+        for (let i = 0; i < 2; i++) {
+          if (state.player.deck.length > 0) {
+            const drawnCard = state.player.deck.pop()!;
+            state.player.hand.push(drawnCard);
+            state.actionQueue.push({ type: 'DRAW_CARD', card: drawnCard });
+          }
+        }
+      }
+      return state;
+    }
+  }]
+),
+
+
+
+}
 
 
 export const getCardById = (id: string): Card | undefined => {

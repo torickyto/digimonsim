@@ -28,6 +28,7 @@ export const initializeBattle = (playerTeam: Digimon[], enemyTeam: Digimon[]): G
     turn: 1,  
     phase: 'initial',  // Add a new 'initial' phase
     cardsPlayedThisTurn: 0,
+    currentDigimon: playerTeam[0].id,
     damageTakenThisTurn: 0,
     removedCards: {},
     cardsDiscardedThisTurn: 0,
@@ -329,7 +330,7 @@ export const executeEnemyTurn = (gameState: GameState): GameState => {
       
       console.log(`Enemy ${enemyDigimon.displayName} (${enemyIndex}) targeting ${targetPlayerDigimon.displayName} (index: ${targetPlayerIndex})`);
 
-      const damage = calculateDamage('BASIC' as DamageFormulaKey, enemyDigimon, targetPlayerDigimon);
+      const damage = calculateDamage('BASIC' as DamageFormulaKey, enemyDigimon, targetPlayerDigimon, updatedState);
       console.log(`Calculated damage: ${damage}`);
 
       return {

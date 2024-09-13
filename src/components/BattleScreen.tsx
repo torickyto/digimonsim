@@ -66,20 +66,21 @@ const BattleScreen: React.FC<BattleScreenProps> = ({ playerTeam, enemyTeam, onBa
     setLogEntryId(prevId => prevId + 1);
   }, [logEntryId]);
 
-  useEffect(() => {
-    const updateScale = () => {
-      if (battleBackgroundRef.current) {
-        const { width, height } = battleBackgroundRef.current.getBoundingClientRect();
-        const scale = Math.min(width / 1280, height / 720);
-        setScale(scale);
-        document.documentElement.style.setProperty('--battle-scale', scale.toString());
-      }
-    };
+useEffect(() => {
+  const updateScale = () => {
+    if (battleScreenRef.current) {
+      const { width, height } = battleScreenRef.current.getBoundingClientRect();
+      const scale = Math.min(width / 1280, height / 720);
+      setScale(scale);
+      setSpriteScale(scale);
+      document.documentElement.style.setProperty('--battle-scale', scale.toString());
+    }
+  };
 
-    updateScale();
-    window.addEventListener('resize', updateScale);
-    return () => window.removeEventListener('resize', updateScale);
-  }, []);
+  updateScale();
+  window.addEventListener('resize', updateScale);
+  return () => window.removeEventListener('resize', updateScale);
+}, []);
 
   useEffect(() => {
     if (battleStarting) {
