@@ -11,7 +11,7 @@ import { generateEnemyTeam } from './data/enemyManager';
 import { savePlayerData, loadPlayerData, PlayerData } from './playerData';
 import { getCurrentUser, signOut } from './auth';
 
-type NodeType = 'start' | 'monster' | 'chest' | 'event' | 'boss' | 'empty' | 'rest';
+type NodeType = 'start' | 'normal_enemy' | 'hard_enemy' | 'chest' | 'event' | 'boss' | 'empty' | 'rest';
 
 type MapNode = {
   type: NodeType;

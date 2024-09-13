@@ -193,8 +193,8 @@ export const DigimonTemplates: Record<string, DigimonTemplate> = {
   },
 
   wanyamon: {
-    name: 'waynamon',
-    displayName: 'Waynamon',
+    name: 'wanyamon',
+    displayName: 'Wanyamon',
     type: 'FREE' as DigimonType,
     digivolutionStage: 'In-Training' as DigivolutionStage,
     baseHp: 35,
@@ -277,6 +277,22 @@ export const DigimonTemplates: Record<string, DigimonTemplate> = {
     name: 'veemon',
     displayName: 'Veemon',
     type: 'VACCINE' as DigimonType,
+    digivolutionStage: 'Rookie' as DigivolutionStage,
+    baseHp: 50,
+    baseAttack: 8,
+    baseHealing: 4,
+    baseEvadeChance: 0.05,
+    baseCritChance: 0.05,
+    baseAccuracy: 1,
+    baseCorruptionResistance: 0.2,
+    baseBuggedResistance: 0.2,
+    startingCard: CardCollection.PEPPER_BREATH,
+    passiveSkill: nullPassiveSkill
+  },
+  dorumon: {
+    name: 'dorumon',
+    displayName: 'Dorumon',
+    type: 'DATA' as DigimonType,
     digivolutionStage: 'Rookie' as DigivolutionStage,
     baseHp: 50,
     baseAttack: 8,
