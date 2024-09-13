@@ -169,37 +169,10 @@ export const CardCollection: Record<string, Card> = {
     }]
   ),
 
-  PEPPER_BLAST: createCard(
-    'PEPPER_BLAST',
-    'Pepper Blast',
-    'attack',
-    1,
-    'FREE',
-    'Deal {damage} damage to an enemy. If you have 3 or more RAM, deal {damage} damage again.',
-    'enemy',
-    [{
-      description: "Deal light damage, potentially twice.",
-      damage: {
-        formula: 'LIGHT',
-        target: 'enemy'
-      },
-      conditional: {
-        condition: (state) => state.player.ram >= 3,
-        effect: {
-          description: "Deal light damage, potentially twice.",
-          damage: {
-            formula: 'LIGHT',
-            target: 'enemy'
-          }
-        }
-      }
-    }]
-  ),
-
   // Guilmon
-  PYRO_SHOT: createCard(
-    'PYRO_SHOT',
-    'Pyro Shot',
+  PYRO_SPHERE: createCard(
+    'PYRO_SPHERE',
+    'Pyro Sphere',
     'attack',
     2,
     'VIRUS',
@@ -411,6 +384,35 @@ export const CardCollection: Record<string, Card> = {
     }]
   ),
 
+  NIGHT_OF_BLIZZARDS: createCard(
+    'NIGHT_OF_BLIZZARDS',
+    'Night of Blizzards',
+    'attack',
+    4,
+    'VIRUS',
+    'Deal {damage} damage to an enemy. If you discard a card, deal {bonusDamage} additional damage and draw a card.',
+    'enemy',
+    [{
+      description: "Unleash a freezing attack on the enemy.",
+      damage: {
+        formula: 'STRONG',
+        target: 'enemy'
+      },
+      discardCards: 1,
+      conditional: {
+        condition: (state) => state.cardsDiscardedThisTurn > 0,
+        effect: {
+          description: "Deal additional damage and draw a card.",
+          damage: {
+            formula: 'BASIC2',
+            target: 'enemy'
+          },
+          drawCards: 1
+        }
+      }
+    }]
+  ),
+
   // Kunemon
   ELECTRIC_THREAD: createCard(
     'ELECTRIC_THREAD',
@@ -423,7 +425,7 @@ export const CardCollection: Record<string, Card> = {
     [{
       description: "Shoots an electrified thread at the enemy.",
       damage: {
-        formula: 'BASIC',
+        formula: 'LIGHT2',
         target: 'enemy'
       },
       applyStatus: {
@@ -595,7 +597,7 @@ export const CardCollection: Record<string, Card> = {
 
   // Kamemon
 
-  ARMORED_ARROW: createCard(
+  /*ARMORED_ARROW: createCard(
     'ARMORED_ARROW',
     'Armored Arrow',
     'attack',
@@ -620,7 +622,7 @@ export const CardCollection: Record<string, Card> = {
         })
       }
     }]
-  ),
+  ),*/
 
   TORTO_TACKLE: createCard(
     'TORTO_TACKLE',
@@ -1001,7 +1003,7 @@ NIGHTMARE_SHOCK: createCard(
 
 DEMONS_CURSE: createCard(
   'DEMONS_CURSE',
-  'Demon\'s Curse',
+  'Demons Curse',
   'special',
   3,
   'VIRUS',
@@ -1292,7 +1294,7 @@ SWEET_SCENT: createCard(
   'SWEET_SCENT',
   'Sweet Scent',
   'special',
-  2,
+  3,
   'VIRUS',
   'Apply 2 stacks of corruption to an enemy. Draw a card.',
   'enemy',
@@ -1389,9 +1391,9 @@ GREAT_HORNS_ATTACK: createCard(
   }]
 ),
 
-MEGA_FLAME: createCard(
-  'MEGA_FLAME',
-  'Mega Flame',
+FIRE_WALL: createCard(
+  'FIRE_WALL',
+  'Fire Wall',
   'attack',
   5,
   'VACCINE',
@@ -1479,7 +1481,7 @@ TOUCH_OF_EVIL: createCard(
   'TOUCH_OF_EVIL',
   'Touch of Evil',
   'attack',
-  3,
+  2,
   'VIRUS', 
   'Deal {damage} damage to an enemy and apply 1 stack of CORRUPTION.',
   'enemy',
@@ -1674,6 +1676,268 @@ DARK_MIND: createCard(
     gainRam: 10
   }]
 ),
+
+
+// superstarmon
+
+HALLEYS_SQUALL: createCard(
+  'HALLEYS_SQUALL',
+  'Halleys Squall',
+  'attack',
+  5,
+  'DATA',
+  'Deal {damage} damage split randomly among all enemies 5 times.',
+  'random_enemy',
+  [{
+    description: "Summons a meteor shower to strike enemies.",
+    damage: {
+      formula: 'BASIC2',
+      target: 'random_enemy'
+    },
+    repeat: 5
+  }]
+),
+
+GALACTIC_EYES: createCard(
+  'GALACTIC_EYES',
+  'Galactic Eyes',
+  'special',
+  3,
+  'DATA',
+  'Apply Bugged to an enemy for 2 turns. Draw a card.',
+  'enemy',
+  [{
+    description: "Hypnotizes the opponent with cosmic energy.",
+    applyStatus: {
+      type: 'bugged',
+      duration: 2,
+      value: 1
+    },
+    drawCards: 1
+  }]
+),
+
+//vademon
+
+MUTILATOR: createCard(
+  'MUTILATOR',
+  'Mutilator',
+  'attack',
+  3,
+  'VIRUS',
+  'Deal {damage} damage to an enemy. Apply 1 stack of corruption and reduce their attack by 20% for 2 turns.',
+  'enemy',
+  [{
+    description: "",
+    damage: {
+      formula: 'STRONG',
+      target: 'enemy'
+    },
+    applyStatus: {
+      type: 'corruption',
+      duration: -1,
+      value: 1,
+      isResistable: true
+    },
+    modifyStatMultiplier: {
+      stat: 'attack',
+      multiplier: 0.8,
+      duration: 2
+    }
+  }]
+),
+
+ABDUCTION_BEAM: createCard(
+  'ABDUCTION_BEAM',
+  'Abduction Beam',
+  'special',
+  4,
+  'VIRUS',
+  'Apply Bugged to an enemy for 2 turns. Draw 2 cards.',
+  'enemy',
+  [{
+    description: "Fires a mysterious beam that confuses the enemy.",
+    applyStatus: {
+      type: 'bugged',
+      duration: 2,
+      value: 1
+    },
+    drawCards: 2
+  }]
+),
+
+//metalgreymon
+
+GIGA_BLASTER: createCard(
+  'GIGA_BLASTER',
+  'Giga Blaster',
+  'attack',
+  5,
+  'VACCINE',
+  'Deal {damage} damage to an enemy. If your RAM is 6 or higher, deal {bonusDamage} to all enemies instead.',
+  'enemy',
+  [{
+    description: "Fires organic missiles from chest.",
+    damage: {
+      formula: 'HEAVY',
+      target: 'enemy'
+    },
+    conditional: {
+      condition: (state) => state.player.ram >= 6,
+      effect: {
+        description: "Fires organic missiles from chest.",
+        damage: {
+          formula: 'STRONG2',
+          target: 'all_enemies'
+        }
+      }
+    }
+  }]
+),
+
+TRIDENT_ARM: createCard(
+  'TRIDENT_ARM',
+  'Trident Arm',
+  'attack',
+  3,
+  'VACCINE',
+  'Deal {damage} damage to an enemy. If the enemy has a shield, destroy it completely.',
+  'enemy',
+  [{
+    description: "Strikes with a powerful mechanical arm.",
+    damage: {
+      formula: 'STRONG2',
+      target: 'enemy'
+    },
+    customEffect: (state: GameState) => {
+      const lastPlayCardAction = state.actionQueue
+        .filter(action => action.type === 'PLAY_CARD')
+        .pop();
+      
+      if (lastPlayCardAction && 'targetInfo' in lastPlayCardAction) {
+        const targetIndex = lastPlayCardAction.targetInfo.targetDigimonIndex;
+        if (targetIndex !== undefined && state.enemy.digimon[targetIndex]) {
+          state.enemy.digimon[targetIndex].shield = 0;
+        }
+      }
+      return state;
+    }
+  }]
+),
+
+//Shawujingmon
+
+MOON_FANG: createCard(
+  'MOON_FANG',
+  'Moon Fang',
+  'attack',
+  3,
+  'DATA',
+  'Deal {damage} damage to an enemy. If your shield is greater than 0, deal {bonusDamage} instead.',
+  'enemy',
+  [{
+    description: "",
+    damage: {
+      formula: 'STRONG2',
+      target: 'enemy'
+    },
+    conditional: {
+      condition: (state, targetInfo) => state.player.digimon[targetInfo.sourceDigimonIndex].shield > 0,
+      effect: {
+        description: "",
+        damage: {
+          formula: 'HEAVY2',
+          target: 'enemy'
+        }
+      }
+    }
+  }]
+),
+
+// SKULLKNIGHTMON
+
+SPEAR_NEEDLE: createCard(
+  'SPEAR_NEEDLE',
+  'Spear Needle',
+  'attack',
+  3,
+  'VIRUS',
+  'Deal {damage} damage to an enemy. If the enemy has a shield, deal double damage to it.',
+  'enemy',
+  [{
+    description: "Attacks with a powerful spear thrust.",
+    damage: {
+      formula: 'STRONG',
+      target: 'enemy'
+    },
+    conditional: {
+      condition: (state, targetInfo) => state.enemy.digimon[targetInfo.targetDigimonIndex].shield > 0,
+      effect: {
+        description: "Attacks with a powerful spear thrust.",
+        damage: {
+          formula: 'HEAVY',
+          target: 'enemy'
+        }
+      }
+    }
+  }]
+),
+
+DEATH_FLASH: createCard(
+  'DEATH FLASH',
+  'Death Flash',
+  'special',
+  3,
+  'VIRUS',
+  'Deal {damage} damage to all enemies. Apply 1 stack of corruption to all enemies.',
+  'all_enemies',
+  [{
+    description: "Emits a blinding flash.",
+    damage: {
+      formula: 'BASIC2',
+      target: 'all_enemies'
+    },
+    applyStatus: {
+      type: 'corruption',
+      duration: -1,
+      value: 1,
+      isResistable: true
+    }
+  }]
+),
+
+//Matadormon
+
+WAR_DANCE: createCard(
+  'WAR_DANCE',
+  'War Dance',
+  'special',
+  5,
+  'VIRUS',
+  'Deal {damage} damage to all enemies. For each enemy hit, gain 1 RAM and increase your evasion by 5% for 2 turns.',
+  'all_enemies',
+  [{
+    description: "",
+    damage: {
+      formula: 'STRONG',
+      target: 'all_enemies'
+    },
+    customEffect: (state: GameState) => {
+      const hitEnemies = state.enemy.digimon.filter(enemy => enemy.hp > 0).length;
+      state.player.ram += hitEnemies;
+      state.temporaryEffects.statMultipliers.push({
+        stat: 'evasion',
+        multiplier: 1 + (0.05 * hitEnemies),
+        duration: 2,
+        turnsRemaining: 2
+      });
+      return state;
+    }
+  }]
+),
+
+
+
 
 //revolmon
 QUICKSHOT: createCard(
@@ -1887,6 +2151,70 @@ BEREJENA: createCard(
   }]
 ),
 
+//wargreymon
+
+TERRA_FORCE: createCard(
+  'TERRA_FORCE',
+  'Terra Force',
+  'attack',
+  8,
+  'VACCINE',
+  'Deal {damage} damage to all enemies. Discard your hand.',
+  'all_enemies',
+  [{
+    description: "Concentrates atmospheric energy into a devastating attack.",
+    damage: {
+      formula: 'MEGA',
+      target: 'all_enemies'
+    },
+    discardCards: 'all'
+  }]
+),
+
+GREAT_TORNADO: createCard(
+  'GREAT_TORNADO',
+  'Great Tornado',
+  'attack',
+  5,
+  'VACCINE',
+  'Deal {damage} damage to an enemy. Gain {shield} shield.',
+  'enemy',
+  [{
+    description: "Spins at tremendous speed, damaging the enemy and creating a protective vortex.",
+    damage: {
+      formula: 'HEAVY2',
+      target: 'enemy'
+    },
+    shield: {
+      formula: 'STRONG',
+      target: 'self'
+    }
+  }]
+),
+
+WAR_DRIVER: createCard(
+  'WAR_DRIVER',
+  'War Driver',
+  'attack',
+  6,
+  'VACCINE',
+  'Deal {damage} damage to an enemy. Gain 1 RAM for each card played this turn.',
+  'enemy',
+  [{
+    description: "Charges energy in claws for a powerful strike.",
+    damage: {
+      formula: 'HEAVY2',
+      target: 'enemy'
+    },
+    customEffect: (state: GameState) => {
+      state.player.ram += state.cardsPlayedThisTurn;
+      return state;
+    }
+  }]
+),
+
+//kimeramon 
+
 DEATH_CLAW: createCard(
   'DEATH_CLAW',
   'Death Claw',
@@ -1934,7 +2262,69 @@ HEAT_VIPER: createCard(
     },
     repeat: 6
   }]
-)}
+),
+
+//lucemon
+
+GRAND_CROSS: createCard(
+  'GRAND_CROSS',
+  'Grand Cross',
+  'attack',
+  8,
+  'VACCINE',
+  'Deal {damage} damage split evenly among all enemies 10 times. Remove all status effects from yourself.',
+  'all_enemies',
+  [{
+    description: "Fires ten super-heated spheres of light in a cruciform pattern.",
+    damage: {
+      formula: 'STRONG',
+      target: 'all_enemies'
+    },
+    repeat: 10,
+    customEffect: (state: GameState) => {
+      const sourceIndex = state.player.digimon.findIndex(d => d.id === state.currentDigimon);
+      if (sourceIndex !== -1) {
+        state.player.digimon[sourceIndex].statusEffects = [];
+      }
+      return state;
+    }
+  }]
+),
+
+DIVINE_FEAT: createCard(
+  'DIVINE_FEAT',
+  'Divine Feat',
+  'attack',
+  6,
+  'VACCINE',
+  'Deal {damage} damage to an enemy. If this attack defeats the enemy, gain 5 RAM and draw 2 cards.',
+  'enemy',
+  [{
+    description: "Creates a great sword of light to pierce the enemy.",
+    damage: {
+      formula: 'MEGA',
+      target: 'enemy'
+    },
+    customEffect: (state: GameState) => {
+      const lastAction = state.actionQueue[state.actionQueue.length - 1];
+      if (lastAction.type === 'APPLY_DAMAGE' && lastAction.newHp <= 0) {
+        state.player.ram += 5;
+        for (let i = 0; i < 2; i++) {
+          if (state.player.deck.length > 0) {
+            const drawnCard = state.player.deck.pop()!;
+            state.player.hand.push(drawnCard);
+            state.actionQueue.push({ type: 'DRAW_CARD', card: drawnCard });
+          }
+        }
+      }
+      return state;
+    }
+  }]
+),
+
+
+
+}
 
 
 export const getCardById = (id: string): Card | undefined => {

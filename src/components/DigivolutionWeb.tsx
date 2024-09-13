@@ -107,6 +107,7 @@ export const getDigivolutionConnections = (): DigivolutionConnection[] => {
 
     { from: 'shawujingmon', to: 'jumbogamemon' },
 
+    { from: 'vademon', to: 'vademon' }, //placeholder
 
     { from: 'tokomon', to: 'lucemon' },
 
