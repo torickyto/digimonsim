@@ -168,6 +168,7 @@ export interface GameState {
   cardsDiscardedThisTurn: number;
   cardsDiscardedThisBattle: number;
   lastPlayedCardType?: CardEffectType;
+  currentDigimon: string;
   temporaryEffects: {
     costModifications: Array<{
       target: 'all' | 'specific';
@@ -228,7 +229,7 @@ export interface DigimonState {
   passiveSkill: PassiveSkill | null;
   nickname?: string;
   dateObtained: Date;
-  
+
   age: string;
   lifespan: number;
   rebirthCount: number;

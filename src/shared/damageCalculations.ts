@@ -1,4 +1,4 @@
-import { DigimonState, DamageFormulaKey } from './types';
+import { DigimonState, DamageFormulaKey, GameState, StatType } from './types';
 import { DAMAGE_MULTIPLIERS } from '../game/gameConstants';
 
 export type DamageFormula = (attacker: DigimonState) => number;
@@ -57,13 +57,29 @@ export function calculateCustomDamage(attacker: DigimonState, customValue: numbe
   return customValue;
 }
 
-export function calculateDamage(formulaKey: DamageFormulaKey, attacker: DigimonState, defender: DigimonState): number {
+interface StatMultiplier {
+  stat: StatType;
+  multiplier: number;
+  duration: number;
+  turnsRemaining: number;
+}
+
+export function calculateDamage(formulaKey: DamageFormulaKey, attacker: DigimonState, defender: DigimonState, gameState: GameState): number {
   const formula = DamageCalculations[formulaKey];
   if (!formula) {
     console.error(`No damage formula found for key: ${formulaKey}`);
     return 0;
   }
-  const damage = formula(attacker);
+  
+  let damage = formula(attacker);
+  
+  // Apply stat multipliers
+  const attackMultiplier = gameState.temporaryEffects.statMultipliers
+    .filter((m: StatMultiplier) => m.stat === 'attack' && m.turnsRemaining > 0)
+    .reduce((total: number, m: StatMultiplier) => total * m.multiplier, 1);
+  
+  damage *= attackMultiplier;
+  
   console.log('Calculated damage:', damage, 'using formula:', formulaKey);
-  return damage;
+  return Math.round(damage);
 }
