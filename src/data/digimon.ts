@@ -12,6 +12,7 @@ import { BASE_EXP_REQUIREMENT, EXP_SCALE_FACTOR, MAX_LEVEL, DAMAGE_MULTIPLIERS }
 import { v4 as uuidv4 } from 'uuid';
 import { calculateExpRequirement } from '../game/expSystem';
 import { getEggTypeForDigimon } from './eggTypes';
+import { CardCollection } from '../shared/cardCollection';
 
 export const rebirthDigimon = (digimon: Digimon, selectedCards: Card[]): DigimonEgg => {
   const eggType = getEggTypeForDigimon(digimon.name);
@@ -33,15 +34,33 @@ export const createUniqueDigimon = (templateName: string, level: number = 1, egg
   const template = getDigimonTemplate(templateName);
   if (!template) throw new Error(`No template found for ${templateName}`);
 
+  const basicCards: Card[] = [
+    { ...CardCollection.PUNCH_BASIC, instanceId: uuidv4(), ownerDigimonIndex: 0 },
+    { ...CardCollection.PUNCH_BASIC, instanceId: uuidv4(), ownerDigimonIndex: 0 },
+    { ...CardCollection.BLOCK_BASIC, instanceId: uuidv4(), ownerDigimonIndex: 0 },
+    { ...CardCollection.BLOCK_BASIC, instanceId: uuidv4(), ownerDigimonIndex: 0 },
+  ];
+
+  const startingCard: Card = { ...template.startingCard, instanceId: uuidv4(), ownerDigimonIndex: 0 };
+
+  const inheritedCards = egg?.inheritedCards || [];
+
+  const deck = [...inheritedCards, ...basicCards, startingCard];
+
+
   const digimon: Digimon = {
     id: uuidv4(),
-    ...template,
-    level,
+    name: template.name,
+    displayName: template.displayName,
+    type: template.type,
     digivolutionStage: template.digivolutionStage,
-    hp: calculateBaseStat(template.baseHp, level),
-    maxHp: calculateBaseStat(template.baseHp, level),
-    attack: calculateBaseStat(template.baseAttack, level),
-    healing: calculateBaseStat(template.baseHealing, level),
+    level: level,
+    exp: 0,
+    expToNextLevel: calculateExpRequirement(level),
+    hp: template.baseHp,
+    maxHp: template.baseHp,
+    attack: template.baseAttack,
+    healing: template.baseHealing,
     evasion: template.baseEvadeChance,
     critChance: template.baseCritChance,
     accuracy: template.baseAccuracy,
@@ -49,18 +68,17 @@ export const createUniqueDigimon = (templateName: string, level: number = 1, egg
     buggedResistance: template.baseBuggedResistance,
     shield: 0,
     statusEffects: [],
-    exp: 0,
-    expToNextLevel: calculateExpRequirement(level),
-    deck: egg?.inheritedCards || getStarterDeck(templateName),
-    nickname: egg?.nickname,
+    passiveSkill: template.passiveSkill,
+    deck: deck,
     dateObtained: new Date(),
+    nickname: egg?.nickname,
     age: 'Young',
     lifespan: 50,
-    rebirthCount: egg ? egg.rebirthCount : 0,
+    rebirthCount: egg?.rebirthCount || 0
   };
 
   return digimon;
-};
+}
 
 export const calculateAgeCategory = (currentLifespan: number, totalLifespan: number): string => {
   const percentage = (currentLifespan / totalLifespan) * 100;

@@ -4,29 +4,40 @@ import { getDigimonTemplate } from './DigimonTemplate';
 
 interface EnemyPool {
   [key: string]: {
-    enemies: string[];
+    normal_enemies: string[];
+    hard_enemies: string[];
     bosses: string[];
   };
 }
 
 const enemyPool: EnemyPool = {
   'Label Forest': {
-    enemies: ['minomon', 'kunemon', 'mushmon', 'veggiemon'],
-    bosses: ['greymon', 'garurumon']
+    normal_enemies: ['minomon', 'chicchimon', 'pagumon', 'gummymon', 'koromon', 'tsunomon', 'goblimon', 'tokomon', 'budmon', 'kunemon', 'mushmon'],
+    hard_enemies: ['veggiemon', 'mushmon', 'kunemon', 'tentomon', 'goblimon'],
+    bosses: ['kuwagamon']
   },
   // Add more zones here as they are implemented
 };
 
-export const getEnemiesForZone = (zoneName: string, nodeType: 'monster' | 'boss'): string[] => {
+export const getEnemiesForZone = (zoneName: string, nodeType: 'normal_enemy' | 'hard_enemy' | 'boss'): string[] => {
   const zoneEnemies = enemyPool[zoneName];
   if (!zoneEnemies) {
     console.error(`No enemies defined for zone: ${zoneName}`);
     return [];
   }
-  return nodeType === 'boss' ? zoneEnemies.bosses : zoneEnemies.enemies;
+  switch (nodeType) {
+    case 'normal_enemy':
+      return zoneEnemies.normal_enemies;
+    case 'hard_enemy':
+      return zoneEnemies.hard_enemies;
+    case 'boss':
+      return zoneEnemies.bosses;
+    default:
+      return [];
+  }
 };
 
-export const generateEnemy = (zoneName: string, nodeType: 'monster' | 'boss', playerLevel: number): Digimon | null => {
+export const generateEnemy = (zoneName: string, nodeType: 'normal_enemy' | 'hard_enemy' | 'boss', playerLevel: number): Digimon | null => {
   const potentialEnemies = getEnemiesForZone(zoneName, nodeType);
   if (potentialEnemies.length === 0) return null;
 
@@ -38,11 +49,23 @@ export const generateEnemy = (zoneName: string, nodeType: 'monster' | 'boss', pl
     return null;
   }
 
-  const enemyLevel = nodeType === 'boss' ? playerLevel + 2 : playerLevel;
+  let enemyLevel = playerLevel;
+  switch (nodeType) {
+    case 'normal_enemy':
+      enemyLevel = playerLevel + Math.floor(Math.random() * 2) - 1; // -1 to +1 level difference
+      break;
+    case 'hard_enemy':
+      enemyLevel = playerLevel + Math.floor(Math.random() * 2) + 1; // +1 to +2 level difference
+      break;
+    case 'boss':
+      enemyLevel = playerLevel + 2;
+      break;
+  }
+
   return createUniqueDigimon(randomEnemyName, enemyLevel);
 };
 
-export const generateEnemyTeam = (zoneName: string, nodeType: 'monster' | 'boss', playerLevel: number, teamSize: number): Digimon[] => {
+export const generateEnemyTeam = (zoneName: string, nodeType: 'normal_enemy' | 'hard_enemy' | 'boss', playerLevel: number, teamSize: number): Digimon[] => {
   const enemyTeam: Digimon[] = [];
   for (let i = 0; i < teamSize; i++) {
     const enemy = generateEnemy(zoneName, nodeType, playerLevel);

@@ -7,16 +7,16 @@ import { gainExperience } from '../data/digimon';
 
 const digitamaSpriteSheet = require('../assets/images/digitama-sheet.png');
 
-type NodeType = 'start' | 'monster' | 'chest' | 'event' | 'boss' | 'empty' | 'rest';
+type NodeType = 'start' | 'normal_enemy' | 'hard_enemy' | 'chest' | 'event' | 'boss' | 'empty' | 'rest';
 
 interface NodeEventProps {
-    type: NodeType;
-    onClose: () => void;
-    onUpdatePlayerTeam: (updatedTeam: Digimon[]) => void;
-    playerTeam: Digimon[];
-    onAddEgg: (eggTypeId: number) => void;
-    onUpdateBits: (amount: number) => void;
-  }
+  type: NodeType;
+  onClose: () => void;
+  onUpdatePlayerTeam: (updatedTeam: Digimon[]) => void;
+  playerTeam: Digimon[];
+  onAddEgg: (eggTypeId: number) => void;
+  onUpdateBits: (amount: number) => void;
+}
   
 
 const NodeEvent: React.FC<NodeEventProps> = ({ type, onClose, onUpdatePlayerTeam, playerTeam, onAddEgg, onUpdateBits }) => {
@@ -193,12 +193,27 @@ const NodeEvent: React.FC<NodeEventProps> = ({ type, onClose, onUpdatePlayerTeam
             <button onClick={onClose}>Proceed</button>
           </div>
         );
-      case 'monster':
+        case 'normal_enemy':
+          return (
+            <div className="event-content">
+              <h2>⚠️ Hostile Data Detected</h2>
+              <p>Prepare for imminent data conflict. Battle subroutines loading...</p>
+              <button onClick={onClose}>Engage</button>
+            </div>
+          );
+        case 'hard_enemy':
+          return (
+            <div className="event-content">
+              <h2>⚠️ Hostile Data Detected</h2>
+              <p>Prepare for imminent data conflict. Battle subroutines loading...</p>
+              <button onClick={onClose}>Engage</button>
+            </div>
+          );
       case 'boss':
         return (
           <div className="event-content">
-            <h2>⚠️ Hostile Data Detected</h2>
-            <p>Prepare for imminent data conflict. Battle subroutines loading...</p>
+            <h2>🚨 Strong Hostile Data Detected</h2>
+            <p>Warning: High-level threat detected. Prepare for battle.</p>
             <button onClick={onClose}>Engage</button>
           </div>
         );

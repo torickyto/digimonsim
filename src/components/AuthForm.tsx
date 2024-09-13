@@ -5,6 +5,7 @@ import DigimonSprite from './DigimonSprite';
 import { Digimon } from '../shared/types';
 import { v4 as uuidv4 } from 'uuid';
 import './AuthForm.css';
+import { createUniqueDigimon } from '../data/digimon';
 
 interface AuthFormProps {
   onAuthSuccess: (user: any, starterDigimon?: Digimon) => void;
@@ -30,7 +31,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
     e.preventDefault();
     setError(null);
     setIsLoading(true);
-
+  
     try {
       if (isSignUp) {
         if (!selectedDigimon) {
@@ -39,38 +40,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
         const { user, error } = await signUp({ email, password });
         if (error) throw new Error(error);
         if (user) {
-          const template = getDigimonTemplate(selectedDigimon);
-          if (!template) throw new Error("Invalid starter Digimon");
-          
-          const starterDigimon: Digimon = {
-            id: uuidv4(),
-            name: template.name,
-            displayName: template.displayName,
-            type: template.type,
-            digivolutionStage: template.digivolutionStage,
-            level: 1,
-            exp: 0,
-            expToNextLevel: 100, // calculate this based on game logic
-            hp: template.baseHp,
-            maxHp: template.baseHp,
-            attack: template.baseAttack,
-            healing: template.baseHealing,
-            evasion: template.baseEvadeChance,
-            critChance: template.baseCritChance,
-            accuracy: template.baseAccuracy,
-            corruptionResistance: template.baseCorruptionResistance,
-            buggedResistance: template.baseBuggedResistance,
-            shield: 0,
-            statusEffects: [],
-            passiveSkill: template.passiveSkill,
-            deck: [{ ...template.startingCard, instanceId: uuidv4(), ownerDigimonIndex: 0 }],
-            nickname: undefined,
-            dateObtained: new Date(),
-            age: 'Young',
-            lifespan: 50,
-            rebirthCount: 0
-          };
-          
+          const starterDigimon = createUniqueDigimon(selectedDigimon);
           onAuthSuccess(user, starterDigimon);
         }
       } else {
