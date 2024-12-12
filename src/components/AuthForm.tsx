@@ -82,7 +82,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
       <div className="dq-auth-form-container">
         <div className="dq-grid-background"></div>
         <form onSubmit={handleSubmit} className="dq-auth-form">
-          <h2>{isSignUp ? 'Create Tamer Profile' : 'Login'}</h2>
+          <h2>{isSignUp ? 'SERVER is INACTIVE' : 'SERVER is INACTIVE'}</h2>
           <div className="dq-input-group">
             <input
               type="email"
@@ -126,11 +126,11 @@ const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
             {isLoading ? 'Initializing...' : (isSignUp ? 'Initialize Tamer' : 'CONNECT')}
           </button>
           <button type="button" className="dq-toggle-btn" onClick={() => setIsSignUp(!isSignUp)}>
-            {isSignUp ? 'Existing Tamer? SERVERS DOWN' : 'New Tamer? SERVERS DOWN'}
+            {isSignUp ? 'Existing Tamer? Sign Up' : 'New Tamer? Log In'}
           </button>
         </form>
         <div className="dq-auth-footer">
-          <p>DigimonQuest v0.1 | A Fan Game</p>
+          <p>DigimonQuest v0.1</p>
         </div>
       </div>
     </div>
