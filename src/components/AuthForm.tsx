@@ -126,7 +126,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
             {isLoading ? 'Initializing...' : (isSignUp ? 'Initialize Tamer' : 'CONNECT')}
           </button>
           <button type="button" className="dq-toggle-btn" onClick={() => setIsSignUp(!isSignUp)}>
-            {isSignUp ? 'Existing Tamer? Log In' : 'New Tamer? Sign Up'}
+            {isSignUp ? 'Existing Tamer? SERVERS DOWN' : 'New Tamer? SERVERS DOWN'}
           </button>
         </form>
         <div className="dq-auth-footer">
